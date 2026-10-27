@@ -1,0 +1,24 @@
+# Build products
+build/
+.build/
+DerivedData/
+
+# Xcode per-user state
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager
+# The app's Package.resolved (under xcshareddata/swiftpm/) is committed.
+.swiftpm/
+
+# Editor files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Temp files
+*.swp
+*~
+.*.sw*
