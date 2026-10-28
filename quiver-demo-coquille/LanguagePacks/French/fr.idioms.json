@@ -1,0 +1,22 @@
+[
+  {
+    "phrase": "bon pour ta santé",
+    "suggestion": "bon pour la santé",
+    "note": "For health in general, French uses the definite article."
+  },
+  {
+    "phrase": "bon pour votre santé",
+    "suggestion": "bon pour la santé",
+    "note": "For health in general, French uses the definite article."
+  },
+  {
+    "phrase": "fait du sens",
+    "suggestion": "a du sens",
+    "note": "Faire du sens copies the English “make sense”; French usually says avoir du sens."
+  },
+  {
+    "phrase": "je suis excité",
+    "suggestion": "j'ai hâte",
+    "note": "Je suis excité can suggest overexcitement or arousal; for looking forward to something, French says j'ai hâte."
+  }
+]

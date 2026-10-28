@@ -198,6 +198,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -269,6 +270,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -407,7 +409,7 @@
 			};
 			name = Release;
 		};
-		DA2705FA3091505900F81D2D /* Debug */ = {
+		DA2705FA3091505900F81D2D /* Debug configuration for PBXNativeTarget "quiver-demo-coquilleTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -432,7 +434,7 @@
 			};
 			name = Debug;
 		};
-		DA2705FB3091505900F81D2D /* Release */ = {
+		DA2705FB3091505900F81D2D /* Release configuration for PBXNativeTarget "quiver-demo-coquilleTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -479,8 +481,8 @@
 		DA2705FC3091505900F81D2D /* Build configuration list for PBXNativeTarget "quiver-demo-coquilleTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DA2705FA3091505900F81D2D /* Debug */,
-				DA2705FB3091505900F81D2D /* Release */,
+				DA2705FA3091505900F81D2D /* Debug configuration for PBXNativeTarget "quiver-demo-coquilleTests" */,
+				DA2705FB3091505900F81D2D /* Release configuration for PBXNativeTarget "quiver-demo-coquilleTests" */,
 			);
 			defaultConfigurationName = Release;
 		};
