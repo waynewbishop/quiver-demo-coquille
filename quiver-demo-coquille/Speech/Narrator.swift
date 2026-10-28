@@ -25,6 +25,8 @@ enum PlaybackState: Equatable {
 protocol Narrator: AnyObject {
     /// Whether speech is idle, playing, or paused.
     var state: PlaybackState { get }
+    /// The word being spoken, as UTF-16 offsets into the spoken text, or `nil` when idle.
+    var spokenRange: Range<Int>? { get }
     /// Speaks `text` from the start, replacing anything already playing.
     func speak(_ text: String, rate: Float)
     /// Pauses at the current point, so `resume()` carries on from there.
@@ -33,6 +35,13 @@ protocol Narrator: AnyObject {
     func resume()
     /// Stops speaking immediately; the next `speak` starts from the beginning.
     func stop()
+}
+
+extension Narrator {
+    /// Whether speech is playing right now.
+    var isSpeaking: Bool {
+        state == .speaking
+    }
 }
 
 /// Speaks French with the system synthesizer, preferring a female voice and the
@@ -46,13 +55,9 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
     static let slowRate = AVSpeechUtteranceDefaultSpeechRate * 0.5
 
     private(set) var state = PlaybackState.idle
-    /// Timing for the passage being spoken, or `nil` when idle.
-    private(set) var clock: PlaybackClock?
-
-    /// Whether speech is playing right now.
-    var isSpeaking: Bool {
-        state == .speaking
-    }
+    /// The word being spoken, as UTF-16 offsets into the spoken text, or `nil` when idle.
+    /// It stays on the current word while paused.
+    private(set) var spokenRange: Range<Int>?
 
     /// The voice language, such as "fr-FR".
     let language: String
@@ -74,8 +79,7 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
         utterance.voice = Self.preferredVoice(for: language)
         utterance.rate = rate
         currentUtterance = ObjectIdentifier(utterance)
-        // The clock starts when the synthesizer reports that audio has begun.
-        clock = PlaybackClock(characterCount: text.utf16.count, rateScale: Double(rate / Self.normalRate))
+        spokenRange = nil
         state = .speaking
         synthesizer.speak(utterance)
     }
@@ -84,7 +88,6 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
     func pause() {
         guard state == .speaking else { return }
         synthesizer.pauseSpeaking(at: .immediate)
-        clock?.pause(at: .now)
         state = .paused
     }
 
@@ -92,14 +95,13 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
     func resume() {
         guard state == .paused else { return }
         synthesizer.continueSpeaking()
-        clock?.resume(at: .now)
         state = .speaking
     }
 
     /// Stops speaking immediately; the next `speak` starts from the beginning.
     func stop() {
         currentUtterance = nil
-        clock = nil
+        spokenRange = nil
         state = .idle
         synthesizer.stopSpeaking(at: .immediate)
     }
@@ -118,27 +120,17 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
 
     // MARK: - AVSpeechSynthesizerDelegate
 
-    /// Starts the clock once audio actually begins, after the voice has loaded.
-    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        let id = ObjectIdentifier(utterance)
-        let date = Date.now
-        Task { @MainActor in
-            guard self.currentUtterance == id, self.state == .speaking else { return }
-            self.clock?.resume(at: date)
-        }
-    }
-
-    /// Refines the time estimate as each word begins.
+    /// Records each word as the synthesizer begins it.
     nonisolated func speechSynthesizer(
         _ synthesizer: AVSpeechSynthesizer,
         willSpeakRangeOfSpeechString characterRange: NSRange,
         utterance: AVSpeechUtterance
     ) {
         let id = ObjectIdentifier(utterance)
-        let date = Date.now
+        let range = characterRange.location..<(characterRange.location + characterRange.length)
         Task { @MainActor in
             guard self.currentUtterance == id else { return }
-            self.clock?.reached(characterOffset: characterRange.location, at: date)
+            self.spokenRange = range
         }
     }
 
@@ -157,7 +149,7 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             guard self.currentUtterance == utterance else { return }
             self.currentUtterance = nil
-            self.clock = nil
+            self.spokenRange = nil
             self.state = .idle
         }
     }

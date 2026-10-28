@@ -177,6 +177,8 @@ struct EditorScreen: View {
             }
             .onChange(of: model.text) { model.textDidChange() }
             .onChange(of: model.selection) { model.selectionDidChange() }
+            .onChange(of: model.narrator.spokenRange) { model.spokenWordDidChange() }
+            .onChange(of: model.narrator.state) { model.spokenWordDidChange() }
     }
 }
 

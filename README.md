@@ -121,7 +121,7 @@ Everything is plain folders in one Xcode project:
   no Info.plist entry.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table.
-- `quiver-demo-coquilleTests/` — 34 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 41 XCTest cases, including the
   false-positive traps above.
 
 ## Data

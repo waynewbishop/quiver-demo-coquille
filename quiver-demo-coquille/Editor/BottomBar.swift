@@ -22,21 +22,15 @@ struct BottomBar: View {
     let jumpToFirstError: () -> Void
 
     var body: some View {
-        VStack(spacing: 10) {
-            if let clock = model.narrator.clock {
-                PlaybackProgress(clock: clock, isRunning: model.narrator.isSpeaking)
-            }
+        HStack {
+            Toggle("English", isOn: $model.isEnglishOn)
+                .toggleStyle(.switch)
+                .fixedSize()
+                .font(.body.weight(.medium))
 
-            HStack {
-                Toggle("English", isOn: $model.isEnglishOn)
-                    .toggleStyle(.switch)
-                    .fixedSize()
-                    .font(.body.weight(.medium))
+            Spacer()
 
-                Spacer()
-
-                PlayControl(model: model, diameter: 60, captionEdge: .leading, showsProgress: false, jumpToFirstError: jumpToFirstError)
-            }
+            PlayControl(model: model, diameter: 60, captionEdge: .leading, jumpToFirstError: jumpToFirstError)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -66,7 +60,7 @@ struct MacBottomBar: View {
             .accessibilityHint("Shows every issue")
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            PlayControl(model: model, diameter: 44, captionEdge: .trailing, showsProgress: true, jumpToFirstError: jumpToFirstError)
+            PlayControl(model: model, diameter: 44, captionEdge: .trailing, jumpToFirstError: jumpToFirstError)
 
             Toggle("English", isOn: $model.isEnglishOn)
                 .toggleStyle(.switch)
@@ -90,14 +84,11 @@ struct PlayControl: View {
     let diameter: Double
     /// Which side of the button the caption sits on.
     let captionEdge: HorizontalEdge
-    /// Whether playback time replaces the caption while speaking or paused, as in the
-    /// Mac footer. The iPhone shows it in a row of its own instead.
-    let showsProgress: Bool
     /// Called when the learner taps the locked play button.
     let jumpToFirstError: () -> Void
 
-    /// The width kept for a caption on the button's right, wide enough for the playback time.
-    private static let trailingCaptionWidth = 240.0
+    /// The width kept for a caption on the button's right, wide enough for the longest one.
+    private static let trailingCaptionWidth = 160.0
 
     /// Set by a long press so the tap that ends it doesn't also play at normal speed.
     @State private var longPressPlayed = false
@@ -118,18 +109,8 @@ struct PlayControl: View {
         }
     }
 
-    /// "Fix 4 errors to play", "Hold for slow", "Speaking French…", "Paused", or the playback time.
-    @ViewBuilder
+    /// "Fix 4 errors to play", "Hold for slow", "Speaking French…", or "Paused".
     private var caption: some View {
-        if showsProgress, let clock = model.narrator.clock {
-            PlaybackProgress(clock: clock, isRunning: model.narrator.isSpeaking)
-        } else {
-            text
-        }
-    }
-
-    /// The caption as text.
-    private var text: some View {
         Group {
             if model.isLocked {
                 // Beside the button on the left, the caption wraps to stay compact.
@@ -190,38 +171,5 @@ struct PlayControl: View {
         )
         .accessibilityLabel(model.narrator.isSpeaking ? "Pause" : model.narrator.state == .paused ? "Resume" : "Read aloud in French")
         .accessibilityAction(named: "Read slowly") { model.togglePlay(slowly: true) }
-    }
-}
-
-/// Elapsed time, a progress bar, and the estimated total, as in "0:04 ━━━── 0:10".
-///
-/// The total is an estimate that settles once a tenth of the passage has been
-/// spoken; see `PlaybackClock`.
-struct PlaybackProgress: View {
-
-    let clock: PlaybackClock
-    /// Whether time is advancing; the view stops redrawing while paused.
-    let isRunning: Bool
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 0.1, paused: !isRunning)) { context in
-            HStack(spacing: 10) {
-                Text(Self.format(clock.elapsed(at: context.date)))
-                ProgressView(value: clock.fraction(at: context.date))
-                    .progressViewStyle(.linear)
-                Text(Self.format(clock.estimatedDuration.rounded()))
-            }
-            .font(.plexMono(12, relativeTo: .caption))
-            .monospacedDigit()
-            .foregroundStyle(.secondary)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Playback")
-            .accessibilityValue("\(Self.format(clock.elapsed(at: context.date))) of about \(Self.format(clock.estimatedDuration.rounded()))")
-        }
-    }
-
-    /// Formats whole seconds as "0:04".
-    static func format(_ seconds: TimeInterval) -> String {
-        Duration.seconds(seconds.rounded(.down)).formatted(.time(pattern: .minuteSecond))
     }
 }

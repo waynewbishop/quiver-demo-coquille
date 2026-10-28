@@ -33,7 +33,12 @@ final class EditorModel {
     var text = AttributedString()
     var selection = AttributedTextSelection()
     var isEnglishOn = false {
-        didSet { refreshEnglish() }
+        didSet {
+            // Linting refreshes the English itself; otherwise refresh it here.
+            if !lintIfStale() {
+                refreshEnglish()
+            }
+        }
     }
     /// Whether suggestion-level issues are shown at all.
     var showsSuggestions = true {
@@ -46,7 +51,7 @@ final class EditorModel {
     private(set) var english = English.idle
     private(set) var loadFailure: String?
 
-    let narrator: SpeechNarrator
+    let narrator: any Narrator
     let stats: StatsStore
 
     @ObservationIgnored private var linter: Linter?
@@ -61,10 +66,18 @@ final class EditorModel {
     /// How long typing must pause before the text is linted.
     static let lintDelay = Duration.milliseconds(400)
 
-    /// Creates a model; the language pack loads in `load()`.
-    init(stats: StatsStore = StatsStore()) {
+    /// Creates a model. Without a `linter`, the French pack loads in `load()`; tests
+    /// pass their own linter, narrator and in-memory stats instead.
+    init(
+        stats: StatsStore = StatsStore(),
+        narrator: any Narrator = SpeechNarrator(language: "fr-FR"),
+        linter: Linter? = nil,
+        translator: (any Translator)? = nil
+    ) {
         self.stats = stats
-        self.narrator = SpeechNarrator(language: "fr-FR")
+        self.narrator = narrator
+        self.linter = linter
+        self.translator = translator
     }
 
     // MARK: - Derived state
@@ -89,7 +102,15 @@ final class EditorModel {
         visibleIssues.filter { $0.severity == .warning }
     }
 
+    /// Whether `issues` describe the text as it is now, rather than before the last edit.
+    var isLintCurrent: Bool {
+        plainText == lintedText
+    }
+
     /// Like a compiler, nothing runs until the French is correct.
+    ///
+    /// Between an edit and its lint, this still reflects the previous text, so the
+    /// lock doesn't flicker while typing. Play and English lint first instead.
     var isLocked: Bool {
         !blockingIssues.isEmpty
     }
@@ -139,6 +160,16 @@ final class EditorModel {
             guard !Task.isCancelled else { return }
             lintNow()
         }
+    }
+
+    /// Lints right away if the text changed since the last lint, so play and English
+    /// never act on a stale verdict. Returns whether it linted.
+    @discardableResult
+    private func lintIfStale() -> Bool {
+        guard !isLintCurrent, linter != nil else { return false }
+        lintTask?.cancel()
+        lintNow()
+        return true
     }
 
     /// Lints the current text immediately and restyles it.
@@ -209,8 +240,15 @@ final class EditorModel {
     /// The design's sample paragraph, with one mistake for each kind of check.
     static let example = "Hier, je suis allé au marché avec ma sœur. Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentile, et la pain sentait bon."
 
-    /// Fills the editor with the sample paragraph and lints it right away.
+    /// Starts the sample paragraph from a clean slate, so a rehearsal never changes
+    /// the next run: ignored issues come back, and playback and English reset.
     func loadExample() {
+        narrator.stop()
+        lintTask?.cancel()
+        translationTask?.cancel()
+        ignoredKeys = []
+        selectedIssueID = nil
+        english = .idle
         text = AttributedString(Self.example)
         selection = AttributedTextSelection()
         lintNow()
@@ -230,13 +268,14 @@ final class EditorModel {
     /// Pauses, resumes, or starts the French. A slow request always starts over at
     /// about half speed; any edit to the text stops playback.
     func togglePlay(slowly: Bool = false) {
+        lintIfStale()
         switch narrator.state {
         case .speaking where !slowly:
             narrator.pause()
         case .paused where !slowly:
             narrator.resume()
         default:
-            guard !isLocked, hasText else { return }
+            guard isLintCurrent, !isLocked, hasText else { return }
             narrator.speak(plainText, rate: slowly ? SpeechNarrator.slowRate : SpeechNarrator.normalRate)
         }
     }
@@ -270,7 +309,22 @@ final class EditorModel {
 
     // MARK: - Styling
 
-    /// Underlines each visible issue by severity and highlights the open one.
+    /// Restyles the text when the narrator moves to a new word.
+    func spokenWordDidChange() {
+        applyStyling()
+    }
+
+    /// The word being read aloud, as character offsets into the text, or `nil`.
+    private var spokenWordRange: Range<Int>? {
+        guard narrator.state != .idle, let utf16 = narrator.spokenRange else { return nil }
+        let plain = plainText
+        guard let range = Range(NSRange(location: utf16.lowerBound, length: utf16.count), in: plain) else { return nil }
+        let lower = plain.distance(from: plain.startIndex, to: range.lowerBound)
+        return lower..<(lower + plain[range].count)
+    }
+
+    /// Underlines each visible issue by severity, highlights the open one, and
+    /// highlights the word being read aloud.
     private func applyStyling() {
         guard plainText == lintedText else { return }
         var styled = text
@@ -282,6 +336,9 @@ final class EditorModel {
             if issue.id == selectedIssueID {
                 styled[range].backgroundColor = Self.highlight(for: issue.severity)
             }
+        }
+        if let spoken = spokenWordRange, let range = attributedRange(for: spoken, in: styled) {
+            styled[range].backgroundColor = Self.spokenHighlight
         }
         if styled != text {
             text = styled
@@ -296,6 +353,9 @@ final class EditorModel {
         case .suggestion: Text.LineStyle(pattern: .dash, color: .secondary)
         }
     }
+
+    /// The tint behind the word being read aloud.
+    private static let spokenHighlight = Color.brand.opacity(0.22)
 
     /// A soft tint behind the open issue, in its severity's color.
     private static func highlight(for severity: Severity) -> Color {
