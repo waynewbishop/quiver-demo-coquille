@@ -41,12 +41,22 @@ final class EditorModelTests: XCTestCase {
         func misspellings(in text: String) -> [Misspelling] { [] }
     }
 
+    /// Reports every occurrence of the given words as misspelled, with no guesses.
+    private struct UnknownWordSpellChecker: SpellChecker {
+        let unknown: Set<String>
+        func misspellings(in text: String) -> [Misspelling] {
+            FrenchTokenizer.tokens(in: text)
+                .filter { unknown.contains($0.text) }
+                .map { Misspelling(offset: $0.offset, word: $0.text, guesses: []) }
+        }
+    }
+
     private var narrator = FakeNarrator()
 
     /// Builds a model over the bundled French rules, with in-memory stats.
-    private func makeModel() throws -> EditorModel {
+    private func makeModel(spellChecker: any SpellChecker = SilentSpellChecker()) throws -> EditorModel {
         let pack = try LanguagePack.french()
-        let linter = Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        let linter = Linter(spellChecker: spellChecker, grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
         narrator = FakeNarrator()
         return EditorModel(stats: StatsStore(fileURL: nil), narrator: narrator, linter: linter)
     }
@@ -169,6 +179,32 @@ final class EditorModelTests: XCTestCase {
         type("Nous avons", into: model)
         model.lintNow()
         XCTAssertFalse(model.isLocked)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+    }
+
+    // An unknown word warns without blocking play, and retyping it counts as the learner's fix.
+    func testRetypedUnknownWordCountsAsTheLearners() throws {
+        let model = try makeModel(spellChecker: UnknownWordSpellChecker(unknown: ["Ahdourdui"]))
+        type("Ahdourdui, il pleut.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.warnings.map(\.original), ["Ahdourdui"])
+        XCTAssertTrue(model.blockingIssues.isEmpty)
+
+        type("Aujourd'hui, il pleut.", into: model)
+        model.lintNow()
+        XCTAssertTrue(model.warnings.isEmpty)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 1)
+        XCTAssertEqual(model.stats.stats.fixedByLearner, 1)
+    }
+
+    // Deleting an unknown word clears its warning but never counts as fixing it.
+    func testDeletingAnUnknownWordIsNotAFix() throws {
+        let model = try makeModel(spellChecker: UnknownWordSpellChecker(unknown: ["Ahdourdui"]))
+        type("Il pleut Ahdourdui.", into: model)
+        model.lintNow()
+        type("Il pleut.", into: model)
+        model.lintNow()
+        XCTAssertTrue(model.warnings.isEmpty)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
     }
 }

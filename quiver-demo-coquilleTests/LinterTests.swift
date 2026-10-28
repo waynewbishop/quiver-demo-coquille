@@ -56,7 +56,17 @@ final class LinterTests: XCTestCase {
         XCTAssertEqual(linter.lint(text).map(\.replacement), ["gentille"])
 
         let english = try self.linter(reporting: [Misspelling(offset: 9, word: "gentile", guesses: ["gentle"])])
-        XCTAssertEqual(english.lint(text), [])
+        XCTAssertEqual(english.lint(text).map(\.replacement), [nil])
+    }
+
+    // A misspelling with no French guess is still underlined, as a warning with no fix.
+    func testUnknownWordIsFlaggedWithoutAFix() throws {
+        let linter = try linter(reporting: [Misspelling(offset: 0, word: "Ahdourdui", guesses: [])])
+        let issue = try XCTUnwrap(linter.lint("Ahdourdui, il pleut.").first)
+        XCTAssertEqual(issue.kind, .spelling)
+        XCTAssertEqual(issue.severity, .warning)
+        XCTAssertNil(issue.replacement)
+        XCTAssertEqual(issue.hint, "Ahdourdui isn't in the French dictionary, and there's no close match to suggest.")
     }
 
     func testLexiconWordsAreNotMisspelled() throws {

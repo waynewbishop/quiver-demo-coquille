@@ -52,6 +52,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Check | Example | Severity | Source |
 |---|---|---|---|
 | Spelling | gentile → gentille | Error | System spellchecker, guesses ranked by Quiver |
+| Unknown words | Ahdourdui, with no fix offered | Warning | System spellchecker, no French guess |
 | Article gender | une fromage → un fromage | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |

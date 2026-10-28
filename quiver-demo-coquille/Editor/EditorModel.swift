@@ -179,10 +179,11 @@ final class EditorModel {
 
     /// Lints the current text, counts the errors the learner fixed by typing, and restyles.
     /// `applied` is the issue whose fix Apply just inserted, which isn't the learner's own.
+    /// Unknown words count too: with no fix to apply, every fix to one is the learner's.
     private func lint(applied: Issue?) {
         guard let linter else { return }
         let plain = plainText
-        let previousErrors = visibleIssues.filter { $0.severity == .error && $0 != applied }
+        let previousErrors = visibleIssues.filter { ($0.severity == .error || $0.replacement == nil) && $0 != applied }
         let previousText = lintedText
         observedText = plain
         issues = linter.lint(plain)
@@ -205,12 +206,37 @@ final class EditorModel {
         let shift = new.count - old.count
         return errors.filter { error in
             guard !remaining.contains(error.ignoreKey) else { return false }
+            guard let replacement = error.replacement else {
+                return retypedWord(error, from: old, to: new)
+            }
             // Edits elsewhere move the fix by at most the change in length.
             let start = max(0, error.offset + min(0, shift))
-            let length = error.replacement.count + abs(shift)
+            let length = replacement.count + abs(shift)
             let window = String(new.dropFirst(start).prefix(length))
-            return window.range(of: error.replacement, options: .caseInsensitive) != nil
+            return window.range(of: replacement, options: .caseInsensitive) != nil
         }
+    }
+
+    /// Whether the learner retyped a flagged word into one the linter now accepts.
+    ///
+    /// With no replacement to look for, the edit itself has to land on the word: the
+    /// changed text must sit inside the old word and inside one new word that no issue
+    /// flags. Deleting the word leaves no word around the edit, so it never counts.
+    private func retypedWord(_ error: Issue, from old: String, to new: String) -> Bool {
+        let old = Array(old), new = Array(new)
+        let prefix = zip(old, new).prefix(while: { $0 == $1 }).count
+        let suffix = zip(old.reversed(), new.reversed())
+            .prefix(min(old.count, new.count) - prefix)
+            .prefix(while: { $0 == $1 }).count
+        let oldEdit = prefix..<(old.count - suffix)
+        let newEdit = prefix..<(new.count - suffix)
+        guard oldEdit.lowerBound >= error.range.lowerBound,
+              oldEdit.upperBound <= error.range.upperBound else { return false }
+        let word = FrenchTokenizer.tokens(in: String(new))
+            .map { $0.offset..<($0.offset + $0.text.count) }
+            .first { $0.lowerBound <= newEdit.lowerBound && newEdit.upperBound <= $0.upperBound }
+        guard let word else { return false }
+        return !issues.contains { $0.range.overlaps(word) }
     }
 
     /// Opens the card for the issue under the caret, if any.
@@ -241,9 +267,11 @@ final class EditorModel {
     }
 
     /// Replaces the issue's span with its fix, relints, and opens the next blocking issue.
+    /// An issue with no replacement has nothing to apply.
     func apply(_ issue: Issue) {
-        guard plainText == lintedText, let range = attributedRange(for: issue.range) else { return }
-        text.replaceSubrange(range, with: AttributedString(issue.replacement))
+        guard plainText == lintedText, let replacement = issue.replacement,
+              let range = attributedRange(for: issue.range) else { return }
+        text.replaceSubrange(range, with: AttributedString(replacement))
         if issue.severity == .error {
             stats.recordFix(byLearner: false)
         }

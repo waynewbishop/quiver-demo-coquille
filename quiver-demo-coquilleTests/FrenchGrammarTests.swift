@@ -26,7 +26,7 @@ final class FrenchGrammarTests: XCTestCase {
 
     /// Returns each issue as "original → replacement".
     private func fixes(_ text: String) throws -> [String] {
-        try grammar().check(text).map { "\($0.original) → \($0.replacement)" }
+        try grammar().check(text).map { "\($0.original) → \($0.replacement ?? "")" }
     }
 
     // MARK: - The mockup sentence
@@ -35,7 +35,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testMockupSentence() throws {
         let text = "Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentille, et la pain sentait bon."
         let issues = try grammar().check(text)
-        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement)" }, [
+        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, [
             "une fromage → un fromage",
             "rouge → rouges",
             "Le boulangère → La boulangère",
@@ -110,7 +110,7 @@ final class FrenchGrammarTests: XCTestCase {
     // A clause-final "il dort plus" is a warning that restores ne.
     func testMissingNeIsAWarning() throws {
         let issues = try grammar().check("Lui, il dort plus.")
-        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement)" }, ["dort plus → ne dort plus"])
+        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["dort plus → ne dort plus"])
         XCTAssertEqual(issues.first?.severity, .warning)
         XCTAssertEqual(issues.first.map { $0.severity.blocksPlayback }, false)
     }
@@ -151,7 +151,7 @@ final class FrenchGrammarTests: XCTestCase {
         let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], explanations: pack.explanations, genderPredictor: predictor)
 
         let issues = grammar.check("C'est un frobnication.")
-        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement)" }, ["un frobnication → une frobnication"])
+        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["un frobnication → une frobnication"])
         XCTAssertEqual(issues.first?.severity, .warning)
         XCTAssertEqual(issues.first?.source, "Quiver prediction · ending -tion")
     }

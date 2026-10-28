@@ -26,8 +26,9 @@ nonisolated struct Issue: Identifiable, Equatable, Sendable {
     let length: Int
     /// The flagged text as the learner typed it.
     let original: String
-    /// The suggested replacement for the flagged span.
-    let replacement: String
+    /// The suggested replacement for the flagged span, or `nil` when there's nothing
+    /// safe to suggest and the fix is left to the learner.
+    let replacement: String?
     /// The one-line explanation shown with the fix.
     let reason: String
     /// The rule without the answer, shown first so the learner can try the fix.
@@ -42,7 +43,7 @@ nonisolated struct Issue: Identifiable, Equatable, Sendable {
 
     /// Identifies every occurrence of the same mistake, so Ignore applies to all of them.
     var ignoreKey: String {
-        "\(kind.rawValue)|\(original.lowercased())|\(replacement.lowercased())"
+        "\(kind.rawValue)|\(original.lowercased())|\(replacement?.lowercased() ?? "")"
     }
 
     /// Unique within one lint pass.

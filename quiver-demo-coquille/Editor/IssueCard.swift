@@ -17,6 +17,7 @@ import SwiftUI
 /// the verdict came from, and Ignore / Apply.
 ///
 /// The card names the rule and leaves the fix to the learner, who can still ask for it.
+/// An issue with no replacement, such as an unknown word, has no fix to show.
 struct IssueCard: View {
 
     let issue: Issue
@@ -42,7 +43,7 @@ struct IssueCard: View {
                 .accessibilityLabel("Close")
             }
 
-            if showsFix {
+            if showsFix, let replacement = issue.replacement {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(issue.original)
                         .strikethrough()
@@ -51,7 +52,7 @@ struct IssueCard: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .accessibilityLabel("becomes")
-                    Text(issue.replacement)
+                    Text(replacement)
                         .font(.plexMono(16, weight: .medium, relativeTo: .body))
                         .foregroundStyle(.tint)
                 }
@@ -73,12 +74,14 @@ struct IssueCard: View {
                 Spacer()
                 Button("Ignore") { model.ignore(issue) }
                     .buttonStyle(.bordered)
-                if showsFix {
-                    Button("Apply fix") { model.apply(issue) }
-                        .buttonStyle(.borderedProminent)
-                } else {
-                    Button("Show fix") { showsFix = true }
-                        .buttonStyle(.borderedProminent)
+                if issue.replacement != nil {
+                    if showsFix {
+                        Button("Apply fix") { model.apply(issue) }
+                            .buttonStyle(.borderedProminent)
+                    } else {
+                        Button("Show fix") { showsFix = true }
+                            .buttonStyle(.borderedProminent)
+                    }
                 }
             }
             .controlSize(.regular)
