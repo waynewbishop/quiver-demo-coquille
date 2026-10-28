@@ -115,7 +115,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 issues.append(issue(
                     .gender, .error, from: index, through: index + 1, in: tokens,
                     replacement: fix + article.gap + noun.text,
-                    reason: explanations.render(.articleGender, [
+                    explanation: explanations.render(.articleGender, [
                         "noun": noun.text, "gender": gender.rawValue, "article": expected(gender)
                     ]),
                     source: "Lexique · known noun"
@@ -129,7 +129,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 issues.append(issue(
                     .gender, .warning, from: index, through: index + 1, in: tokens,
                     replacement: fix + article.gap + noun.text,
-                    reason: explanations.render(.articleGenderPredicted, [
+                    explanation: explanations.render(.articleGenderPredicted, [
                         "noun": noun.text,
                         "gender": prediction.gender.rawValue,
                         "reason": ending.map { "words ending in \($0) usually are." } ?? "the model leans that way.",
@@ -187,7 +187,7 @@ nonisolated struct FrenchGrammar: Grammar {
             issues.append(issue(
                 .contraction, .error, from: index, through: index + 1, in: tokens,
                 replacement: matchingCase(of: preposition.text, contraction),
-                reason: explanations.render(.contraction, [
+                explanation: explanations.render(.contraction, [
                     "preposition": preposition.normalized,
                     "article": article.normalized,
                     "contraction": contraction
@@ -238,7 +238,7 @@ nonisolated struct FrenchGrammar: Grammar {
             issues.append(issue(
                 .agreement, .error, from: index + 2, through: index + 2, in: tokens,
                 replacement: matchingCase(of: adjective.text, expected),
-                reason: explanations.render(key, [
+                explanation: explanations.render(key, [
                     "noun": noun.text, "gender": gender.rawValue, "number": number.rawValue
                 ]),
                 source: "Agreement rule · Lexique"
@@ -282,7 +282,7 @@ nonisolated struct FrenchGrammar: Grammar {
             issues.append(issue(
                 .negation, .warning, from: start, through: index + 2, in: tokens,
                 replacement: replacement,
-                reason: explanations.render(.negation, ["corrected": corrected]),
+                explanation: explanations.render(.negation, ["corrected": corrected]),
                 source: "Negation rule · won't block play"
             ))
         }
@@ -305,7 +305,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 issues.append(issue(
                     .idiom, .suggestion, from: start, through: start + phrase.count - 1, in: tokens,
                     replacement: matchingCase(of: tokens[start].text, idiom.suggestion),
-                    reason: explanations.render(.idiom, ["suggestion": idiom.suggestion, "note": idiom.note]),
+                    explanation: explanations.render(.idiom, ["suggestion": idiom.suggestion, "note": idiom.note]),
                     source: "Idiom list"
                 ))
             }
@@ -323,7 +323,7 @@ nonisolated struct FrenchGrammar: Grammar {
         through last: Int,
         in tokens: [Token],
         replacement: String,
-        reason: String,
+        explanation: Explanation,
         source: String
     ) -> Issue {
         var original = ""
@@ -338,7 +338,8 @@ nonisolated struct FrenchGrammar: Grammar {
             length: tokens[last].end - tokens[first].offset,
             original: original,
             replacement: replacement,
-            reason: reason,
+            reason: explanation.reason,
+            hint: explanation.hint,
             source: source
         )
     }

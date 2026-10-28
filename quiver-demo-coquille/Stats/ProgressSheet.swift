@@ -50,7 +50,7 @@ struct ProgressSheet: View {
             }
             GridRow {
                 card("Clean this week", clean)
-                card("Errors fixed", "\(stats.errorsFixed)")
+                card("Fixed by you", stats.errorsFixed > 0 ? "\(stats.fixedByLearner) of \(stats.errorsFixed)" : "0")
             }
         }
     }

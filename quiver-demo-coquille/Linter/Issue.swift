@@ -28,8 +28,10 @@ nonisolated struct Issue: Identifiable, Equatable, Sendable {
     let original: String
     /// The suggested replacement for the flagged span.
     let replacement: String
-    /// The one-line explanation shown in the issue card.
+    /// The one-line explanation shown with the fix.
     let reason: String
+    /// The rule without the answer, shown first so the learner can try the fix.
+    let hint: String
     /// Where the verdict came from, such as "Lexique · known noun".
     let source: String
 

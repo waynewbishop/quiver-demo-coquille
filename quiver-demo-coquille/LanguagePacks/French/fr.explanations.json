@@ -1,37 +1,46 @@
 {
   "articleGender": {
+    "hint": "{noun} is {gender}.",
     "template": "{noun} is {gender}, so the article is {article}.",
     "example": "fromage is masculine, so the article is un."
   },
   "articleGenderPredicted": {
+    "hint": "{noun} is probably {gender}: {reason}",
     "template": "{noun} is probably {gender}: {reason} So the article would be {article}.",
     "example": "boulangère is probably feminine: words ending in -ère usually are. So the article would be la."
   },
   "contraction": {
+    "hint": "{preposition} + {article} always contracts into one word.",
     "template": "{preposition} + {article} always contracts to {contraction}.",
     "example": "à + le always contracts to au."
   },
   "agreementGender": {
+    "hint": "The adjective must agree with {noun}, which is {gender}.",
     "template": "The adjective must agree with {noun}, which is {gender}.",
     "example": "The adjective must agree with maison, which is feminine."
   },
   "agreementNumber": {
+    "hint": "The adjective must agree with {noun}, which is {number}.",
     "template": "The adjective must agree with {noun}, which is {number}.",
     "example": "The adjective must agree with pommes, which is plural."
   },
   "agreementGenderAndNumber": {
+    "hint": "The adjective must agree with {noun}, which is {gender} and {number}.",
     "template": "The adjective must agree with {noun}, which is {gender} and {number}.",
     "example": "The adjective must agree with tables, which is feminine and plural."
   },
   "spelling": {
+    "hint": "{word} isn't in the French dictionary.",
     "template": "{word} isn't in the French dictionary. Did you mean {suggestion}?",
     "example": "gentile isn't in the French dictionary. Did you mean gentille?"
   },
   "negation": {
+    "hint": "In writing, “no longer” needs both ne and plus. Without ne, this reads as “more.”",
     "template": "In writing, “no longer” is ne… plus: {corrected}. Without ne, this reads as “more.”",
     "example": "In writing, “no longer” is ne… plus: il ne dort plus. Without ne, this reads as “more.”"
   },
   "idiom": {
+    "hint": "This is correct, but a native would usually say it another way. {note}",
     "template": "This is correct. Here's how a native would usually say it: {suggestion}. {note}",
     "example": "This is correct. Here's how a native would usually say it: bon pour la santé. For health in general, French uses the definite article."
   }

@@ -13,11 +13,16 @@
 
 import SwiftUI
 
-/// The open issue: the fix, a one-line reason, where the verdict came from, and Ignore / Apply.
+/// The open issue: the rule as a hint, then on request the fix and its reason, where
+/// the verdict came from, and Ignore / Apply.
+///
+/// The card names the rule and leaves the fix to the learner, who can still ask for it.
 struct IssueCard: View {
 
     let issue: Issue
     let model: EditorModel
+    /// Whether the learner asked to see the fix.
+    @State private var showsFix = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -37,21 +42,27 @@ struct IssueCard: View {
                 .accessibilityLabel("Close")
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
+            if showsFix {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(issue.original)
+                        .strikethrough()
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "arrow.right")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("becomes")
+                    Text(issue.replacement)
+                        .font(.plexMono(16, weight: .medium, relativeTo: .body))
+                        .foregroundStyle(.tint)
+                }
+                .font(.plexMono(16, relativeTo: .body))
+            } else {
                 Text(issue.original)
-                    .strikethrough()
-                    .foregroundStyle(.secondary)
-                Image(systemName: "arrow.right")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel("becomes")
-                Text(issue.replacement)
-                    .font(.plexMono(16, weight: .medium, relativeTo: .body))
-                    .foregroundStyle(.tint)
+                    .font(.plexMono(16, relativeTo: .body))
+                    .underline(pattern: .dot, color: issue.severity.tint)
             }
-            .font(.plexMono(16, relativeTo: .body))
 
-            Text(issue.reason)
+            Text(showsFix ? issue.reason : issue.hint)
                 .font(.plexSans(14, relativeTo: .subheadline))
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -62,8 +73,13 @@ struct IssueCard: View {
                 Spacer()
                 Button("Ignore") { model.ignore(issue) }
                     .buttonStyle(.bordered)
-                Button("Apply fix") { model.apply(issue) }
-                    .buttonStyle(.borderedProminent)
+                if showsFix {
+                    Button("Apply fix") { model.apply(issue) }
+                        .buttonStyle(.borderedProminent)
+                } else {
+                    Button("Show fix") { showsFix = true }
+                        .buttonStyle(.borderedProminent)
+                }
             }
             .controlSize(.regular)
         }

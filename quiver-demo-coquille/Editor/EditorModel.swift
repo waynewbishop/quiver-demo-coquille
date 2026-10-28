@@ -174,14 +174,43 @@ final class EditorModel {
 
     /// Lints the current text immediately and restyles it.
     func lintNow() {
+        lint(applied: nil)
+    }
+
+    /// Lints the current text, counts the errors the learner fixed by typing, and restyles.
+    /// `applied` is the issue whose fix Apply just inserted, which isn't the learner's own.
+    private func lint(applied: Issue?) {
         guard let linter else { return }
         let plain = plainText
+        let previousErrors = visibleIssues.filter { $0.severity == .error && $0 != applied }
+        let previousText = lintedText
         observedText = plain
         issues = linter.lint(plain)
         lintedText = plain
+        for _ in typedFixes(of: previousErrors, from: previousText, to: plain) {
+            stats.recordFix(byLearner: true)
+        }
         stats.record(text: plain, issues: visibleIssues)
         applyStyling()
         refreshEnglish()
+    }
+
+    /// Errors from the previous lint that are gone because the learner typed the fix.
+    ///
+    /// An error counts only when its replacement now stands where the error was, so
+    /// deleting a sentence never counts as fixing it.
+    private func typedFixes(of errors: [Issue], from old: String, to new: String) -> [Issue] {
+        guard old != new else { return [] }
+        let remaining = Set(issues.map(\.ignoreKey))
+        let shift = new.count - old.count
+        return errors.filter { error in
+            guard !remaining.contains(error.ignoreKey) else { return false }
+            // Edits elsewhere move the fix by at most the change in length.
+            let start = max(0, error.offset + min(0, shift))
+            let length = error.replacement.count + abs(shift)
+            let window = String(new.dropFirst(start).prefix(length))
+            return window.range(of: error.replacement, options: .caseInsensitive) != nil
+        }
     }
 
     /// Opens the card for the issue under the caret, if any.
@@ -216,9 +245,9 @@ final class EditorModel {
         guard plainText == lintedText, let range = attributedRange(for: issue.range) else { return }
         text.replaceSubrange(range, with: AttributedString(issue.replacement))
         if issue.severity == .error {
-            stats.recordFix()
+            stats.recordFix(byLearner: false)
         }
-        lintNow()
+        lint(applied: issue)
         selectNext(after: issue.offset)
     }
 

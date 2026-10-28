@@ -30,6 +30,8 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     /// Noun → times its gender was wrong.
     var nounMistakes: [String: Int] = [:]
     var errorsFixed = 0
+    /// Errors the learner fixed by typing, out of `errorsFixed`.
+    var fixedByLearner = 0
     /// Sentence + issue pairs already counted, so relinting the same text never double-counts.
     var countedIssues: Set<String> = []
 
@@ -60,9 +62,12 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
         days[key] = day
     }
 
-    /// Counts one applied fix.
-    mutating func recordFix() {
+    /// Counts one fixed error, and whether the learner typed the fix rather than applying it.
+    mutating func recordFix(byLearner: Bool) {
         errorsFixed += 1
+        if byLearner {
+            fixedByLearner += 1
+        }
     }
 
     // MARK: - Summaries
@@ -139,5 +144,19 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
             start = offset + 1
         }
         return sentences
+    }
+}
+
+nonisolated extension LearnerStats {
+
+    /// Decodes saved stats, including files written before `fixedByLearner` existed.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        days = try container.decode([String: Day].self, forKey: .days)
+        issueCounts = try container.decode([String: Int].self, forKey: .issueCounts)
+        nounMistakes = try container.decode([String: Int].self, forKey: .nounMistakes)
+        errorsFixed = try container.decode(Int.self, forKey: .errorsFixed)
+        fixedByLearner = try container.decodeIfPresent(Int.self, forKey: .fixedByLearner) ?? 0
+        countedIssues = try container.decode(Set<String>.self, forKey: .countedIssues)
     }
 }

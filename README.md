@@ -10,8 +10,11 @@ that won't compile.
 This demo uses [Quiver](https://github.com/waynewbishop/quiver) for
 the machine learning in a universal SwiftUI app for iPhone, iPad and
 Mac. The whole screen is one text editor. Mistakes get a red underline;
-tapping one opens a card with the fix and a one-line reason, such as
-"fromage is masculine, so the article is un." A play button reads the
+tapping one opens a card that names the rule, such as "fromage is
+masculine." The underline shows where the mistake is, and the fix stays
+hidden until we ask for it, so we get the first try at correcting it.
+The progress sheet counts the fixes we typed ourselves.
+A play button reads the
 French aloud and an English toggle shows an on-device translation, but
 both stay locked until every error is fixed or ignored. Apple's
 translator is forgiving ("une fromage" still comes out as "a cheese"),
@@ -121,7 +124,7 @@ Everything is plain folders in one Xcode project:
   no Info.plist entry.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table.
-- `quiver-demo-coquilleTests/` — 41 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 44 XCTest cases, including the
   false-positive traps above.
 
 ## Data

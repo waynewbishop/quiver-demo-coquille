@@ -44,6 +44,8 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertTrue(issues.allSatisfy { $0.severity == .error })
         XCTAssertEqual(issues[0].reason, "fromage is masculine, so the article is un.")
         XCTAssertEqual(issues[1].reason, "The adjective must agree with pommes, which is plural.")
+        // The hint names the rule but leaves the fix to the learner.
+        XCTAssertEqual(issues[0].hint, "fromage is masculine.")
     }
 
     // The corrected paragraph raises nothing.

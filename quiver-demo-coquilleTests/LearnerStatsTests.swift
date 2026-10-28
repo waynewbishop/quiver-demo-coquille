@@ -26,7 +26,7 @@ final class LearnerStatsTests: XCTestCase {
     /// A gender error covering "une fromage" in the sample sentence.
     private let genderIssue = Issue(
         kind: .gender, severity: .error, offset: 3, length: 11,
-        original: "une fromage", replacement: "un fromage", reason: "", source: ""
+        original: "une fromage", replacement: "un fromage", reason: "", hint: "", source: ""
     )
 
     // Only completed sentences count, and a flagged sentence isn't clean.
@@ -68,5 +68,14 @@ final class LearnerStatsTests: XCTestCase {
         XCTAssertEqual(stats.streak(asOf: try day(26), calendar: calendar), 3)
         XCTAssertEqual(stats.streak(asOf: try day(27), calendar: calendar), 3)
         XCTAssertEqual(stats.streak(asOf: try day(28), calendar: calendar), 0)
+    }
+
+    // Stats saved before fixedByLearner existed still load, starting it at zero.
+    func testDecodesStatsWithoutFixedByLearner() throws {
+        let json = #"{"days":{},"issueCounts":{"gender":2},"nounMistakes":{},"errorsFixed":3,"countedIssues":[]}"#
+        let stats = try JSONDecoder().decode(LearnerStats.self, from: Data(json.utf8))
+        XCTAssertEqual(stats.errorsFixed, 3)
+        XCTAssertEqual(stats.fixedByLearner, 0)
+        XCTAssertEqual(stats.issueCounts["gender"], 2)
     }
 }

@@ -38,9 +38,9 @@ final class StatsStore {
         save()
     }
 
-    /// Counts an applied fix and saves.
-    func recordFix() {
-        stats.recordFix()
+    /// Counts a fixed error, typed or applied, and saves.
+    func recordFix(byLearner: Bool) {
+        stats.recordFix(byLearner: byLearner)
         save()
     }
 

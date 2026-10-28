@@ -93,6 +93,7 @@ struct EditorScreen: View {
         .overlay(alignment: .bottom) {
             if let issue = model.selectedIssue {
                 IssueCard(issue: issue, model: model)
+                    .id(issue.id)
                     .frame(maxWidth: 440)
                     .padding(20)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -130,6 +131,7 @@ struct EditorScreen: View {
 
                 if let issue = model.selectedIssue {
                     IssueCard(issue: issue, model: model)
+                        .id(issue.id)
                         .padding(.horizontal, 12)
                         .padding(.bottom, 8)
                         .frame(maxWidth: 560)

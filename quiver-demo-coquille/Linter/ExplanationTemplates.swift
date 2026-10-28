@@ -26,14 +26,23 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case idiom
 }
 
+/// A verdict worded twice: a hint that names the rule without the answer, and the
+/// full reason shown once the learner asks for the fix.
+nonisolated struct Explanation: Equatable, Sendable {
+    let hint: String
+    let reason: String
+}
+
 /// The bundled explanation templates, such as "{noun} is {gender}, so the article is {article}."
 ///
 /// The rules decide every verdict; a template only words it. Editing the JSON file
 /// changes the explanations without touching code.
 nonisolated struct ExplanationTemplates: Sendable {
 
-    /// One template and a worked example of it, as stored in `fr.explanations.json`.
+    /// One template, its hint, and a worked example, as stored in `fr.explanations.json`.
     struct Entry: Codable, Sendable {
+        /// The rule without the answer, so the learner can try the fix first. Falls back to `template`.
+        let hint: String?
         let template: String
         let example: String
     }
@@ -60,11 +69,18 @@ nonisolated struct ExplanationTemplates: Sendable {
         self.entries = entries
     }
 
-    /// Fills a template's `{placeholders}` with the given values.
-    func render(_ key: ExplanationKey, _ values: [String: String]) -> String {
-        guard var text = entries[key]?.template else {
+    /// Fills the hint's and the template's `{placeholders}` with the given values.
+    func render(_ key: ExplanationKey, _ values: [String: String]) -> Explanation {
+        guard let entry = entries[key] else {
             preconditionFailure("Explanation templates were validated at load; \(key.rawValue) is missing")
         }
+        let reason = Self.fill(entry.template, values)
+        return Explanation(hint: entry.hint.map { Self.fill($0, values) } ?? reason, reason: reason)
+    }
+
+    /// Replaces each `{name}` in `text` with its value.
+    private static func fill(_ text: String, _ values: [String: String]) -> String {
+        var text = text
         for (name, value) in values {
             text = text.replacingOccurrences(of: "{\(name)}", with: value)
         }

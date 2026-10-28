@@ -55,19 +55,19 @@ struct IssueListSheet: View {
         .frame(minWidth: 360, minHeight: 420)
     }
 
-    /// One issue: its severity, the word and its fix, and its kind.
+    /// One issue: its severity, the flagged words, the hint, and its kind. The fix stays
+    /// on the card, so the list never hands out every answer at once.
     private func row(for issue: Issue) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Image(systemName: issue.severity.symbolName)
                 .foregroundStyle(issue.severity.tint)
                 .accessibilityLabel(issue.severity.rawValue)
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(issue.original).strikethrough().foregroundStyle(.secondary)
-                    Image(systemName: "arrow.right").font(.caption).foregroundStyle(.secondary)
-                    Text(issue.replacement).foregroundStyle(.tint)
-                }
-                .font(.body.monospaced())
+                Text(issue.original)
+                    .font(.body.monospaced())
+                Text(issue.hint)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 Text(issue.kind.label + " · " + issue.severity.rawValue.uppercased())
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)

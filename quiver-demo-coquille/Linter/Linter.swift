@@ -40,6 +40,7 @@ struct Linter {
             guard let best = SuggestionRanker.ranked(frenchGuesses, for: misspelling.word).first else {
                 return nil
             }
+            let explanation = explanations.render(.spelling, ["word": misspelling.word, "suggestion": best])
             return Issue(
                 kind: .spelling,
                 severity: .error,
@@ -47,7 +48,8 @@ struct Linter {
                 length: misspelling.word.count,
                 original: misspelling.word,
                 replacement: best,
-                reason: explanations.render(.spelling, ["word": misspelling.word, "suggestion": best]),
+                reason: explanation.reason,
+                hint: explanation.hint,
                 source: "System spellcheck · ranked by Quiver"
             )
         }

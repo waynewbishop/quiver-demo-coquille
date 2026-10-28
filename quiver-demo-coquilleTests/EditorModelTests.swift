@@ -142,4 +142,33 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(model.selectedIssue?.id, first.id)
         XCTAssertEqual(narrator.state, .idle)
     }
+
+    // A fix the learner types counts as theirs; Apply counts only toward the total.
+    func testTypedFixCountsAsTheLearners() throws {
+        let model = try makeModel()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        type("Nous avons un fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.errorsFixed, 1)
+        XCTAssertEqual(model.stats.stats.fixedByLearner, 1)
+
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        let issue = try XCTUnwrap(model.blockingIssues.first)
+        model.apply(issue)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 2)
+        XCTAssertEqual(model.stats.stats.fixedByLearner, 1)
+    }
+
+    // Deleting a flagged sentence clears its error but never counts as fixing it.
+    func testDeletingAnErrorIsNotAFix() throws {
+        let model = try makeModel()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        type("Nous avons", into: model)
+        model.lintNow()
+        XCTAssertFalse(model.isLocked)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+    }
 }
