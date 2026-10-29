@@ -43,6 +43,11 @@
     "template": "{note} It should be {fix}.",
     "example": "cava is a past form of caver, “to dig,” as in il cava un trou. It should be ça va."
   },
+  "wordChoice": {
+    "hint": "{note}",
+    "template": "{note} It should be {fix}.",
+    "example": "French says avoir for hunger, thirst, fear and sleepiness. It should be j'ai faim."
+  },
   "negation": {
     "hint": "In writing, “no longer” needs both ne and plus. Without ne, this reads as “more.”",
     "template": "In writing, “no longer” is ne… plus: {corrected}. Without ne, this reads as “more.”",

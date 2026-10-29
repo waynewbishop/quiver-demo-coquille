@@ -146,7 +146,36 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Ça va bien, merci."), [])
     }
 
+    // MARK: - Word choice
+
+    // English patterns that are wrong in French are errors, with the French phrasing as the fix.
+    func testWordChoiceErrors() throws {
+        XCTAssertEqual(try fixes("Je suis faim."), ["Je suis faim → J'ai faim"])
+        XCTAssertEqual(try fixes("J'ai demandé une question."), ["demandé une question → posé une question"])
+        XCTAssertEqual(try fixes("Il habite à Canada."), ["à Canada → au Canada"])
+        XCTAssertEqual(try fixes("Je suis tard."), ["Je suis tard → Je suis en retard"])
+        let issue = try XCTUnwrap(grammar().check("Je suis faim.").first)
+        XCTAssertEqual(issue.kind, .wordChoice)
+        XCTAssertEqual(issue.severity, .error)
+    }
+
+    // The French phrasing raises nothing.
+    func testCorrectWordChoicePasses() throws {
+        XCTAssertEqual(try fixes("J'ai faim et je suis en retard."), [])
+        XCTAssertEqual(try fixes("J'ai posé une question au Canada."), [])
+        XCTAssertEqual(try fixes("J'ai pris une décision en France."), [])
+    }
+
     // MARK: - Idioms
+
+    // Correct French with a different meaning gets a suggestion, never an error.
+    func testMeaningIdioms() throws {
+        let issues = try grammar().check("Je suis froid.")
+        XCTAssertEqual(issues.map(\.replacement), ["J'ai froid"])
+        XCTAssertEqual(issues.first?.severity, .suggestion)
+        XCTAssertEqual(try fixes("C'est très délicieux."), ["C'est très délicieux → C'est délicieux"])
+        XCTAssertEqual(try fixes("Il fait froid."), [])
+    }
 
     // A correct but unidiomatic phrase gets a suggestion, never an error.
     func testIdiomSuggestion() throws {
@@ -184,7 +213,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionWithoutEndingIsSilent() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: nil))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("C'est un frobnication.").count, 0)
     }
 
@@ -192,7 +221,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionOnUnknownNounIsAWarning() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.97, ending: "tion"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
 
         let issues = grammar.check("C'est un frobnication.")
         XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["un frobnication → une frobnication"])
@@ -204,7 +233,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionNeverOverridesLexicon() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: "ette"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un squelette.").count, 0)
     }
 
@@ -212,7 +241,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testLowConfidencePredictionIsSilent() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.6, ending: "e"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un frobnication.").count, 0)
     }
 }

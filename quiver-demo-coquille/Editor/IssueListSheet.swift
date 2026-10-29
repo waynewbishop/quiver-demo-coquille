@@ -23,6 +23,9 @@ struct IssueListSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        #if os(macOS)
+        macBody
+        #else
         NavigationStack {
             List {
                 Section {
@@ -41,7 +44,7 @@ struct IssueListSheet: View {
                 Section {
                     Toggle("Show suggestions", isOn: $model.showsSuggestions)
                 } footer: {
-                    Text("Suggestions point out a more natural way to say correct French. They never block play.")
+                    Text(Self.suggestionsNote)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -52,8 +55,60 @@ struct IssueListSheet: View {
                 }
             }
         }
-        .frame(minWidth: 360, minHeight: 420)
+        #endif
     }
+
+    /// What the suggestions toggle controls.
+    private static let suggestionsNote = "Suggestions point out a more natural way to say correct French. They never block play."
+
+    #if os(macOS)
+    /// The Mac sheet: a header, the issues, and the suggestions toggle and Done in a
+    /// footer, so the note under the toggle wraps instead of being cut off.
+    private var macBody: some View {
+        VStack(spacing: 0) {
+            Text("Issues")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+
+            Divider()
+
+            List {
+                if model.visibleIssues.isEmpty {
+                    ContentUnavailableView("No issues", systemImage: "checkmark.circle")
+                }
+                ForEach(model.visibleIssues) { issue in
+                    Button {
+                        open(issue)
+                    } label: {
+                        row(for: issue)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.vertical, 4)
+                }
+            }
+            .listStyle(.inset)
+
+            Divider()
+
+            HStack(alignment: .top, spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Show suggestions", isOn: $model.showsSuggestions)
+                    Text(Self.suggestionsNote)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Button("Done") { dismiss() }
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(20)
+        }
+        .frame(width: 480, height: 380)
+    }
+    #endif
 
     /// One issue: its severity, the flagged words, the hint, and its kind. The fix stays
     /// on the card, so the list never hands out every answer at once.

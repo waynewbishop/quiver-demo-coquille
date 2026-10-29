@@ -29,12 +29,13 @@ nonisolated struct Idiom: Codable, Equatable, Sendable {
     let note: String
 }
 
-/// Words that are each valid French, or sound like it, but are wrong together, such as
-/// "comment cava", from `fr.lookalikes.json`.
-nonisolated struct LookAlike: Codable, Equatable, Sendable {
-    /// The words as a learner writes them, such as "cava".
+/// A phrase that is wrong wherever it appears, apart from listed exceptions, and its
+/// fix: look-alikes such as "comment cava" from `fr.lookalikes.json`, and English
+/// patterns such as "je suis faim" from `fr.wordchoice.json`.
+nonisolated struct PhraseFix: Codable, Equatable, Sendable {
+    /// The words as a learner writes them, such as "cava" or "je suis faim".
     let phrase: String
-    /// The words the learner means, such as "ça va".
+    /// The words the learner means, such as "ça va" or "j'ai faim".
     let fix: String
     /// Words after which the phrase is correct French, so the rule stays silent, as in "il cava".
     let unlessAfter: [String]

@@ -24,6 +24,8 @@ struct EditorScreen: View {
     @AppStorage(Appearance.storageKey) private var appearance: String?
 
     #if os(macOS)
+    /// The story's title from the on-device model, or `nil` to show the app's name.
+    @State private var storyTitle: String?
     /// The English pane's share of the window, kept between launches.
     @AppStorage("englishPaneFraction") private var englishFraction = SplitPanes<EmptyView, EmptyView>.defaultFraction
     #endif
@@ -53,8 +55,9 @@ struct EditorScreen: View {
 
     #if os(macOS)
     /// The Mac window: French and English side by side with a draggable divider, play
-    /// at the toolbar's leading edge as in Xcode, the streak, Clear and theme buttons
-    /// at its trailing edge, and status and English in the footer.
+    /// and stop grouped at the toolbar's leading edge as in Xcode, the streak and the
+    /// Clear and theme pair at its trailing edge, and status and English in the footer.
+    /// Once the French is correct, the title names the story.
     private var layout: some View {
         VStack(spacing: 0) {
             SplitPanes(showsTrailing: model.isEnglishOn, trailingFraction: $englishFraction) {
@@ -65,12 +68,15 @@ struct EditorScreen: View {
 
             MacBottomBar(model: model, showsIssueList: $showsIssueList)
         }
+        .navigationTitle(storyTitle ?? "Coquille")
+        .task(id: titleSource) { await retitle() }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
+            ToolbarItemGroup(placement: .navigation) {
                 MacPlayButton(model: model)
+                MacStopButton(model: model)
             }
 
-            ToolbarItemGroup(placement: .primaryAction) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     showsProgress = true
                 } label: {
@@ -78,7 +84,11 @@ struct EditorScreen: View {
                         .labelStyle(.titleAndIcon)
                 }
                 .help("Your progress")
+            }
 
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button("Clear", action: model.clear)
                     .keyboardShortcut("k", modifiers: .command)
                     .help("Clear text (⌘K)")
@@ -87,6 +97,22 @@ struct EditorScreen: View {
                 ThemeToggle()
             }
         }
+    }
+
+    /// The text to title: the French once it's linted with no errors, otherwise `nil`.
+    private var titleSource: String? {
+        model.isLintCurrent && !model.isLocked && model.hasText ? model.plainText : nil
+    }
+
+    /// Names the story after a pause in typing; an empty editor goes back to the app's name.
+    private func retitle() async {
+        guard let text = titleSource else {
+            if !model.hasText { storyTitle = nil }
+            return
+        }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled, let title = await StoryTitler.title(for: text), !Task.isCancelled else { return }
+        storyTitle = title
     }
 
     /// The French pane: its header, the editor, and the open issue's card floating over it.

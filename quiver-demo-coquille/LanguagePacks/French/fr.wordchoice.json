@@ -1,0 +1,110 @@
+[
+  {
+    "phrase": "je suis faim",
+    "fix": "j'ai faim",
+    "unlessAfter": [],
+    "note": "French says avoir for hunger, thirst, fear and sleepiness."
+  },
+  {
+    "phrase": "je suis soif",
+    "fix": "j'ai soif",
+    "unlessAfter": [],
+    "note": "French says avoir for hunger, thirst, fear and sleepiness."
+  },
+  {
+    "phrase": "je suis peur",
+    "fix": "j'ai peur",
+    "unlessAfter": [],
+    "note": "French says avoir for hunger, thirst, fear and sleepiness."
+  },
+  {
+    "phrase": "je suis sommeil",
+    "fix": "j'ai sommeil",
+    "unlessAfter": [],
+    "note": "French says avoir for hunger, thirst, fear and sleepiness."
+  },
+  {
+    "phrase": "je suis raison",
+    "fix": "j'ai raison",
+    "unlessAfter": [],
+    "note": "Being right or wrong uses avoir in French."
+  },
+  {
+    "phrase": "je suis tort",
+    "fix": "j'ai tort",
+    "unlessAfter": [],
+    "note": "Being right or wrong uses avoir in French."
+  },
+  {
+    "phrase": "je suis tard",
+    "fix": "je suis en retard",
+    "unlessAfter": [],
+    "note": "Tard means late in the day; for being late, French says en retard."
+  },
+  {
+    "phrase": "demander une question",
+    "fix": "poser une question",
+    "unlessAfter": [],
+    "note": "French asks a question with poser, not demander."
+  },
+  {
+    "phrase": "demande une question",
+    "fix": "pose une question",
+    "unlessAfter": [],
+    "note": "French asks a question with poser, not demander."
+  },
+  {
+    "phrase": "demandé une question",
+    "fix": "posé une question",
+    "unlessAfter": [],
+    "note": "French asks a question with poser, not demander."
+  },
+  {
+    "phrase": "faire une décision",
+    "fix": "prendre une décision",
+    "unlessAfter": [],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "fait une décision",
+    "fix": "pris une décision",
+    "unlessAfter": [],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "prendre une classe",
+    "fix": "suivre un cours",
+    "unlessAfter": [],
+    "note": "A classe is a group of students or a room; taking a course is suivre un cours."
+  },
+  {
+    "phrase": "parle sur le téléphone",
+    "fix": "parle au téléphone",
+    "unlessAfter": [],
+    "note": "On the phone is au téléphone; sur le téléphone means on top of it."
+  },
+  {
+    "phrase": "à France",
+    "fix": "en France",
+    "unlessAfter": [],
+    "note": "Countries take en, au or aux in French, never à on its own."
+  },
+  {
+    "phrase": "à Canada",
+    "fix": "au Canada",
+    "unlessAfter": [],
+    "note": "Countries take en, au or aux in French, never à on its own."
+  },
+  {
+    "phrase": "à Japon",
+    "fix": "au Japon",
+    "unlessAfter": [],
+    "note": "Countries take en, au or aux in French, never à on its own."
+  },
+  {
+    "phrase": "à États-Unis",
+    "fix": "aux États-Unis",
+    "unlessAfter": [],
+    "note": "Countries take en, au or aux in French, never à on its own."
+  }
+]

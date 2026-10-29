@@ -24,6 +24,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case spelling
     case unknownWord
     case lookAlike
+    case wordChoice
     case negation
     case idiom
 }

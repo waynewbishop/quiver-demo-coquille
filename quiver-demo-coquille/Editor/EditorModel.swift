@@ -322,6 +322,11 @@ final class EditorModel {
 
     // MARK: - Play
 
+    /// Stops the French and goes back to the start, as Xcode's Stop button does.
+    func stopPlaying() {
+        narrator.stop()
+    }
+
     /// Pauses, resumes, or starts the French; any edit to the text stops playback.
     func togglePlay() {
         lintIfStale()

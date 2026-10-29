@@ -18,5 +18,45 @@
     "phrase": "je suis excité",
     "suggestion": "j'ai hâte",
     "note": "Je suis excité can suggest overexcitement or arousal; for looking forward to something, French says j'ai hâte."
+  },
+  {
+    "phrase": "je suis froid",
+    "suggestion": "j'ai froid",
+    "note": "Je suis froid describes a cold person or a cold body; for feeling cold, French says avoir froid."
+  },
+  {
+    "phrase": "je suis froide",
+    "suggestion": "j'ai froid",
+    "note": "Je suis froid describes a cold person or a cold body; for feeling cold, French says avoir froid."
+  },
+  {
+    "phrase": "je suis chaud",
+    "suggestion": "j'ai chaud",
+    "note": "Je suis chaud is slang for being up for something and can sound suggestive; for feeling warm, French says avoir chaud."
+  },
+  {
+    "phrase": "je suis chaude",
+    "suggestion": "j'ai chaud",
+    "note": "Je suis chaud is slang for being up for something and can sound suggestive; for feeling warm, French says avoir chaud."
+  },
+  {
+    "phrase": "je suis fini",
+    "suggestion": "j'ai fini",
+    "note": "Je suis fini means being done for; for finishing something, French says j'ai fini."
+  },
+  {
+    "phrase": "je suis finie",
+    "suggestion": "j'ai fini",
+    "note": "Je suis fini means being done for; for finishing something, French says j'ai fini."
+  },
+  {
+    "phrase": "j'ai réalisé que",
+    "suggestion": "je me suis rendu compte que",
+    "note": "Réaliser in the sense of realize is borrowed from English; careful writing prefers se rendre compte."
+  },
+  {
+    "phrase": "c'est très délicieux",
+    "suggestion": "c'est délicieux",
+    "note": "Délicieux is already as strong as it gets, so très sounds off."
   }
 ]

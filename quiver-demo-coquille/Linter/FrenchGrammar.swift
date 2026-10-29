@@ -14,7 +14,7 @@
 import Foundation
 
 /// The version 1 French rules: article gender, contractions, adjacent adjective
-/// agreement, look-alike words, the ne… plus warning, and idiom suggestions.
+/// agreement, look-alike words, word choice, the ne… plus warning, and idiom suggestions.
 ///
 /// Every rule prefers silence to a guess. A learning app must never flag correct
 /// French as wrong, so a rule skips any word the lexicon marks as ambiguous (both
@@ -25,7 +25,8 @@ nonisolated struct FrenchGrammar: Grammar {
 
     let lexicon: Lexicon
     let idioms: [Idiom]
-    let lookAlikes: [LookAlike]
+    let lookAlikes: [PhraseFix]
+    let wordChoices: [PhraseFix]
     let explanations: ExplanationTemplates
     /// Predicts gender for nouns missing from the lexicon; `nil` until a trained model ships.
     let genderPredictor: (any GenderPredictor)?
@@ -45,7 +46,8 @@ nonisolated struct FrenchGrammar: Grammar {
         issues += articleIssues(in: tokens)
         issues += contractionIssues(in: tokens)
         issues += agreementIssues(in: tokens)
-        issues += lookAlikeIssues(in: tokens)
+        issues += phraseFixIssues(in: tokens, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
+        issues += phraseFixIssues(in: tokens, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
         issues += negationIssues(in: tokens)
         issues += idiomIssues(in: tokens)
         return issues.sorted { $0.offset < $1.offset }
@@ -297,15 +299,21 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
-    // MARK: - Look-alikes
+    // MARK: - Look-alikes and word choice
 
-    /// Flags words that are each French, or sound like it, but are wrong together, such as
-    /// "comment cava". Each entry is wrong wherever it appears, apart from its listed
-    /// exceptions, so these are errors.
-    private func lookAlikeIssues(in tokens: [Token]) -> [Issue] {
+    /// Flags each listed phrase: look-alikes such as "comment cava", whose words are each
+    /// French but wrong together, and English patterns such as "je suis faim". Each entry
+    /// is wrong wherever it appears, apart from its listed exceptions, so these are errors.
+    private func phraseFixIssues(
+        in tokens: [Token],
+        from fixes: [PhraseFix],
+        kind: IssueKind,
+        explanation key: ExplanationKey,
+        source: String
+    ) -> [Issue] {
         var issues: [Issue] = []
-        for lookAlike in lookAlikes {
-            let phrase = FrenchTokenizer.tokens(in: lookAlike.phrase).map(\.normalized)
+        for fix in fixes {
+            let phrase = FrenchTokenizer.tokens(in: fix.phrase).map(\.normalized)
             guard !phrase.isEmpty, tokens.count >= phrase.count else { continue }
             for start in 0...(tokens.count - phrase.count) {
                 let window = tokens[start..<(start + phrase.count)]
@@ -314,14 +322,14 @@ nonisolated struct FrenchGrammar: Grammar {
                 guard matches, isContiguous else { continue }
                 // "il cava" is the verb caver, which is correct French.
                 if start > 0, tokens[start - 1].isAdjacentToNext,
-                   lookAlike.unlessAfter.contains(tokens[start - 1].normalized) {
+                   fix.unlessAfter.contains(tokens[start - 1].normalized) {
                     continue
                 }
                 issues.append(issue(
-                    .lookAlike, .error, from: start, through: start + phrase.count - 1, in: tokens,
-                    replacement: matchingCase(of: tokens[start].text, lookAlike.fix),
-                    explanation: explanations.render(.lookAlike, ["note": lookAlike.note, "fix": lookAlike.fix]),
-                    source: "Look-alike list"
+                    kind, .error, from: start, through: start + phrase.count - 1, in: tokens,
+                    replacement: matchingCase(of: tokens[start].text, fix.fix),
+                    explanation: explanations.render(key, ["note": fix.note, "fix": fix.fix]),
+                    source: source
                 ))
             }
         }

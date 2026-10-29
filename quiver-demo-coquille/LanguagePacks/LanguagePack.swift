@@ -43,7 +43,8 @@ nonisolated struct LanguagePack: Sendable {
         let lexicon = try Lexicon(contentsOf: url(of: "fr.lexicon", in: bundle))
         let explanations = try ExplanationTemplates(data: Data(contentsOf: url(of: "fr.explanations", in: bundle)))
         let idioms = try JSONDecoder().decode([Idiom].self, from: Data(contentsOf: url(of: "fr.idioms", in: bundle)))
-        let lookAlikes = try JSONDecoder().decode([LookAlike].self, from: Data(contentsOf: url(of: "fr.lookalikes", in: bundle)))
+        let lookAlikes = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.lookalikes", in: bundle)))
+        let wordChoices = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.wordchoice", in: bundle)))
 
         // The model is optional: until it is trained, unknown nouns simply go unchecked.
         let genderModel = try bundle.url(forResource: "fr.gender-model", withExtension: "json").map {
@@ -60,6 +61,7 @@ nonisolated struct LanguagePack: Sendable {
                 lexicon: lexicon,
                 idioms: idioms,
                 lookAlikes: lookAlikes,
+                wordChoices: wordChoices,
                 explanations: explanations,
                 genderPredictor: genderModel
             ),

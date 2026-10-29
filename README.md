@@ -41,6 +41,9 @@ either itself:
 - **Translation.** Download French under the system's translation
   languages. Until it's installed, the English area says so.
 
+On a Mac with Apple Intelligence, the window title names the story once
+the French has no errors; otherwise it reads "Coquille".
+
 ## What it checks
 
 ```

@@ -71,7 +71,8 @@ struct MacBottomBar: View {
     }
 }
 
-/// The Mac toolbar's play and pause button, disabled while errors remain.
+/// The Mac toolbar's play and pause button, disabled while errors remain. It shares
+/// a group with `MacStopButton`, as Run and Stop do in Xcode.
 struct MacPlayButton: View {
 
     let model: EditorModel
@@ -83,6 +84,20 @@ struct MacPlayButton: View {
         .disabled(model.isLocked || !model.hasText)
         .help(model.narrator.isSpeaking ? "Pause" : "Read aloud in French")
         .accessibilityLabel(model.narrator.isSpeaking ? "Pause" : model.narrator.state == .paused ? "Resume" : "Read aloud in French")
+    }
+}
+
+/// The Mac toolbar's stop button: ends playback, so the next play starts from the top.
+struct MacStopButton: View {
+
+    let model: EditorModel
+
+    var body: some View {
+        Button(action: model.stopPlaying) {
+            Label("Stop", systemImage: "stop.fill")
+        }
+        .disabled(model.narrator.state == .idle)
+        .help("Stop")
     }
 }
 #endif

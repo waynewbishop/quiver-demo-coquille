@@ -110,6 +110,20 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(narrator.spoken.count, 1)
     }
 
+    // Stop ends playback, so the next play reads the French again from the top.
+    func testStopStartsOverOnNextPlay() throws {
+        let model = try makeModel()
+        type("Nous avons un fromage.", into: model)
+        model.lintNow()
+
+        model.togglePlay()
+        model.togglePlay()
+        model.stopPlaying()
+        XCTAssertEqual(narrator.state, .idle)
+        model.togglePlay()
+        XCTAssertEqual(narrator.spoken.count, 2)
+    }
+
     /// The words in the text that carry a background color.
     private func highlightedWords(in model: EditorModel) -> [String] {
         model.text.runs.compactMap { run in
