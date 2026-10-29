@@ -89,11 +89,16 @@ struct Linter {
     }
 
     /// Orders issues for overlap resolution: errors before warnings before suggestions.
+    ///
+    /// A look-alike outranks every other error, because its fix comes from the words
+    /// around it: the system spellchecker turns "sava" into "cava", which is the very
+    /// mistake the look-alike list catches.
     private func rank(_ issue: Issue) -> Int {
-        switch issue.severity {
-        case .error: 0
-        case .warning: 1
-        case .suggestion: 2
+        guard issue.kind != .lookAlike else { return 0 }
+        return switch issue.severity {
+        case .error: 1
+        case .warning: 2
+        case .suggestion: 3
         }
     }
 }

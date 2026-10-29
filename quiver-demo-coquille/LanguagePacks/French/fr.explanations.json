@@ -38,6 +38,11 @@
     "template": "{word} isn't in the French dictionary, and there's no close match to suggest.",
     "example": "Ahdourdui isn't in the French dictionary, and there's no close match to suggest."
   },
+  "lookAlike": {
+    "hint": "{note}",
+    "template": "{note} It should be {fix}.",
+    "example": "cava is a past form of caver, “to dig,” as in il cava un trou. It should be ça va."
+  },
   "negation": {
     "hint": "In writing, “no longer” needs both ne and plus. Without ne, this reads as “more.”",
     "template": "In writing, “no longer” is ne… plus: {corrected}. Without ne, this reads as “more.”",

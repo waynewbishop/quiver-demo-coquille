@@ -28,3 +28,16 @@ nonisolated struct Idiom: Codable, Equatable, Sendable {
     let suggestion: String
     let note: String
 }
+
+/// Words that are each valid French, or sound like it, but are wrong together, such as
+/// "comment cava", from `fr.lookalikes.json`.
+nonisolated struct LookAlike: Codable, Equatable, Sendable {
+    /// The words as a learner writes them, such as "cava".
+    let phrase: String
+    /// The words the learner means, such as "ça va".
+    let fix: String
+    /// Words after which the phrase is correct French, so the rule stays silent, as in "il cava".
+    let unlessAfter: [String]
+    /// Why the phrase is wrong, without the answer.
+    let note: String
+}

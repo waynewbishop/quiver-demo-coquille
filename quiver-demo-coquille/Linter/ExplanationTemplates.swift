@@ -23,6 +23,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case agreementGenderAndNumber
     case spelling
     case unknownWord
+    case lookAlike
     case negation
     case idiom
 }

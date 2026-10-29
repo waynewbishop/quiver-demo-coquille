@@ -28,7 +28,7 @@ protocol Narrator: AnyObject {
     /// The word being spoken, as UTF-16 offsets into the spoken text, or `nil` when idle.
     var spokenRange: Range<Int>? { get }
     /// Speaks `text` from the start, replacing anything already playing.
-    func speak(_ text: String, rate: Float)
+    func speak(_ text: String)
     /// Pauses at the current point, so `resume()` carries on from there.
     func pause()
     /// Carries on from where `pause()` stopped.
@@ -49,11 +49,6 @@ extension Narrator {
 @Observable
 final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
 
-    /// The system's normal speaking rate.
-    static let normalRate = AVSpeechUtteranceDefaultSpeechRate
-    /// About half speed, for a long press on play.
-    static let slowRate = AVSpeechUtteranceDefaultSpeechRate * 0.5
-
     private(set) var state = PlaybackState.idle
     /// The word being spoken, as UTF-16 offsets into the spoken text, or `nil` when idle.
     /// It stays on the current word while paused.
@@ -73,11 +68,10 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
     }
 
     /// Speaks `text` from the start, replacing anything already playing.
-    func speak(_ text: String, rate: Float) {
+    func speak(_ text: String) {
         synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = Self.preferredVoice(for: language)
-        utterance.rate = rate
         currentUtterance = ObjectIdentifier(utterance)
         spokenRange = nil
         state = .speaking

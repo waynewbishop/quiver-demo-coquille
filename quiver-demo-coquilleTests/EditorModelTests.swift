@@ -24,7 +24,7 @@ final class EditorModelTests: XCTestCase {
         var spokenRange: Range<Int>?
         private(set) var spoken: [String] = []
 
-        func speak(_ text: String, rate: Float) {
+        func speak(_ text: String) {
             spoken.append(text)
             state = .speaking
         }

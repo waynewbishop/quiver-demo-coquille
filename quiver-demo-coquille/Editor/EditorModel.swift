@@ -287,7 +287,7 @@ final class EditorModel {
         selectNext(after: issue.offset)
     }
 
-    /// Opens the first blocking issue, used when the learner taps the locked play button.
+    /// Opens the first blocking issue, used when the learner taps the locked play button on iPhone and iPad.
     func jumpToFirstError() {
         if let first = blockingIssues.first {
             select(first)
@@ -322,18 +322,17 @@ final class EditorModel {
 
     // MARK: - Play
 
-    /// Pauses, resumes, or starts the French. A slow request always starts over at
-    /// about half speed; any edit to the text stops playback.
-    func togglePlay(slowly: Bool = false) {
+    /// Pauses, resumes, or starts the French; any edit to the text stops playback.
+    func togglePlay() {
         lintIfStale()
         switch narrator.state {
-        case .speaking where !slowly:
+        case .speaking:
             narrator.pause()
-        case .paused where !slowly:
+        case .paused:
             narrator.resume()
-        default:
+        case .idle:
             guard isLintCurrent, !isLocked, hasText else { return }
-            narrator.speak(plainText, rate: slowly ? SpeechNarrator.slowRate : SpeechNarrator.normalRate)
+            narrator.speak(plainText)
         }
     }
 

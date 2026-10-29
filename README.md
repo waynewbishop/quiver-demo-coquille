@@ -56,6 +56,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Article gender | une fromage → un fromage | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
+| Look-alike words | comment cava → comment ça va | Error | Look-alike list |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | bon pour ta santé → bon pour la santé | Suggestion | Idiom list |
 | Unknown nouns | a gender guess from the word's ending | Warning | Quiver model |

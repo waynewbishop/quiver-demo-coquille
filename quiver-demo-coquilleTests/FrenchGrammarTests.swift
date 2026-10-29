@@ -127,6 +127,25 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Il dort plus que moi."), [])
     }
 
+    // MARK: - Look-alikes
+
+    // Words that are each French but wrong together are errors, fixed to ça va.
+    func testCaVaLookAlikes() throws {
+        XCTAssertEqual(try fixes("Bonjour, comment cava?"), ["cava → ça va"])
+        XCTAssertEqual(try fixes("Sa va bien."), ["Sa va → Ça va"])
+        XCTAssertEqual(try fixes("Ça vas bien?"), ["Ça vas → Ça va"])
+        XCTAssertEqual(try fixes("Comment sava?"), ["sava → ça va"])
+        let issue = try XCTUnwrap(grammar().check("Comment cava?").first)
+        XCTAssertEqual(issue.severity, .error)
+        XCTAssertEqual(issue.hint, "cava is a past form of caver, “to dig,” as in il cava un trou.")
+    }
+
+    // After a subject pronoun, cava is the verb caver, which is correct French.
+    func testCavaAfterSubjectIsTheVerb() throws {
+        XCTAssertEqual(try fixes("Il cava un trou."), [])
+        XCTAssertEqual(try fixes("Ça va bien, merci."), [])
+    }
+
     // MARK: - Idioms
 
     // A correct but unidiomatic phrase gets a suggestion, never an error.
@@ -148,7 +167,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionOnUnknownNounIsAWarning() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.93, ending: "tion"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
 
         let issues = grammar.check("C'est un frobnication.")
         XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["un frobnication → une frobnication"])
@@ -160,7 +179,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionNeverOverridesLexicon() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: "ette"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un squelette.").count, 0)
     }
 
@@ -168,7 +187,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testLowConfidencePredictionIsSilent() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.6, ending: "e"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un frobnication.").count, 0)
     }
 }

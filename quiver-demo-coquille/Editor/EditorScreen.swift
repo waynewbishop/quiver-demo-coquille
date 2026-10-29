@@ -52,8 +52,9 @@ struct EditorScreen: View {
     }
 
     #if os(macOS)
-    /// The Mac window: French and English side by side with a draggable divider, the
-    /// streak, Clear and theme buttons in the toolbar, and status, play and English in the footer.
+    /// The Mac window: French and English side by side with a draggable divider, play
+    /// at the toolbar's leading edge as in Xcode, the streak, Clear and theme buttons
+    /// at its trailing edge, and status and English in the footer.
     private var layout: some View {
         VStack(spacing: 0) {
             SplitPanes(showsTrailing: model.isEnglishOn, trailingFraction: $englishFraction) {
@@ -62,9 +63,13 @@ struct EditorScreen: View {
                 EnglishPane(model: model, showsHeaderBar: true)
             }
 
-            MacBottomBar(model: model, showsIssueList: $showsIssueList, jumpToFirstError: jumpToFirstError)
+            MacBottomBar(model: model, showsIssueList: $showsIssueList)
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                MacPlayButton(model: model)
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     showsProgress = true
@@ -144,7 +149,7 @@ struct EditorScreen: View {
     }
     #endif
 
-    /// Focuses the editor and opens the first error, for the locked play button.
+    /// Focuses the editor and opens the first error, for the locked play button on iPhone and iPad.
     private func jumpToFirstError() {
         editorIsFocused = true
         model.jumpToFirstError()

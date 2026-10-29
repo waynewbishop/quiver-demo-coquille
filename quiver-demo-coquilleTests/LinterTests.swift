@@ -82,6 +82,14 @@ final class LinterTests: XCTestCase {
         XCTAssertEqual(issues.first?.kind, .spelling)
     }
 
+    // A look-alike's fix wins over the spellchecker's, which turns "sava" into "cava".
+    func testLookAlikeOutranksSpelling() throws {
+        let linter = try linter(reporting: [Misspelling(offset: 8, word: "sava", guesses: ["cava"])])
+        let issues = linter.lint("Comment sava?")
+        XCTAssertEqual(issues.map(\.kind), [.lookAlike])
+        XCTAssertEqual(issues.map(\.replacement), ["ça va"])
+    }
+
     // MARK: - Suggestion ranking
 
     // Quiver's cosine similarity on letter pairs puts the closest guess first.

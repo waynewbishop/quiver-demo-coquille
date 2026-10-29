@@ -14,7 +14,7 @@
 import Foundation
 
 /// The version 1 French rules: article gender, contractions, adjacent adjective
-/// agreement, the ne… plus warning, and idiom suggestions.
+/// agreement, look-alike words, the ne… plus warning, and idiom suggestions.
 ///
 /// Every rule prefers silence to a guess. A learning app must never flag correct
 /// French as wrong, so a rule skips any word the lexicon marks as ambiguous (both
@@ -25,6 +25,7 @@ nonisolated struct FrenchGrammar: Grammar {
 
     let lexicon: Lexicon
     let idioms: [Idiom]
+    let lookAlikes: [LookAlike]
     let explanations: ExplanationTemplates
     /// Predicts gender for nouns missing from the lexicon; `nil` until a trained model ships.
     let genderPredictor: (any GenderPredictor)?
@@ -39,6 +40,7 @@ nonisolated struct FrenchGrammar: Grammar {
         issues += articleIssues(in: tokens)
         issues += contractionIssues(in: tokens)
         issues += agreementIssues(in: tokens)
+        issues += lookAlikeIssues(in: tokens)
         issues += negationIssues(in: tokens)
         issues += idiomIssues(in: tokens)
         return issues.sorted { $0.offset < $1.offset }
@@ -285,6 +287,37 @@ nonisolated struct FrenchGrammar: Grammar {
                 explanation: explanations.render(.negation, ["corrected": corrected]),
                 source: "Negation rule · won't block play"
             ))
+        }
+        return issues
+    }
+
+    // MARK: - Look-alikes
+
+    /// Flags words that are each French, or sound like it, but are wrong together, such as
+    /// "comment cava". Each entry is wrong wherever it appears, apart from its listed
+    /// exceptions, so these are errors.
+    private func lookAlikeIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for lookAlike in lookAlikes {
+            let phrase = FrenchTokenizer.tokens(in: lookAlike.phrase).map(\.normalized)
+            guard !phrase.isEmpty, tokens.count >= phrase.count else { continue }
+            for start in 0...(tokens.count - phrase.count) {
+                let window = tokens[start..<(start + phrase.count)]
+                let matches = zip(window, phrase).allSatisfy { $0.normalized == $1 }
+                let isContiguous = window.dropLast().allSatisfy(\.isAdjacentToNext)
+                guard matches, isContiguous else { continue }
+                // "il cava" is the verb caver, which is correct French.
+                if start > 0, tokens[start - 1].isAdjacentToNext,
+                   lookAlike.unlessAfter.contains(tokens[start - 1].normalized) {
+                    continue
+                }
+                issues.append(issue(
+                    .lookAlike, .error, from: start, through: start + phrase.count - 1, in: tokens,
+                    replacement: matchingCase(of: tokens[start].text, lookAlike.fix),
+                    explanation: explanations.render(.lookAlike, ["note": lookAlike.note, "fix": lookAlike.fix]),
+                    source: "Look-alike list"
+                ))
+            }
         }
         return issues
     }

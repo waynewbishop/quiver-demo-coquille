@@ -1,0 +1,26 @@
+[
+  {
+    "phrase": "cava",
+    "fix": "ça va",
+    "unlessAfter": ["il", "elle", "on", "qui"],
+    "note": "cava is a past form of caver, “to dig,” as in il cava un trou."
+  },
+  {
+    "phrase": "sava",
+    "fix": "ça va",
+    "unlessAfter": [],
+    "note": "sava isn't a French word; it sounds like two words run together."
+  },
+  {
+    "phrase": "sa va",
+    "fix": "ça va",
+    "unlessAfter": [],
+    "note": "sa means his or her, so it comes before a noun, never before a verb like va."
+  },
+  {
+    "phrase": "ça vas",
+    "fix": "ça va",
+    "unlessAfter": [],
+    "note": "ça takes the il form of the verb, and vas is the tu form."
+  }
+]
