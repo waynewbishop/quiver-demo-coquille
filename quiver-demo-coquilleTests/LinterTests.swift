@@ -150,6 +150,18 @@ final class LinterTests: XCTestCase {
         XCTAssertEqual(model.gender(of: "moment")?.ending, "ment")
     }
 
+    // A warning names the longest ending behind the guess, never a single letter.
+    func testEndingModelNamesTheLongestEnding() throws {
+        let features: [[Double]] = [[1.0, 1.0], [1.0, 1.0], [1.0, 1.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+        let labels = [1, 1, 1, 0, 0, 0]
+        let fit = try LogisticRegression.fit(features: features, labels: labels, learningRate: 0.5, maxIterations: 2000)
+        let model = EndingGenderModel(endings: ["e", "ette"], model: fit)
+        XCTAssertEqual(model.gender(of: "glimette")?.ending, "ette")
+
+        let letterOnly = EndingGenderModel(endings: ["e", "ment"], model: try tinyModel().model)
+        XCTAssertNil(letterOnly.gender(of: "glime")?.ending)
+    }
+
     // A noun with none of the known endings gets no prediction.
     func testEndingModelSilentWithoutEvidence() throws {
         XCTAssertNil(try tinyModel().gender(of: "chat"))

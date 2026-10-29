@@ -18,14 +18,15 @@ nonisolated struct GenderPrediction: Equatable, Sendable {
     let gender: Gender
     /// The model's probability for `gender`, in (0, 1).
     let probability: Double
-    /// The word ending that pushed hardest toward `gender`, such as "ère".
+    /// The longest word ending that points toward `gender`, such as "ette", or `nil`
+    /// when only single letters do.
     let ending: String?
 }
 
 /// Predicts the gender of a noun the lexicon doesn't know.
 ///
 /// Known nouns never reach a predictor: the lexicon answers them exactly. A
-/// predictor's verdicts only ever produce warnings.
+/// predictor's verdicts only ever produce warnings, and only when they name an ending.
 nonisolated protocol GenderPredictor: Sendable {
     /// Returns a prediction for a normalized noun, or `nil` when the model has no evidence.
     func gender(of noun: String) -> GenderPrediction?

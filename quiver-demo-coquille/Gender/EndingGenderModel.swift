@@ -19,8 +19,7 @@ import Quiver
 /// Each feature is 1.0 when the noun ends with one ending from `endings` and 0.0
 /// otherwise, so feature *i* and weight *i* both belong to `endings[i]`. Class 1 is
 /// feminine: a positive weight leans feminine and a negative weight leans masculine.
-/// Because the weights are plain numbers, every prediction can name the ending that
-/// decided it.
+/// Because the weights are plain numbers, a prediction can name the ending behind it.
 ///
 /// The model is trained outside the app and bundled as `fr.gender-model.json`.
 /// Retraining and replacing that file changes predictions without code changes.
@@ -69,7 +68,7 @@ nonisolated struct EndingGenderModel: GenderPredictor, Codable, Equatable, Senda
         endings.map { noun.hasSuffix($0) ? 1.0 : 0.0 }
     }
 
-    /// Predicts the gender of a noun and names the ending that weighed most.
+    /// Predicts the gender of a noun and names the longest ending behind the guess.
     func gender(of noun: String) -> GenderPrediction? {
         let row = features(for: noun)
         guard row.contains(1.0), let feminine = model.predictProbabilities([row]).first else {
@@ -83,18 +82,24 @@ nonisolated struct EndingGenderModel: GenderPredictor, Codable, Equatable, Senda
         )
     }
 
-    /// Returns the present ending whose weight pushes hardest toward `gender`.
+    /// Returns the longest present ending that pushes toward `gender`, such as "ette"
+    /// rather than "e" for glimette, or `nil` when only single letters do.
+    ///
+    /// The heaviest weight usually belongs to a single letter, and "words ending in -e
+    /// usually are feminine" is a poor rule to learn (le livre, le musée). A longer
+    /// ending is a rule the learner can use; without one, the app raises no warning.
     private func decidingEnding(for row: [Double], toward gender: Gender) -> String? {
         let weightOffset = model.hasIntercept ? 1 : 0
-        var best: (ending: String, pull: Double)?
+        var best: String?
         for (index, value) in row.enumerated() where value == 1.0 {
             let weight = model.coefficients[index + weightOffset]
-            // Feminine predictions want the largest positive weight; masculine, the most negative.
+            // Feminine predictions want a positive weight; masculine, a negative one.
             let pull = gender == .feminine ? weight : -weight
-            if pull > 0, pull > (best?.pull ?? 0.0) {
-                best = (endings[index], pull)
+            let ending = endings[index]
+            if pull > 0, ending.count > 1, ending.count > (best?.count ?? 0) {
+                best = ending
             }
         }
-        return best?.ending
+        return best
     }
 }

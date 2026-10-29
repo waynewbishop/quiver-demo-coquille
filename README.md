@@ -59,7 +59,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | bon pour ta santé → bon pour la santé | Suggestion | Idiom list |
-| Unknown nouns | a gender guess from the word's ending | Warning | Quiver model |
+| Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
 
 Errors block play and English; warnings and suggestions never do, and
 every card has **Ignore**, so a false positive can never trap the
@@ -77,24 +77,40 @@ every issue at once, like Xcode's issue navigator.
   trained offline and bundled as JSON through its `Codable`
   conformance.
 - `predictProbabilities(_:)` — the model's probability that a noun is
-  feminine. Only confident guesses (0.8 or more) become warnings.
+  feminine. Only guesses of 0.95 or more that can name an ending become
+  warnings.
 - `coefficients` and `hasIntercept` — the open weights. A positive
-  weight leans feminine and a negative one masculine, so every
-  prediction names the ending that decided it: "boulangère is probably
-  feminine: words ending in -ère usually are."
+  weight leans feminine and a negative one masculine, so a prediction
+  can name the ending behind it: "influenceuse is probably feminine:
+  words ending in -euse usually are."
 - `cosineSimilarities(to:)` — ranks the spellchecker's guesses by
   letter-pair similarity to the typo, so "gentile" suggests "gentille"
   before "gentil".
 
 ## The gender model
 
-The model isn't bundled yet: training and comparing models happens in
-the Quiver Notebook first. Until `fr.gender-model.json` exists, nouns
-Lexique doesn't know simply go unchecked; known nouns never need the
-model, because the lexicon answers them exactly. Dropping in a trained
-file turns the warnings on, with no code changes. The file holds the
-ending vocabulary and the encoded `LogisticRegression`, with endings in
-the same order as the features and class 1 meaning feminine:
+The model only answers for nouns Lexique doesn't know; known nouns never
+need it, because the lexicon answers them exactly. It was trained in the
+Quiver Notebook on the 26,323 singular nouns Lexique gives exactly one
+gender, with a fifth held out for testing. Its 110 features are the
+endings of one to four letters shared by at least 100 training nouns.
+
+The nouns that reach it in the app are mostly loanwords and new words,
+and those break the ending rules more often than Lexique's nouns do: at
+a 0.8 cutoff it called "un selfie" and "une appli" wrong. So it warns
+only when it is at least 0.95 sure and can name an ending of two letters
+or more, the longest one behind the guess ("influenceuse" cites -euse,
+never -e, since "words ending in -e" is no rule to learn). On the
+held-out Lexique nouns, that warns on 34.8% of them and is right 99.7%
+of the time; everywhere else it stays silent.
+
+To retrain, rebuild the noun list with
+`swift Tools/BuildGenderNouns.swift <Lexique383.tsv> Tools/fr.gender-nouns.csv`,
+train in the Notebook, and replace `fr.gender-model.json`; no code
+changes are needed. Without the file, unknown nouns simply go
+unchecked. The file holds the ending vocabulary and the encoded
+`LogisticRegression`, with endings in the same order as the features and
+class 1 meaning feminine:
 
 ```json
 {

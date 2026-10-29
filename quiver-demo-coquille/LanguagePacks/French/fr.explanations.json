@@ -7,7 +7,7 @@
   "articleGenderPredicted": {
     "hint": "{noun} is probably {gender}: {reason}",
     "template": "{noun} is probably {gender}: {reason} So the article would be {article}.",
-    "example": "boulangère is probably feminine: words ending in -ère usually are. So the article would be la."
+    "example": "influenceuse is probably feminine: words ending in -euse usually are. So the article would be une."
   },
   "contraction": {
     "hint": "{preposition} + {article} always contracts into one word.",

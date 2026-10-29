@@ -163,10 +163,35 @@ final class FrenchGrammarTests: XCTestCase {
         func gender(of noun: String) -> GenderPrediction? { prediction }
     }
 
+    // The bundled model catches a noun Lexique doesn't know and names its ending.
+    func testBundledModelWarnsOnUnknownNoun() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        XCTAssertNotNil(pack.genderModel)
+        let issues = try grammar().check("C'est un influenceuse.")
+        XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["un influenceuse → une influenceuse"])
+        XCTAssertEqual(issues.first?.severity, .warning)
+        XCTAssertEqual(issues.first?.source, "Quiver prediction · ending -euse")
+    }
+
+    // Loanwords that break the ending rules stay silent rather than flag correct French.
+    func testBundledModelSilentOnLoanwords() throws {
+        XCTAssertEqual(try fixes("J'ai pris un selfie."), [])
+        XCTAssertEqual(try fixes("C'est une appli."), [])
+        XCTAssertEqual(try fixes("C'est un mot-dièse."), [])
+    }
+
+    // A confident guess with no ending to name raises nothing, since there's no rule to teach.
+    func testPredictionWithoutEndingIsSilent() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: nil))
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
+        XCTAssertEqual(grammar.check("C'est un frobnication.").count, 0)
+    }
+
     // A confident model guess on an unknown noun is a warning, never an error.
     func testPredictionOnUnknownNounIsAWarning() throws {
         let pack = try XCTUnwrap(Self.pack)
-        let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.93, ending: "tion"))
+        let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.97, ending: "tion"))
         let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], explanations: pack.explanations, genderPredictor: predictor)
 
         let issues = grammar.check("C'est un frobnication.")

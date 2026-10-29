@@ -31,7 +31,12 @@ nonisolated struct FrenchGrammar: Grammar {
     let genderPredictor: (any GenderPredictor)?
 
     /// The probability a model guess needs before it becomes a warning.
-    static let predictionThreshold = 0.8
+    ///
+    /// The nouns that reach the model are mostly loanwords and new words, which
+    /// follow French endings less often than the nouns it was tested on: at 0.8 it
+    /// called "un selfie" and "une appli" wrong. A high bar keeps it to the cases
+    /// where the ending rule really holds.
+    static let predictionThreshold = 0.95
 
     /// Returns every grammar issue in `text`, ordered by position.
     func check(_ text: String) -> [Issue] {
@@ -125,8 +130,9 @@ nonisolated struct FrenchGrammar: Grammar {
             } else if !lexicon.contains(word),
                       let prediction = genderPredictor?.gender(of: word),
                       prediction.gender != marked.gender,
-                      prediction.probability >= Self.predictionThreshold {
-                let ending = prediction.ending.map { "-\($0)" }
+                      prediction.probability >= Self.predictionThreshold,
+                      // Without an ending of two letters or more, there's no rule to teach.
+                      let ending = prediction.ending.map({ "-\($0)" }) {
                 let fix = matchingCase(of: article.text, expected(prediction.gender))
                 issues.append(issue(
                     .gender, .warning, from: index, through: index + 1, in: tokens,
@@ -134,10 +140,10 @@ nonisolated struct FrenchGrammar: Grammar {
                     explanation: explanations.render(.articleGenderPredicted, [
                         "noun": noun.text,
                         "gender": prediction.gender.rawValue,
-                        "reason": ending.map { "words ending in \($0) usually are." } ?? "the model leans that way.",
+                        "reason": "words ending in \(ending) usually are.",
                         "article": expected(prediction.gender)
                     ]),
-                    source: ending.map { "Quiver prediction · ending \($0)" } ?? "Quiver prediction"
+                    source: "Quiver prediction · ending \(ending)"
                 ))
             }
         }
