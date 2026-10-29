@@ -52,13 +52,15 @@ final class EditorModelTests: XCTestCase {
     }
 
     private var narrator = FakeNarrator()
+    private var phraseNarrator = FakeNarrator()
 
     /// Builds a model over the bundled French rules, with in-memory stats.
     private func makeModel(spellChecker: any SpellChecker = SilentSpellChecker()) throws -> EditorModel {
         let pack = try LanguagePack.french()
         let linter = Linter(spellChecker: spellChecker, grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
         narrator = FakeNarrator()
-        return EditorModel(stats: StatsStore(fileURL: nil), narrator: narrator, linter: linter)
+        phraseNarrator = FakeNarrator()
+        return EditorModel(stats: StatsStore(fileURL: nil), narrator: narrator, phraseNarrator: phraseNarrator, linter: linter)
     }
 
     /// Replaces the text as typing would, leaving the debounced lint pending.
@@ -165,6 +167,109 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(model.visibleIssues.count, count)
         XCTAssertEqual(model.selectedIssue?.id, first.id)
         XCTAssertEqual(narrator.state, .idle)
+    }
+
+    // Try an example's mistakes aren't the learner's: fixing them counts nothing until the editor is cleared.
+    func testExampleIsNotCounted() throws {
+        let model = try makeModel()
+        model.loadExample()
+        let issue = try XCTUnwrap(model.blockingIssues.first)
+        model.apply(issue)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+        XCTAssertEqual(model.stats.stats.sentencesChecked, 0)
+
+        model.clear()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.sentencesChecked, 1)
+    }
+
+    // Selecting the whole example and typing over it ends the rehearsal without an empty editor in between.
+    func testTypingOverTheExampleEndsTheRehearsal() throws {
+        let model = try makeModel()
+        model.loadExample()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.sentencesChecked, 1)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+
+        type("Nous avons un fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.errorsFixed, 1)
+        XCTAssertEqual(model.stats.stats.trickyWords, ["fromage"])
+    }
+
+    // Fixing the example's mistakes leaves its opening sentence, so the rehearsal carries on.
+    func testFixingTheExampleKeepsTheRehearsal() throws {
+        // The rehearsal check relies on the example opening with this mistake-free sentence.
+        XCTAssertTrue(EditorModel.example.hasPrefix(EditorModel.exampleOpening))
+        let model = try makeModel()
+        model.loadExample()
+        let fixed = Self.exampleWithFirstErrorFixed
+        type(fixed, into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+        XCTAssertEqual(model.stats.stats.sentencesChecked, 0)
+    }
+
+    /// The example with "une fromage" typed as "un fromage".
+    private static let exampleWithFirstErrorFixed = EditorModel.example.replacingOccurrences(of: "une fromage", with: "un fromage")
+
+    // A half-typed word's guess never becomes a tricky word; the fix the learner keeps does.
+    func testTrickyWordsComeFromFixes() throws {
+        let model = try makeModel()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.trickyWords, [])
+        type("Nous avons un fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.trickyWords, ["fromage"])
+    }
+
+    // Fixing one of two identical mistakes counts once, even though the other is still flagged.
+    func testFixingOneOfTwoIdenticalMistakesCounts() throws {
+        let model = try makeModel()
+        type("Une fromage et une fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.blockingIssues.count, 2)
+
+        type("Un fromage et une fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.errorsFixed, 1)
+        XCTAssertEqual(model.stats.stats.fixedByLearner, 1)
+
+        type("Un fromage et un fromage.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.stats.stats.errorsFixed, 2)
+    }
+
+    // A phrase stops the French, and the French stops a phrase, so two voices never overlap.
+    func testPhraseAndFrenchNeverSpeakTogether() throws {
+        let model = try makeModel()
+        let phrase = Phrase(situation: .greetings, french: "Bonjour !", english: "Hello!", register: .either, note: nil)
+        type("Je fais du vélo.", into: model)
+        model.lintNow()
+        model.togglePlay()
+        XCTAssertEqual(narrator.state, .speaking)
+
+        model.togglePhrase(phrase)
+        XCTAssertEqual(narrator.state, .idle)
+        XCTAssertTrue(model.isSpeaking(phrase))
+        XCTAssertEqual(phraseNarrator.spoken, ["Bonjour !"])
+
+        model.togglePlay()
+        XCTAssertFalse(model.isSpeaking(phrase))
+        XCTAssertEqual(narrator.state, .speaking)
+    }
+
+    // Playing the phrase that's already playing stops it.
+    func testPlayingAPhraseAgainStopsIt() throws {
+        let model = try makeModel()
+        let phrase = Phrase(situation: .greetings, french: "Bonjour !", english: "Hello!", register: .either, note: nil)
+        model.togglePhrase(phrase)
+        model.togglePhrase(phrase)
+        XCTAssertFalse(model.isSpeaking(phrase))
+        XCTAssertEqual(phraseNarrator.spoken, ["Bonjour !"])
     }
 
     // A fix the learner types counts as theirs; Apply counts only toward the total.

@@ -137,5 +137,488 @@
     "fix": "aux États-Unis",
     "unlessAfter": [],
     "note": "Countries take en, au or aux in French, never à on its own."
+  },
+  {
+    "phrase": "il va faire pleuvoir",
+    "fix": "il va pleuvoir",
+    "unlessAfter": [],
+    "note": "Rain and snow are verbs of their own: il va pleuvoir, il va neiger. Faire is for other weather, like il va faire beau."
+  },
+  {
+    "phrase": "il va faire neiger",
+    "fix": "il va neiger",
+    "unlessAfter": [],
+    "note": "Rain and snow are verbs of their own: il va pleuvoir, il va neiger. Faire is for other weather, like il va faire beau."
+  },
+  {
+    "phrase": "il y a pleuvoir",
+    "fix": "il pleut",
+    "unlessAfter": [],
+    "note": "Pleuvoir is a verb, so it takes no il y a: il pleut now, il va pleuvoir later."
+  },
+  {
+    "phrase": "il fait pluie",
+    "fix": "il pleut",
+    "unlessAfter": [],
+    "note": "Rain and snow are verbs of their own: il pleut, il neige."
+  },
+  {
+    "phrase": "il fait neige",
+    "fix": "il neige",
+    "unlessAfter": [],
+    "note": "Rain and snow are verbs of their own: il pleut, il neige."
+  },
+  {
+    "phrase": "mal aux têtes",
+    "fix": "mal à la tête",
+    "unlessAfter": [],
+    "note": "French has one head here: j'ai mal à la tête."
+  },
+  {
+    "phrase": "faire le vélo",
+    "fix": "faire du vélo",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "fais le vélo",
+    "fix": "fais du vélo",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "fait le vélo",
+    "fix": "fait du vélo",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "faire le sport",
+    "fix": "faire du sport",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "fais le sport",
+    "fix": "fais du sport",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "fait le sport",
+    "fix": "fait du sport",
+    "unlessAfter": [],
+    "note": "Activities take du with faire: faire du vélo, faire du sport."
+  },
+  {
+    "phrase": "vais du sport",
+    "fix": "fais du sport",
+    "unlessAfter": [],
+    "note": "Aller is for going somewhere; activities take faire: je fais du sport."
+  },
+  {
+    "phrase": "vais du vélo",
+    "fix": "fais du vélo",
+    "unlessAfter": [],
+    "note": "Aller is for going somewhere; activities take faire: je fais du sport."
+  },
+  {
+    "phrase": "j'aime du",
+    "fix": "j'aime le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "j'aime de la",
+    "fix": "j'aime la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "tu aimes du",
+    "fix": "tu aimes le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "tu aimes de la",
+    "fix": "tu aimes la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "il aime du",
+    "fix": "il aime le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "il aime de la",
+    "fix": "il aime la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "elle aime du",
+    "fix": "elle aime le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "elle aime de la",
+    "fix": "elle aime la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "on aime du",
+    "fix": "on aime le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "on aime de la",
+    "fix": "on aime la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "nous aimons du",
+    "fix": "nous aimons le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "nous aimons de la",
+    "fix": "nous aimons la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "vous aimez du",
+    "fix": "vous aimez le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "vous aimez de la",
+    "fix": "vous aimez la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "ils aiment du",
+    "fix": "ils aiment le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "ils aiment de la",
+    "fix": "ils aiment la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "elles aiment du",
+    "fix": "elles aiment le",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "elles aiment de la",
+    "fix": "elles aiment la",
+    "unlessAfter": ["que", "qu'"],
+    "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something."
+  },
+  {
+    "phrase": "un du",
+    "fix": "un",
+    "unlessAfter": [],
+    "note": "Un already means a, so it needs no du: un billet."
+  },
+  {
+    "phrase": "et tu",
+    "fix": "et toi",
+    "unlessAfter": [],
+    "onlyAtClauseEnd": true,
+    "note": "After et, tu becomes toi: et toi ? To a stranger, say et vous ?"
+  },
+  {
+    "phrase": "à montagne",
+    "fix": "à la montagne",
+    "unlessAfter": [],
+    "note": "Montagne keeps its article: à la montagne."
+  },
+  {
+    "phrase": "à plage",
+    "fix": "à la plage",
+    "unlessAfter": [],
+    "note": "Plage keeps its article: à la plage."
+  },
+  {
+    "phrase": "jouer le foot",
+    "fix": "jouer au foot",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "joue le foot",
+    "fix": "joue au foot",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "jouer le tennis",
+    "fix": "jouer au tennis",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "joue le tennis",
+    "fix": "joue au tennis",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "jouer le basket",
+    "fix": "jouer au basket",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "joue le basket",
+    "fix": "joue au basket",
+    "unlessAfter": [],
+    "note": "Sports and games take au: jouer au foot."
+  },
+  {
+    "phrase": "jouer la guitare",
+    "fix": "jouer de la guitare",
+    "unlessAfter": [],
+    "note": "Instruments take de: jouer de la guitare, jouer du piano."
+  },
+  {
+    "phrase": "joue la guitare",
+    "fix": "joue de la guitare",
+    "unlessAfter": [],
+    "note": "Instruments take de: jouer de la guitare, jouer du piano."
+  },
+  {
+    "phrase": "jouer le piano",
+    "fix": "jouer du piano",
+    "unlessAfter": [],
+    "note": "Instruments take de: jouer de la guitare, jouer du piano."
+  },
+  {
+    "phrase": "joue le piano",
+    "fix": "joue du piano",
+    "unlessAfter": [],
+    "note": "Instruments take de: jouer de la guitare, jouer du piano."
+  },
+  {
+    "phrase": "téléphoner ma",
+    "fix": "téléphoner à ma",
+    "unlessAfter": [],
+    "note": "Téléphoner takes à before the person: téléphoner à ma mère."
+  },
+  {
+    "phrase": "téléphoner mon",
+    "fix": "téléphoner à mon",
+    "unlessAfter": [],
+    "note": "Téléphoner takes à before the person: téléphoner à ma mère."
+  },
+  {
+    "phrase": "téléphone ma",
+    "fix": "téléphone à ma",
+    "unlessAfter": [],
+    "note": "Téléphoner takes à before the person: téléphoner à ma mère."
+  },
+  {
+    "phrase": "téléphone mon",
+    "fix": "téléphone à mon",
+    "unlessAfter": [],
+    "note": "Téléphoner takes à before the person: téléphoner à ma mère."
+  },
+  {
+    "phrase": "en pied",
+    "fix": "à pied",
+    "unlessAfter": [],
+    "onlyAfter": ["vais", "vas", "va", "allons", "allez", "vont", "aller", "allé", "allée", "allés", "allées", "viens", "vient", "venons", "venez", "viennent", "venir", "venu", "venue", "rentre", "rentres", "rentrons", "rentrez", "rentrent", "rentrer", "rentré", "rentrée", "pars", "part", "partons", "partez", "partent", "partir", "parti", "partie"],
+    "note": "On foot is à pied."
+  },
+  {
+    "phrase": "je manque toi",
+    "fix": "tu me manques",
+    "unlessAfter": [],
+    "note": "French turns it around: the person you miss is the subject. Tu me manques means I miss you."
+  },
+  {
+    "phrase": "je manque vous",
+    "fix": "vous me manquez",
+    "unlessAfter": [],
+    "note": "French turns it around: the person you miss is the subject. Vous me manquez means I miss you."
+  },
+  {
+    "phrase": "prendre une marche",
+    "fix": "faire une promenade",
+    "unlessAfter": [],
+    "note": "French doesn't take a walk; it does one: faire une promenade."
+  },
+  {
+    "phrase": "prends une marche",
+    "fix": "fais une promenade",
+    "unlessAfter": [],
+    "note": "French doesn't take a walk; it does one: faire une promenade."
+  },
+  {
+    "phrase": "pris une marche",
+    "fix": "fait une promenade",
+    "unlessAfter": [],
+    "note": "French doesn't take a walk; it does one: faire une promenade."
+  },
+  {
+    "phrase": "avoir un bon temps",
+    "fix": "passer un bon moment",
+    "unlessAfter": [],
+    "note": "Temps means time or weather, not a good time. French says passer un bon moment."
+  },
+  {
+    "phrase": "eu un bon temps",
+    "fix": "passé un bon moment",
+    "unlessAfter": [],
+    "note": "Temps means time or weather, not a good time. French says passer un bon moment."
+  },
+  {
+    "phrase": "sur vacances",
+    "fix": "en vacances",
+    "unlessAfter": [],
+    "note": "On holiday is en vacances."
+  },
+  {
+    "phrase": "dans le matin",
+    "fix": "le matin",
+    "unlessAfter": [],
+    "note": "In the morning is just le matin."
+  },
+  {
+    "phrase": "dans le soir",
+    "fix": "le soir",
+    "unlessAfter": [],
+    "unlessBefore": ["de", "d'"],
+    "note": "In the evening is just le soir."
+  },
+  {
+    "phrase": "dans janvier",
+    "fix": "en janvier",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans février",
+    "fix": "en février",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans mars",
+    "fix": "en mars",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans avril",
+    "fix": "en avril",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans mai",
+    "fix": "en mai",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans juin",
+    "fix": "en juin",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans juillet",
+    "fix": "en juillet",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans août",
+    "fix": "en août",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans septembre",
+    "fix": "en septembre",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans octobre",
+    "fix": "en octobre",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans novembre",
+    "fix": "en novembre",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "dans décembre",
+    "fix": "en décembre",
+    "unlessAfter": [],
+    "note": "Months take en: en juillet."
+  },
+  {
+    "phrase": "sur lundi",
+    "fix": "lundi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur mardi",
+    "fix": "mardi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur mercredi",
+    "fix": "mercredi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur jeudi",
+    "fix": "jeudi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur vendredi",
+    "fix": "vendredi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur samedi",
+    "fix": "samedi",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
+  },
+  {
+    "phrase": "sur dimanche",
+    "fix": "dimanche",
+    "unlessAfter": [],
+    "note": "Days need no preposition: lundi, or le lundi for every Monday."
   }
 ]

@@ -60,6 +60,9 @@ Nous avons acheté une fromage et des pommes rouge.
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
+| Être or avoir | j'ai allé → je suis allé | Error | Auxiliary rule, Lexique participles |
+| Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
+| Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
@@ -72,6 +75,38 @@ lists with both genders (le livre, la livre) are skipped. A le or la in
 front of a verb is read as a pronoun ("je le porte"), not an article.
 "plus tard" and "plus que" are left alone. Tapping the error chip opens
 every issue at once, like Xcode's issue navigator.
+
+## The phrasebook
+
+A blank page is the hardest part of writing in a new language. The
+book button opens a phrasebook beside the editor: 104 complete phrases
+in eight situations, from greetings and the café to directions, travel
+and journal starters. Each row shows the French, an English gloss, a
+*tu* or *vous* tag when it matters, and a play button that reads it
+aloud. Many carry a one-line note on the pattern, such as "Je voudrais
+is the polite way to say I want. Use it to order anything.", so we can
+reuse it in a sentence of our own.
+
+There's no copy or insert. In a paper journal a borrowed phrase is
+copied out by hand, and the copying is practice, so we type the phrase
+ourselves and Coquille checks it like any other French: a slip such as
+*cafe* for *café* is caught as usual. On the Mac and iPad the
+phrasebook is a side panel; on iPhone it's a half-height sheet with the
+editor still usable underneath. Playing a phrase stops the French, and
+playing the French stops the phrase.
+
+Search takes French or English and forgives typos and missing accents:
+*bonjur* finds *Bonjour !* and *cafe* finds *café*. Each word becomes
+the same letter-pair vector that ranks spelling fixes, and Quiver
+scores it against every phrase's words. A word still being typed
+matches the words it starts, so *addi* already finds *L'addition*.
+
+The phrases live in `LanguagePacks/French/fr.phrases.json`, each with
+its situation, French, English, register and optional note. A test
+runs every phrase through the whole linter, the platform spellchecker
+included, and expects no issues, so a phrase we copy is never flagged.
+If the file is missing or won't load, the editor and linter still work
+with an empty phrasebook.
 
 ## Quiver APIs used
 
@@ -88,7 +123,8 @@ every issue at once, like Xcode's issue navigator.
   words ending in -euse usually are."
 - `cosineSimilarities(to:)` — ranks the spellchecker's guesses by
   letter-pair similarity to the typo, so "gentile" suggests "gentille"
-  before "gentil".
+  before "gentil". The phrasebook search uses the same vectors, so
+  "bonjur" finds "Bonjour !".
 
 ## The gender model
 
@@ -135,9 +171,12 @@ Everything is plain folders in one Xcode project:
   (`Grammar`, `SpellChecker`, `GenderPredictor`), so tests swap in
   fakes.
 - `Gender/` — the Quiver gender model.
-- `LanguagePacks/French/` — the lexicon, explanation templates and
-  idiom list as readable JSON. Changing a template changes the
-  explanation without touching code.
+- `LanguagePacks/French/` — the lexicon, explanation templates, the
+  look-alike, word-choice and idiom lists, and the phrasebook, all as
+  readable JSON. Changing a template changes the explanation without
+  touching code.
+- `Phrasebook/` — the phrase model, the Quiver-backed search and the
+  phrasebook view.
 - `Speech/`, `Translation/`, `Stats/`, `Editor/` — playback, on-device
   translation, the learner's progress (stored only on the device) and
   the SwiftUI views.
@@ -146,17 +185,18 @@ Everything is plain folders in one Xcode project:
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 44 XCTest cases, including the
-  false-positive traps above.
+- `quiver-demo-coquilleTests/` — 83 XCTest cases, including the
+  false-positive traps above, a list of correct French that must pass
+  clean, and a check that every phrase lints clean.
 
 ## Data
 
 Word data comes from [Lexique 3.83](http://www.lexique.org) by Boris
 New and Christophe Pallier, licensed
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The
-full table (142,000 rows) never ships. The app bundles a 2.2 MB slice
-of nouns with gender and number, adjectives with their four forms, and
-verb forms. Because it's derived from Lexique, `fr.lexicon.json`
+full table (142,000 rows) never ships. The app bundles a 2.6 MB slice
+of nouns with gender and number, adjectives with their four forms, verb
+forms, and each past participle's verb, gender and number. Because it's derived from Lexique, `fr.lexicon.json`
 carries the same license. To rebuild it:
 
 ```bash

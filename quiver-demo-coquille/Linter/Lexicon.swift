@@ -14,7 +14,8 @@
 import Foundation
 
 /// The bundled slice of Lexique: gender and number for nouns, the four forms of each
-/// adjective, and every verb and other known spelling.
+/// adjective, each past participle's verb, gender and number, and every verb and other
+/// known spelling.
 ///
 /// The file is produced by `Tools/BuildLexicon.swift` and is derived from Lexique 3.83,
 /// licensed CC BY-SA 4.0.
@@ -32,11 +33,20 @@ nonisolated struct Lexicon: Sendable {
         /// Adjective lemma → forms as masculine singular, feminine singular, masculine plural, feminine plural.
         let adjectives: [String: [String]]
         let verbs: [String]
+        /// Past participle → [verb, gender and number code], as for nouns: "mangée" → [["manger", "fs"]].
+        let participles: [String: [[String]]]
         let otherWords: [String]
     }
 
     /// A noun's gender and number; `nil` means the noun serves both.
     struct Noun: Equatable, Sendable {
+        let gender: Gender?
+        let number: GrammaticalNumber?
+    }
+
+    /// A past participle's verb, gender and number; `nil` means the form serves both.
+    struct Participle: Equatable, Sendable {
+        let verb: String
         let gender: Gender?
         let number: GrammaticalNumber?
     }
@@ -49,6 +59,9 @@ nonisolated struct Lexicon: Sendable {
     private let adjectiveForms: [String: [String]]
     private let adjectiveLemmasByForm: [String: [String]]
     private let verbs: Set<String>
+    private let participlesByForm: [String: [Participle]]
+    /// Verb → its participle forms, for finding the one a gender and number need.
+    private let participleFormsByVerb: [String: [String]]
     private let otherWords: Set<String>
 
     /// Builds a lexicon from its decoded file.
@@ -59,21 +72,22 @@ nonisolated struct Lexicon: Sendable {
         var nouns: [String: Noun] = [:]
         nouns.reserveCapacity(file.nouns.count)
         for (word, code) in file.nouns {
-            let letters = Array(code)
-            guard letters.count == 2 else { continue }
-            let gender: Gender? = switch letters[0] {
-            case "m": .masculine
-            case "f": .feminine
-            default: nil
-            }
-            let number: GrammaticalNumber? = switch letters[1] {
-            case "s": .singular
-            case "p": .plural
-            default: nil
-            }
-            nouns[word] = Noun(gender: gender, number: number)
+            guard let reading = Self.genderAndNumber(code) else { continue }
+            nouns[word] = Noun(gender: reading.gender, number: reading.number)
         }
         self.nouns = nouns
+
+        var participlesByForm: [String: [Participle]] = [:]
+        var participleFormsByVerb: [String: [String]] = [:]
+        for (form, readings) in file.participles {
+            for reading in readings where reading.count == 2 {
+                guard let code = Self.genderAndNumber(reading[1]) else { continue }
+                participlesByForm[form, default: []].append(Participle(verb: reading[0], gender: code.gender, number: code.number))
+                participleFormsByVerb[reading[0], default: []].append(form)
+            }
+        }
+        self.participlesByForm = participlesByForm
+        self.participleFormsByVerb = participleFormsByVerb.mapValues { $0.sorted() }
 
         var lemmasByForm: [String: [String]] = [:]
         for (lemma, forms) in file.adjectives where forms.count == 4 {
@@ -134,6 +148,38 @@ nonisolated struct Lexicon: Sendable {
             }
         }
         return readings
+    }
+
+    /// Returns the past-participle readings of a form, such as manger, feminine singular, for "mangée".
+    func participles(_ form: String) -> [Participle] {
+        participlesByForm[form] ?? []
+    }
+
+    /// Returns a verb's past participle for a gender and number, such as "mangé" for manger,
+    /// masculine singular, preferring a form made for exactly that gender and number.
+    func participle(of verb: String, gender: Gender, number: GrammaticalNumber) -> String? {
+        let forms = participleFormsByVerb[verb] ?? []
+        let readings = forms.flatMap { form in participles(form).filter { $0.verb == verb }.map { (form, $0) } }
+        let exact = readings.first { $0.1.gender == gender && $0.1.number == number }
+        let serves = readings.first { ($0.1.gender ?? gender) == gender && ($0.1.number ?? number) == number }
+        return (exact ?? serves)?.0
+    }
+
+    /// Reads a two-letter gender and number code such as "fs" or "mx"; `x` means both.
+    private static func genderAndNumber(_ code: String) -> (gender: Gender?, number: GrammaticalNumber?)? {
+        let letters = Array(code)
+        guard letters.count == 2 else { return nil }
+        let gender: Gender? = switch letters[0] {
+        case "m": .masculine
+        case "f": .feminine
+        default: nil
+        }
+        let number: GrammaticalNumber? = switch letters[1] {
+        case "s": .singular
+        case "p": .plural
+        default: nil
+        }
+        return (gender, number)
     }
 
     /// The position of a gender and number in an adjective's four-form list.

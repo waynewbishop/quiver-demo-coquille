@@ -48,22 +48,38 @@ final class LearnerStatsTests: XCTestCase {
             stats.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
         }
         XCTAssertEqual(stats.issueCounts[IssueKind.gender.rawValue], 1)
-        XCTAssertEqual(stats.wordMistakes["fromage"], 1)
+        // Being flagged isn't enough to make a tricky word; only a fix is.
+        XCTAssertEqual(stats.trickyWords, [])
     }
 
-    // A missed noun becomes a tricky word, and the most missed words come first.
-    func testTrickyWords() throws {
+    // A sentence the caret is inside isn't logged, so going back to finish a word counts only the finished version.
+    func testSentenceBeingEditedIsSkipped() throws {
+        let issue = Issue(kind: .spelling, severity: .error, offset: 21, length: 3, original: "dem", replacement: "demi", reason: "", hint: "", source: "")
+        let text = "Parlez vous français à dem?"
         var stats = LearnerStats()
-        stats.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
+        stats.record(text: text, issues: [issue], on: try day(27), calendar: calendar, editingAt: 24)
+        XCTAssertEqual(stats.sentencesChecked, 0)
+        XCTAssertEqual(stats.issueCounts, [:])
+
+        // With the caret after the question mark, the sentence is finished and counts.
+        stats.record(text: "Parlez vous français à demain?", issues: [], on: try day(27), calendar: calendar, editingAt: 30)
+        XCTAssertEqual(stats.sentencesChecked, 1)
+    }
+
+    // A corrected word becomes a tricky word, and the most corrected words come first.
+    func testTrickyWords() {
+        var stats = LearnerStats()
+        stats.recordFix(byLearner: true, issue: genderIssue)
         XCTAssertEqual(stats.trickyWords, ["fromage"])
 
         let spellingIssue = Issue(
             kind: .spelling, severity: .error, offset: 4, length: 7,
             original: "gentile", replacement: "gentille", reason: "", hint: "", source: ""
         )
-        stats.record(text: "Oh une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
-        stats.record(text: "Il gentile.", issues: [spellingIssue], on: try day(27), calendar: calendar)
+        stats.recordFix(byLearner: false, issue: genderIssue)
+        stats.recordFix(byLearner: true, issue: spellingIssue)
         XCTAssertEqual(stats.trickyWords, ["fromage", "gentille"])
+        XCTAssertEqual(stats.errorsFixed, 3)
     }
 
     // Spelling, agreement and accent misses count under the correct word; look-alikes don't count.
@@ -99,11 +115,12 @@ final class LearnerStatsTests: XCTestCase {
         XCTAssertEqual(stats.issueCounts["gender"], 2)
     }
 
-    // Saved tricky words survive the rename from nouns to words.
-    func testDecodesSavedNounMistakes() throws {
-        let json = #"{"days":{},"issueCounts":{},"nounMistakes":{"fromage":2},"errorsFixed":0,"countedIssues":[]}"#
+    // Older files still load, but their flag-based word counts are left behind.
+    func testOlderNounMistakesAreLeftBehind() throws {
+        let json = #"{"days":{},"issueCounts":{"gender":2},"nounMistakes":{"demi":1},"errorsFixed":3,"countedIssues":[]}"#
         let stats = try JSONDecoder().decode(LearnerStats.self, from: Data(json.utf8))
-        XCTAssertEqual(stats.trickyWords, ["fromage"])
-        XCTAssertTrue(try String(decoding: JSONEncoder().encode(stats), as: UTF8.self).contains("nounMistakes"))
+        XCTAssertEqual(stats.trickyWords, [])
+        XCTAssertEqual(stats.errorsFixed, 3)
+        XCTAssertFalse(String(decoding: try JSONEncoder().encode(stats), as: UTF8.self).contains("nounMistakes"))
     }
 }

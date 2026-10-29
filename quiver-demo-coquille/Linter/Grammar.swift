@@ -23,9 +23,15 @@ nonisolated protocol Grammar: Sendable {
 }
 
 /// A fixed phrase that is correct but has a more natural alternative, from `fr.idioms.json`.
+///
+/// The optional context lists work as they do on `PhraseFix`, so "je suis plein" can
+/// stay silent in "je suis plein de vie".
 nonisolated struct Idiom: Codable, Equatable, Sendable {
     let phrase: String
     let suggestion: String
+    var unlessAfter: [String]? = nil
+    var onlyAfter: [String]? = nil
+    var unlessBefore: [String]? = nil
     let note: String
 }
 
@@ -42,8 +48,11 @@ nonisolated struct PhraseFix: Codable, Equatable, Sendable {
     /// Words that must come right before the phrase, as in "a fait une décision", where the
     /// fix depends on the tense. `nil` means the phrase applies after any word.
     var onlyAfter: [String]? = nil
-    /// Words after which the phrase is correct French, so the rule stays silent, as in "cava un trou".
+    /// Words that make the phrase correct French when they come right after it, as in "cava un trou".
     var unlessBefore: [String]? = nil
+    /// Whether the phrase is wrong only at the end of a clause, as in "et tu ?", which is
+    /// correct French when a verb follows ("et tu vas bien").
+    var onlyAtClauseEnd: Bool? = nil
     /// Why the phrase is wrong, without the answer.
     let note: String
 }

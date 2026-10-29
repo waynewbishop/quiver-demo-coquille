@@ -20,8 +20,11 @@ struct EditorScreen: View {
     @State private var model = EditorModel()
     @State private var showsIssueList = false
     @State private var showsProgress = false
+    @State private var showsPhrasebook = false
     @FocusState private var editorIsFocused: Bool
     @AppStorage(Appearance.storageKey) private var appearance: String?
+    /// The Show suggestions setting, kept between launches and mirrored into the model.
+    @AppStorage("showsSuggestions") private var showsSuggestions = true
 
     #if os(macOS)
     /// The story's title from the on-device model, or `nil` to show the app's name.
@@ -39,6 +42,8 @@ struct EditorScreen: View {
             .preferredColorScheme(Appearance.colorScheme(for: appearance))
             .animation(.snappy(duration: 0.2), value: model.selectedIssueID)
             .task { await model.load() }
+            .onChange(of: showsSuggestions, initial: true) { model.showsSuggestions = showsSuggestions }
+            .onChange(of: model.showsSuggestions) { showsSuggestions = model.showsSuggestions }
             .sheet(isPresented: $showsIssueList) {
                 IssueListSheet(model: model) { issue in
                     showsIssueList = false
@@ -50,6 +55,14 @@ struct EditorScreen: View {
             .sheet(isPresented: $showsProgress) {
                 ProgressSheet(stats: model.stats.stats)
                     .tint(.brand)
+            }
+            // A side panel on the Mac and iPad; on iPhone a half-height sheet the editor stays usable under.
+            .inspector(isPresented: $showsPhrasebook) {
+                PhrasebookView(model: model)
+                    .tint(.brand)
+                    .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
+                    .presentationDetents([.medium, .large])
+                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
             }
     }
 
@@ -74,6 +87,13 @@ struct EditorScreen: View {
             ToolbarItemGroup(placement: .navigation) {
                 MacPlayButton(model: model)
                 MacStopButton(model: model)
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                Button("Phrasebook", systemImage: "book") {
+                    showsPhrasebook.toggle()
+                }
+                .help("Phrasebook")
             }
 
             ToolbarItem(placement: .primaryAction) {
@@ -138,7 +158,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook)
 
                 if isWide {
                     HStack(spacing: 0) {

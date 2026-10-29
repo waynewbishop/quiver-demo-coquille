@@ -55,7 +55,7 @@ nonisolated enum SuggestionRanker {
     }
 
     /// Counts each letter pair into a vector laid out by `position`.
-    private static func counts(of pairs: [String], in position: [String: Int]) -> [Double] {
+    static func counts(of pairs: [String], in position: [String: Int]) -> [Double] {
         var vector = [Double](repeating: 0.0, count: position.count)
         for pair in pairs {
             if let index = position[pair] {

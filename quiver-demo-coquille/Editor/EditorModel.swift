@@ -50,8 +50,15 @@ final class EditorModel {
     private(set) var selectedIssueID: String?
     private(set) var english = English.idle
     private(set) var loadFailure: String?
+    /// The phrasebook, empty until the language pack loads.
+    private(set) var phrases: [Phrase] = []
+    /// The phrasebook phrase last read aloud, if any.
+    private(set) var speakingPhraseID: String?
 
     let narrator: any Narrator
+    /// Reads phrasebook phrases. It's separate from `narrator`, whose word highlight tracks the
+    /// editor's text, and each one stops the other so two voices never overlap.
+    let phraseNarrator: any Narrator
     let stats: StatsStore
 
     @ObservationIgnored private var linter: Linter?
@@ -61,6 +68,9 @@ final class EditorModel {
     /// The text last seen by `textDidChange`, to tell typing from styling changes.
     @ObservationIgnored private var observedText = ""
     @ObservationIgnored private var lintTask: Task<Void, Never>?
+    /// Whether the editor holds Try an example, whose mistakes aren't the learner's.
+    /// It ends once the example's opening sentence is gone: cleared, deleted, or typed over.
+    @ObservationIgnored private var isRehearsal = false
     @ObservationIgnored private var translationTask: Task<Void, Never>?
 
     /// How long typing must pause before the text is linted.
@@ -71,11 +81,13 @@ final class EditorModel {
     init(
         stats: StatsStore = StatsStore(),
         narrator: any Narrator = SpeechNarrator(language: "fr-FR"),
+        phraseNarrator: any Narrator = SpeechNarrator(language: "fr-FR"),
         linter: Linter? = nil,
         translator: (any Translator)? = nil
     ) {
         self.stats = stats
         self.narrator = narrator
+        self.phraseNarrator = phraseNarrator
         self.linter = linter
         self.translator = translator
     }
@@ -139,6 +151,7 @@ final class EditorModel {
                 explanations: pack.explanations
             )
             translator = AppleTranslator(source: pack.language, target: Locale.Language(identifier: "en"))
+            phrases = pack.phrases
             lintNow()
         } catch {
             loadFailure = "The French language pack couldn't be loaded: \(error.localizedDescription)"
@@ -188,10 +201,19 @@ final class EditorModel {
         observedText = plain
         issues = linter.lint(plain)
         lintedText = plain
-        for _ in typedFixes(of: previousErrors, from: previousText, to: plain) {
-            stats.recordFix(byLearner: true)
+        let wasRehearsal = isRehearsal
+        if isRehearsal, !plain.contains(Self.exampleOpening) {
+            isRehearsal = false
         }
-        stats.record(text: plain, issues: visibleIssues)
+        if !isRehearsal {
+            // The errors before a rehearsal ended were the example's, so none of them count as fixed.
+            if !wasRehearsal {
+                for fix in typedFixes(of: previousErrors, from: previousText, to: plain) {
+                    stats.recordFix(byLearner: true, issue: fix)
+                }
+            }
+            stats.record(text: plain, issues: visibleIssues, editingAt: caretOffset())
+        }
         applyStyling()
         refreshEnglish()
     }
@@ -202,18 +224,32 @@ final class EditorModel {
     /// deleting a sentence never counts as fixing it.
     private func typedFixes(of errors: [Issue], from old: String, to new: String) -> [Issue] {
         guard old != new else { return [] }
-        let remaining = Set(issues.map(\.ignoreKey))
+        // Identical mistakes share a key, so compare counts: two "une fromage" before and
+        // one after means one was fixed, whichever one now has its correction in place.
+        var fixesLeft: [String: Int] = [:]
+        for error in errors {
+            fixesLeft[error.ignoreKey, default: 0] += 1
+        }
+        for issue in issues {
+            fixesLeft[issue.ignoreKey]? -= 1
+        }
         let shift = new.count - old.count
         return errors.filter { error in
-            guard !remaining.contains(error.ignoreKey) else { return false }
-            guard let replacement = error.replacement else {
-                return retypedWord(error, from: old, to: new)
+            guard fixesLeft[error.ignoreKey, default: 0] > 0 else { return false }
+            let isFixed: Bool
+            if let replacement = error.replacement {
+                // Edits elsewhere move the fix by at most the change in length.
+                let start = max(0, error.offset + min(0, shift))
+                let length = replacement.count + abs(shift)
+                let window = String(new.dropFirst(start).prefix(length))
+                isFixed = window.range(of: replacement, options: .caseInsensitive) != nil
+            } else {
+                isFixed = retypedWord(error, from: old, to: new)
             }
-            // Edits elsewhere move the fix by at most the change in length.
-            let start = max(0, error.offset + min(0, shift))
-            let length = replacement.count + abs(shift)
-            let window = String(new.dropFirst(start).prefix(length))
-            return window.range(of: replacement, options: .caseInsensitive) != nil
+            if isFixed {
+                fixesLeft[error.ignoreKey, default: 0] -= 1
+            }
+            return isFixed
         }
     }
 
@@ -272,8 +308,8 @@ final class EditorModel {
         guard plainText == lintedText, let replacement = issue.replacement,
               let range = attributedRange(for: issue.range) else { return }
         text.replaceSubrange(range, with: AttributedString(replacement))
-        if issue.severity == .error {
-            stats.recordFix(byLearner: false)
+        if issue.severity == .error, !isRehearsal {
+            stats.recordFix(byLearner: false, issue: issue)
         }
         lint(applied: issue)
         selectNext(after: issue.offset)
@@ -297,6 +333,10 @@ final class EditorModel {
     /// The design's sample paragraph, with one mistake for each kind of check.
     static let example = "Hier, je suis allé au marché avec ma sœur. Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentile, et la pain sentait bon."
 
+    /// The example's first sentence, which has no mistakes, so fixing the others never changes it.
+    /// While it's in the text, the editor is still holding the example.
+    static let exampleOpening = "Hier, je suis allé au marché avec ma sœur."
+
     /// Starts the sample paragraph from a clean slate, so a rehearsal never changes
     /// the next run: ignored issues come back, and playback and English reset.
     func loadExample() {
@@ -308,6 +348,7 @@ final class EditorModel {
         english = .idle
         text = AttributedString(Self.example)
         selection = AttributedTextSelection()
+        isRehearsal = true
         lintNow()
         jumpToFirstError()
     }
@@ -329,6 +370,7 @@ final class EditorModel {
 
     /// Pauses, resumes, or starts the French; any edit to the text stops playback.
     func togglePlay() {
+        phraseNarrator.stop()
         lintIfStale()
         switch narrator.state {
         case .speaking:
@@ -339,6 +381,29 @@ final class EditorModel {
             guard isLintCurrent, !isLocked, hasText else { return }
             narrator.speak(plainText)
         }
+    }
+
+    // MARK: - Phrasebook
+
+    /// Whether this phrase is being read aloud right now.
+    func isSpeaking(_ phrase: Phrase) -> Bool {
+        speakingPhraseID == phrase.id && phraseNarrator.isSpeaking
+    }
+
+    /// Reads a phrase aloud, stopping the French first, or stops it if it's already playing.
+    func togglePhrase(_ phrase: Phrase) {
+        if isSpeaking(phrase) {
+            phraseNarrator.stop()
+            return
+        }
+        narrator.stop()
+        speakingPhraseID = phrase.id
+        phraseNarrator.speak(phrase.french)
+    }
+
+    /// Stops a phrase that's playing, as when the phrasebook closes.
+    func stopPhrase() {
+        phraseNarrator.stop()
     }
 
     // MARK: - English

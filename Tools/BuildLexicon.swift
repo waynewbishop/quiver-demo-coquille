@@ -23,7 +23,8 @@
 //
 // The raw table (about 142,000 rows, 26 MB) never ships in the app. The slice keeps
 // only what the linter's rules read: each noun's gender and number, each adjective's
-// four forms, every verb form, and every other known spelling. The output is derived
+// four forms, every verb form, each past participle's verb, gender and number, and every
+// other known spelling. The output is derived
 // from Lexique and so carries Lexique's CC BY-SA 4.0 license.
 
 import Foundation
@@ -42,6 +43,9 @@ struct LexiconFile: Codable {
     let adjectives: [String: [String]]
     /// Every spelling Lexique tags as a verb or auxiliary.
     let verbs: [String]
+    /// Past participle → each verb it belongs to and its gender and number code, as for
+    /// nouns: "mangée" → [["manger", "fs"]].
+    let participles: [String: [[String]]]
     /// Every remaining spelling: adverbs, prepositions, pronouns, determiners and so on.
     let otherWords: [String]
 }
@@ -74,6 +78,7 @@ let lemmaColumn = column("lemme")
 let categoryColumn = column("cgram")
 let genderColumn = column("genre")
 let numberColumn = column("nombre")
+let verbInfoColumn = column("infover")
 
 var nounGenders: [String: Set<Character>] = [:]
 var nounNumbers: [String: Set<Character>] = [:]
@@ -81,6 +86,9 @@ var nounNumbers: [String: Set<Character>] = [:]
 var adjectiveSlots: [String: [String: String]] = [:]
 var adjectiveSlotIsSpecific: [String: [String: Bool]] = [:]
 var verbs: Set<String> = []
+// "form|lemma" → the genders and numbers its participle rows serve.
+var participleGenders: [String: Set<Character>] = [:]
+var participleNumbers: [String: Set<Character>] = [:]
 var others: Set<String> = []
 
 for line in lines {
@@ -115,6 +123,12 @@ for line in lines {
         }
     case "VER", "AUX":
         verbs.insert(form)
+        // Past participles keep their verb, gender and number for the auxiliary rules.
+        if fields[verbInfoColumn].contains("par:pas") {
+            let key = form + "|" + fields[lemmaColumn]
+            participleGenders[key, default: []].formUnion(genders)
+            participleNumbers[key, default: []].formUnion(numbers)
+        }
     default:
         others.insert(form)
     }
@@ -205,6 +219,16 @@ if let overridesData = FileManager.default.contents(atPath: "Tools/fr.adjective-
     }
 }
 
+var participles: [String: [[String]]] = [:]
+for (key, genders) in participleGenders {
+    let parts = key.split(separator: "|", maxSplits: 1).map(String.init)
+    guard parts.count == 2 else { continue }
+    participles[parts[0], default: []].append([parts[1], code(genders) + code(participleNumbers[key] ?? [])])
+}
+for form in participles.keys {
+    participles[form]?.sort { $0[0] < $1[0] }
+}
+
 let adjectiveForms = Set(adjectives.values.flatMap { $0 })
 let otherWords = others.subtracting(nouns.keys).subtracting(adjectiveForms).subtracting(verbs)
 
@@ -215,6 +239,7 @@ let file = LexiconFile(
     nouns: nouns,
     adjectives: adjectives,
     verbs: verbs.sorted(),
+    participles: participles,
     otherWords: otherWords.sorted()
 )
 
@@ -223,4 +248,4 @@ encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
 let data = try encoder.encode(file)
 try data.write(to: URL(fileURLWithPath: arguments[2]))
 
-print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · other words \(otherWords.count) · \(data.count / 1024) KB")
+print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · participles \(participles.count) · other words \(otherWords.count) · \(data.count / 1024) KB")

@@ -13,12 +13,13 @@
 
 import SwiftUI
 
-/// The status chip, the progress chip, the Clear button, and the theme toggle.
+/// The status chip, the phrasebook and progress buttons, the Clear button, and the theme toggle.
 struct TopBar: View {
 
     let model: EditorModel
     @Binding var showsIssueList: Bool
     @Binding var showsProgress: Bool
+    @Binding var showsPhrasebook: Bool
 
     var body: some View {
         HStack(spacing: 4) {
@@ -31,6 +32,15 @@ struct TopBar: View {
             .accessibilityHint("Shows every issue")
 
             Spacer()
+
+            Button("Phrasebook", systemImage: "book") {
+                showsPhrasebook.toggle()
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
 
             Button {
                 showsProgress = true

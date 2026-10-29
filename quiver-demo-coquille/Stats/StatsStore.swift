@@ -33,14 +33,14 @@ final class StatsStore {
     }
 
     /// Logs a lint pass and saves.
-    func record(text: String, issues: [Issue]) {
-        stats.record(text: text, issues: issues, on: .now)
+    func record(text: String, issues: [Issue], editingAt caret: Int? = nil) {
+        stats.record(text: text, issues: issues, on: .now, editingAt: caret)
         save()
     }
 
     /// Counts a fixed error, typed or applied, and saves.
-    func recordFix(byLearner: Bool) {
-        stats.recordFix(byLearner: byLearner)
+    func recordFix(byLearner: Bool, issue: Issue? = nil) {
+        stats.recordFix(byLearner: byLearner, issue: issue)
         save()
     }
 

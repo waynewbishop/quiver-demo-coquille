@@ -27,9 +27,8 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     var days: [String: Day] = [:]
     /// Issue kind raw value → times flagged.
     var issueCounts: [String: Int] = [:]
-    /// Word → times the learner got it wrong: a noun's gender, an adjective's agreement,
-    /// its spelling, or a missing accent.
-    var wordMistakes: [String: Int] = [:]
+    /// Word → times the learner corrected an error to it, by typing the fix or applying it.
+    var correctedWords: [String: Int] = [:]
     var errorsFixed = 0
     /// Errors the learner fixed by typing, out of `errorsFixed`.
     var fixedByLearner = 0
@@ -42,11 +41,16 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     ///
     /// A sentence counts once it ends in . ! or ?, so half-typed sentences are skipped.
     /// Suggestions never make a sentence unclean.
-    mutating func record(text: String, issues: [Issue], on date: Date, calendar: Calendar = .current) {
+    ///
+    /// A sentence the caret is inside (`editingAt`) is skipped until the learner leaves it,
+    /// so going back to finish a word ("à dem?") never logs the half-typed version.
+    mutating func record(text: String, issues: [Issue], on date: Date, calendar: Calendar = .current, editingAt caret: Int? = nil) {
         let key = Self.dayKey(for: date, calendar: calendar)
         var day = days[key] ?? Day()
 
         for sentence in Self.completedSentences(in: text) {
+            // A caret right after the closing punctuation means the sentence is finished.
+            if let caret, sentence.range.lowerBound < caret, caret < sentence.range.upperBound { continue }
             let flagged = issues.filter { $0.severity != .suggestion && sentence.range.overlaps($0.range) }
             day.checked.insert(sentence.text)
             if flagged.isEmpty {
@@ -55,19 +59,24 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
             for issue in flagged where !countedIssues.contains(sentence.text + "|" + issue.ignoreKey) {
                 countedIssues.insert(sentence.text + "|" + issue.ignoreKey)
                 issueCounts[issue.kind.rawValue, default: 0] += 1
-                if let word = Self.missedWord(in: issue) {
-                    wordMistakes[word, default: 0] += 1
-                }
             }
         }
         days[key] = day
     }
 
-    /// Counts one fixed error, and whether the learner typed the fix rather than applying it.
-    mutating func recordFix(byLearner: Bool) {
+    /// Counts one fixed error, whether the learner typed the fix rather than applying it,
+    /// and the corrected word behind it for the tricky words.
+    ///
+    /// Words are counted here rather than when an issue is flagged: a flag can come from a
+    /// half-typed word, and its suggested fix is only a guess, but a fix that now stands
+    /// in the text is a word the learner really meant.
+    mutating func recordFix(byLearner: Bool, issue: Issue? = nil) {
         errorsFixed += 1
         if byLearner {
             fixedByLearner += 1
+        }
+        if let issue, let word = Self.missedWord(in: issue) {
+            correctedWords[word, default: 0] += 1
         }
     }
 
@@ -118,9 +127,9 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     /// The most tricky words shown at once.
     static let trickyWordLimit = 12
 
-    /// Words missed at least once, most missed first, up to `trickyWordLimit`.
+    /// Words the learner has corrected at least once, most often first, up to `trickyWordLimit`.
     var trickyWords: [String] {
-        wordMistakes.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+        correctedWords.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
             .prefix(Self.trickyWordLimit)
             .map(\.key)
     }
@@ -139,7 +148,7 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
         switch issue.kind {
         case .gender:
             return replacement.split(separator: " ").last.map { $0.lowercased() }
-        case .agreement, .spelling, .accent:
+        case .agreement, .spelling, .accent, .participle:
             return replacement.lowercased()
         default:
             return nil
@@ -172,18 +181,18 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
 
 nonisolated extension LearnerStats {
 
-    /// Keeps the saved key "nounMistakes" from before the list covered every word kind.
+    /// Older files' "nounMistakes" counted every flagged word, half-typed ones and
+    /// guesses included, so it is left behind rather than decoded.
     private enum CodingKeys: String, CodingKey {
-        case days, issueCounts, errorsFixed, fixedByLearner, countedIssues
-        case wordMistakes = "nounMistakes"
+        case days, issueCounts, correctedWords, errorsFixed, fixedByLearner, countedIssues
     }
 
-    /// Decodes saved stats, including files written before `fixedByLearner` existed.
+    /// Decodes saved stats, including files written before `fixedByLearner` or `correctedWords` existed.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         days = try container.decode([String: Day].self, forKey: .days)
         issueCounts = try container.decode([String: Int].self, forKey: .issueCounts)
-        wordMistakes = try container.decode([String: Int].self, forKey: .wordMistakes)
+        correctedWords = try container.decodeIfPresent([String: Int].self, forKey: .correctedWords) ?? [:]
         errorsFixed = try container.decode(Int.self, forKey: .errorsFixed)
         fixedByLearner = try container.decodeIfPresent(Int.self, forKey: .fixedByLearner) ?? 0
         countedIssues = try container.decode(Set<String>.self, forKey: .countedIssues)

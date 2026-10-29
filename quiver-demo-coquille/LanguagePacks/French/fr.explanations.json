@@ -68,6 +68,26 @@
     "template": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans.",
     "example": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans."
   },
+  "auxiliaryChoice": {
+    "hint": "{verb} takes être in the past, not avoir.",
+    "template": "{verb} takes être in the past, not avoir: {fix}.",
+    "example": "aller takes être in the past, not avoir: je suis allé."
+  },
+  "participleWithAvoir": {
+    "hint": "With avoir, the past participle doesn't change to match the subject.",
+    "template": "With avoir, the past participle doesn't change to match the subject, so it stays {fix}.",
+    "example": "With avoir, the past participle doesn't change to match the subject, so it stays mangé."
+  },
+  "participleWithEtre": {
+    "hint": "With être, the past participle agrees with {subject}.",
+    "template": "With être, the past participle agrees with {subject}, so it's {fix}.",
+    "example": "With être, the past participle agrees with elles, so it's allées."
+  },
+  "generalArticle": {
+    "hint": "After {verb}, a noun for something in general takes le, la or les.",
+    "template": "After {verb}, a noun for something in general takes le, la or les: {fix}.",
+    "example": "After aimer, a noun for something in general takes le, la or les: le fromage."
+  },
   "idiom": {
     "hint": "This is correct, but a native would usually say it another way. {note}",
     "template": "This is correct. Here's how a native would usually say it: {suggestion}. {note}",

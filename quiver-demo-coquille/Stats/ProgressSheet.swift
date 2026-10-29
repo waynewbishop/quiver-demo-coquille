@@ -90,12 +90,16 @@ struct ProgressSheet: View {
         }
     }
 
-    /// Words the learner has missed, most often first.
+    /// Words the learner has corrected, most often first, or a line saying where they'll appear.
     @ViewBuilder
     private var trickyWords: some View {
         let words = stats.trickyWords
-        if !words.isEmpty {
-            section("TRICKY WORDS FOR YOU") {
+        section("TRICKY WORDS FOR YOU") {
+            if words.isEmpty {
+                Text("Words you correct will appear here.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), alignment: .leading)], alignment: .leading, spacing: 8) {
                     ForEach(words, id: \.self) { word in
                         Text(word)
@@ -106,7 +110,7 @@ struct ProgressSheet: View {
                             .background(.tint.opacity(0.12), in: Capsule())
                     }
                 }
-                Text("Words you've missed, most often first.")
+                Text("Words you've corrected, most often first.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

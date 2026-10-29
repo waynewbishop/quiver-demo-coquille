@@ -35,6 +35,8 @@ nonisolated struct LanguagePack: Sendable {
     let grammar: any Grammar
     /// The trained gender model, or `nil` when no `fr.gender-model.json` is bundled yet.
     let genderModel: EndingGenderModel?
+    /// The phrasebook, in the order `fr.phrases.json` lists it, or empty if that file won't load.
+    let phrases: [Phrase]
 
     /// Loads the French pack from the app bundle.
     ///
@@ -45,6 +47,11 @@ nonisolated struct LanguagePack: Sendable {
         let idioms = try JSONDecoder().decode([Idiom].self, from: Data(contentsOf: url(of: "fr.idioms", in: bundle)))
         let lookAlikes = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.lookalikes", in: bundle)))
         let wordChoices = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.wordchoice", in: bundle)))
+        // The phrasebook is extra content: if its file is missing or broken, the editor and
+        // linter still load, with an empty phrasebook. The tests require the bundled one to decode.
+        let phrases = bundle.url(forResource: "fr.phrases", withExtension: "json").flatMap {
+            try? JSONDecoder().decode([Phrase].self, from: Data(contentsOf: $0))
+        } ?? []
 
         // The model is optional: until it is trained, unknown nouns simply go unchecked.
         let genderModel = try bundle.url(forResource: "fr.gender-model", withExtension: "json").map {
@@ -65,7 +72,8 @@ nonisolated struct LanguagePack: Sendable {
                 explanations: explanations,
                 genderPredictor: genderModel
             ),
-            genderModel: genderModel
+            genderModel: genderModel,
+            phrases: phrases
         )
     }
 

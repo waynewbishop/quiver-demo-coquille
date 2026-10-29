@@ -30,6 +30,10 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case accentAfterVerb
     case accentAfterJusqu
     case accentAfterDans
+    case auxiliaryChoice
+    case participleWithAvoir
+    case participleWithEtre
+    case generalArticle
 
     /// The placeholders the rule fills for this key. A template may use any of them and no others.
     var placeholders: Set<String> {
@@ -45,6 +49,10 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .idiom: ["suggestion", "note"]
         case .accentAfterVerb: ["verb"]
         case .accentAfterJusqu, .accentAfterDans: []
+        case .auxiliaryChoice: ["verb", "fix"]
+        case .participleWithAvoir: ["fix"]
+        case .participleWithEtre: ["subject", "fix"]
+        case .generalArticle: ["verb", "fix"]
         }
     }
 }

@@ -46,6 +46,9 @@ nonisolated struct FrenchGrammar: Grammar {
         issues += articleIssues(in: tokens)
         issues += contractionIssues(in: tokens)
         issues += accentIssues(in: tokens)
+        issues += auxiliaryIssues(in: tokens)
+        issues += participleWithEtreIssues(in: tokens)
+        issues += generalArticleIssues(in: tokens)
         issues += agreementIssues(in: tokens)
         issues += phraseFixIssues(in: tokens, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
         issues += phraseFixIssues(in: tokens, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
@@ -290,6 +293,214 @@ nonisolated struct FrenchGrammar: Grammar {
         )
     }
 
+    // MARK: - Être or avoir
+
+    /// Verbs that always take être in the compound past. Verbs that also take avoir with an
+    /// object (sortir, monter, descendre, rentrer, passer, retourner, entrer) are left out,
+    /// since "j'ai sorti la poubelle" is correct French.
+    private static let etreVerbs: Set<String> = [
+        "aller", "venir", "revenir", "devenir", "parvenir", "intervenir", "survenir",
+        "arriver", "partir", "repartir", "naître", "mourir", "rester", "tomber", "retomber", "décéder"
+    ]
+
+    /// Verbs that take être or avoir depending on whether an object follows.
+    private static let eitherAuxiliaryVerbs: Set<String> = [
+        "sortir", "ressortir", "monter", "remonter", "descendre", "redescendre",
+        "rentrer", "passer", "repasser", "retourner", "entrer"
+    ]
+
+    /// Each present and imperfect form of avoir, with the form of être that replaces it.
+    private static let avoirToEtre: [String: String] = [
+        "ai": "suis", "as": "es", "a": "est", "avons": "sommes", "avez": "êtes", "ont": "sont",
+        "avais": "étais", "avait": "était", "avions": "étions", "aviez": "étiez", "avaient": "étaient"
+    ]
+
+    /// Subjects that settle a participle's gender and number after être. Je, tu, on and vous
+    /// don't, so the learner's own form is kept for them.
+    private static let subjectAgreement: [String: (gender: Gender, number: GrammaticalNumber)] = [
+        "il": (.masculine, .singular), "elle": (.feminine, .singular),
+        "ils": (.masculine, .plural), "elles": (.feminine, .plural), "nous": (.masculine, .plural)
+    ]
+
+    /// Flags avoir with a verb that takes être ("j'ai allé" → "je suis allé"), and a past
+    /// participle that agrees with the subject after avoir ("il a mangée" → "mangé").
+    ///
+    /// Only a subject pronoun directly followed by avoir and the participle is judged, so an
+    /// object pronoun in between ("il l'a mangée") or ne ("il n'a pas") keeps the rule silent.
+    private func auxiliaryIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        guard tokens.count >= 3 else { return issues }
+        for index in 0..<(tokens.count - 2) {
+            let subject = tokens[index]
+            let auxiliary = tokens[index + 1]
+            let participle = tokens[index + 2]
+            guard Self.subjectPronouns.contains(subject.normalized),
+                  subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
+                  let etre = Self.avoirToEtre[auxiliary.normalized],
+                  // "la pomme qu'il a mangée": the participle agrees with the object before it.
+                  index == 0 || !["que", "qu'"].contains(tokens[index - 1].normalized) else { continue }
+            let readings = lexicon.participles(participle.normalized)
+            guard let verb = readings.first?.verb, readings.allSatisfy({ $0.verb == verb }),
+                  !Self.eitherAuxiliaryVerbs.contains(verb) else { continue }
+
+            if Self.etreVerbs.contains(verb) {
+                var agreed = participle.text
+                if let agreement = Self.subjectAgreement[subject.normalized],
+                   let form = lexicon.participle(of: verb, gender: agreement.gender, number: agreement.number) {
+                    agreed = form
+                }
+                // "j'ai" becomes "je suis": the subject loses its elision.
+                let isElided = subject.normalized == "j'"
+                let subjectText = isElided ? matchingCase(of: subject.text, "je") : subject.text
+                let replacement = subjectText + (isElided ? " " : subject.gap) + etre + auxiliary.gap + agreed
+                issues.append(issue(
+                    .auxiliary, .error, from: index, through: index + 2, in: tokens,
+                    replacement: replacement,
+                    explanation: explanations.render(.auxiliaryChoice, ["verb": verb, "fix": replacement.lowercased()]),
+                    source: "Auxiliary rule · Lexique"
+                ))
+            } else if readings.allSatisfy({ $0.gender == .feminine || $0.number == .plural }),
+                      // "elle a vue sur la mer": vue is a noun there, not a participle.
+                      lexicon.noun(participle.normalized) == nil,
+                      let base = lexicon.participle(of: verb, gender: .masculine, number: .singular),
+                      base != participle.normalized {
+                issues.append(issue(
+                    .participle, .error, from: index + 2, through: index + 2, in: tokens,
+                    replacement: matchingCase(of: participle.text, base),
+                    explanation: explanations.render(.participleWithAvoir, ["fix": base]),
+                    source: "Participle rule · Lexique"
+                ))
+            }
+        }
+        return issues
+    }
+
+    // MARK: - Participle agreement with être
+
+    /// The present and imperfect forms of être.
+    private static let etreForms: Set<String> = [
+        "suis", "es", "est", "sommes", "êtes", "sont", "étais", "était", "étions", "étiez", "étaient"
+    ]
+
+    /// What each subject settles about a participle after être: its gender, its number, or
+    /// both. Vous can be one person or several, and "on est allés" is normal for "we", so
+    /// neither settles anything and both are left out.
+    private static let etreSubjectAgreement: [String: (gender: Gender?, number: GrammaticalNumber)] = [
+        "il": (.masculine, .singular), "elle": (.feminine, .singular),
+        "ils": (.masculine, .plural), "elles": (.feminine, .plural),
+        "je": (nil, .singular), "j'": (nil, .singular), "tu": (nil, .singular), "nous": (nil, .plural)
+    ]
+
+    /// Flags a past participle after être that doesn't agree with its subject pronoun:
+    /// "elles sont allé" → "allées", "elle est fatigué" → "fatiguée".
+    ///
+    /// Only a subject pronoun directly followed by être and the participle is judged, so
+    /// "elle s'est lavé les mains" and "elle n'est pas allée" are left alone. Where the
+    /// subject doesn't settle the gender (je, tu, nous), the learner's own gender is kept.
+    private func participleWithEtreIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        guard tokens.count >= 3 else { return issues }
+        for index in 0..<(tokens.count - 2) {
+            let subject = tokens[index]
+            let auxiliary = tokens[index + 1]
+            let participle = tokens[index + 2]
+            guard let agreement = Self.etreSubjectAgreement[subject.normalized],
+                  subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
+                  Self.etreForms.contains(auxiliary.normalized) else { continue }
+            let readings = lexicon.participles(participle.normalized)
+            guard let verb = readings.first?.verb, readings.allSatisfy({ $0.verb == verb }) else { continue }
+
+            // A form that serves the subject's gender and number is correct; nil serves both.
+            let serves = { (reading: Lexicon.Participle) in
+                (agreement.gender == nil || reading.gender == nil || reading.gender == agreement.gender)
+                    && (reading.number == nil || reading.number == agreement.number)
+            }
+            guard !readings.contains(where: serves) else { continue }
+
+            // Keep the learner's gender where the subject doesn't settle it.
+            let gender = agreement.gender ?? readings.first?.gender ?? .masculine
+            guard let fix = lexicon.participle(of: verb, gender: gender, number: agreement.number),
+                  fix != participle.normalized else { continue }
+            issues.append(issue(
+                .participle, .error, from: index + 2, through: index + 2, in: tokens,
+                replacement: matchingCase(of: participle.text, fix),
+                explanation: explanations.render(.participleWithEtre, ["subject": subject.normalized == "j'" ? "je" : subject.normalized, "fix": fix]),
+                source: "Participle rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Articles for things in general
+
+    /// Present forms of the verbs of liking, each with its infinitive.
+    private static let likingVerbs: [String: String] = [
+        "aime": "aimer", "aimes": "aimer", "aimons": "aimer", "aimez": "aimer", "aiment": "aimer",
+        "adore": "adorer", "adores": "adorer", "adorons": "adorer", "adorez": "adorer", "adorent": "adorer",
+        "déteste": "détester", "détestes": "détester", "détestons": "détester", "détestez": "détester", "détestent": "détester",
+        "préfère": "préférer", "préfères": "préférer", "préférons": "préférer", "préférez": "préférer", "préfèrent": "préférer"
+    ]
+
+    /// Words that can sit between the verb and its noun: "je n'aime pas le fromage", "j'aime bien le chocolat".
+    private static let likingAdverbs: Set<String> = [
+        "pas", "plus", "jamais", "beaucoup", "bien", "vraiment", "aussi", "surtout", "trop"
+    ]
+
+    /// Words Lexique also lists as nouns that follow these verbs without an article:
+    /// adverbs ("j'aime bien"), pronouns ("j'aime ça"), time words, and family names
+    /// used as names ("j'adore maman").
+    private static let bareAfterLiking: Set<String> = [
+        "bien", "mal", "pas", "plus", "moins", "mieux", "tout", "tous", "rien", "ça", "cela", "ceci",
+        "trop", "assez", "beaucoup", "vraiment", "aussi", "surtout", "encore", "toujours", "jamais",
+        "autant", "tellement", "demain", "hier", "aujourd'hui", "maintenant", "ici", "là", "maman", "papa"
+    ]
+
+    /// Flags a bare noun after aimer, adorer, détester or préférer, which French gives the
+    /// definite article for things in general: "j'aime fromage" → "le fromage".
+    ///
+    /// The article comes from the noun's gender and number in Lexique, so a noun that serves
+    /// both, a capitalised name ("j'aime Paris") and an infinitive ("j'aime nager") are skipped.
+    /// So are nouns starting with h, where le hockey and l'hôtel differ in a way Lexique doesn't record.
+    private func generalArticleIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let verbToken = tokens[index]
+            guard let verb = Self.likingVerbs[verbToken.normalized], verbToken.isAdjacentToNext,
+                  // "le fromage que j'aime est bon": the object came before, so the next word is the main verb.
+                  !tokens[max(0, index - 2)..<index].contains(where: { ["que", "qu'"].contains($0.normalized) }) else { continue }
+            // Look past one adverb: "je n'aime pas fromage", "j'aime bien chocolat".
+            var nounIndex = index + 1
+            if Self.likingAdverbs.contains(tokens[nounIndex].normalized), tokens[nounIndex].isAdjacentToNext, nounIndex + 1 < tokens.count {
+                nounIndex += 1
+            }
+            let noun = tokens[nounIndex]
+            let word = noun.normalized
+            guard !Self.bareAfterLiking.contains(word),
+                  noun.text.first?.isUppercase == false,
+                  word.first != "h",
+                  // "j'aime dîner": an infinitive, even one that is also a noun, takes no article.
+                  !isInfinitive(word),
+                  let entry = lexicon.noun(word) else { continue }
+
+            let article: String
+            switch (entry.gender, entry.number) {
+            case (_, .plural?): article = "les "
+            case (_, .singular?) where noun.startsWithVowel: article = "l'"
+            case (.masculine?, .singular?): article = "le "
+            case (.feminine?, .singular?): article = "la "
+            default: continue
+            }
+            let fix = article + noun.text
+            issues.append(issue(
+                .article, .error, from: nounIndex, through: nounIndex, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(.generalArticle, ["verb": verb, "fix": fix]),
+                source: "Article rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
     // MARK: - Adjective agreement
 
     /// Flags an adjective directly after its noun that doesn't agree with it, as in
@@ -396,21 +607,12 @@ nonisolated struct FrenchGrammar: Grammar {
         var issues: [Issue] = []
         for fix in fixes {
             let phrase = FrenchTokenizer.tokens(in: fix.phrase).map(\.normalized)
-            guard !phrase.isEmpty, tokens.count >= phrase.count else { continue }
-            for start in 0...(tokens.count - phrase.count) {
-                let window = tokens[start..<(start + phrase.count)]
-                let matches = zip(window, phrase).allSatisfy { $0.normalized == $1 }
-                let isContiguous = window.dropLast().allSatisfy(\.isAdjacentToNext)
-                guard matches, isContiguous else { continue }
-                let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
-                let end = start + phrase.count
-                let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
-                // "il cava" is the verb caver, which is correct French.
-                if let before, fix.unlessAfter.contains(before) { continue }
-                // "a fait une décision" takes pris; "il fait une décision" takes prend.
-                if let onlyAfter = fix.onlyAfter, !onlyAfter.contains(before ?? "") { continue }
-                // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
-                if let after, fix.unlessBefore?.contains(after) == true { continue }
+            let starts = occurrences(
+                of: phrase, in: tokens,
+                unlessAfter: fix.unlessAfter, onlyAfter: fix.onlyAfter,
+                unlessBefore: fix.unlessBefore, onlyAtClauseEnd: fix.onlyAtClauseEnd == true
+            )
+            for start in starts {
                 issues.append(issue(
                     kind, .error, from: start, through: start + phrase.count - 1, in: tokens,
                     replacement: matchingCase(of: tokens[start].text, fix.fix),
@@ -422,6 +624,36 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
+    /// Returns where `phrase` starts in `tokens`, with its words adjacent, skipping
+    /// matches whose neighbouring words make it correct French.
+    private func occurrences(
+        of phrase: [String],
+        in tokens: [Token],
+        unlessAfter: [String]?,
+        onlyAfter: [String]?,
+        unlessBefore: [String]?,
+        onlyAtClauseEnd: Bool
+    ) -> [Int] {
+        guard !phrase.isEmpty, tokens.count >= phrase.count else { return [] }
+        return (0...(tokens.count - phrase.count)).filter { start in
+            let end = start + phrase.count
+            let window = tokens[start..<end]
+            guard zip(window, phrase).allSatisfy({ $0.normalized == $1 }),
+                  window.dropLast().allSatisfy(\.isAdjacentToNext) else { return false }
+            let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
+            let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
+            // "il cava" is the verb caver, which is correct French.
+            if let before, unlessAfter?.contains(before) == true { return false }
+            // "a fait une décision" takes pris; "il fait une décision" takes prend.
+            if let onlyAfter, !onlyAfter.contains(before ?? "") { return false }
+            // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
+            if let after, unlessBefore?.contains(after) == true { return false }
+            // "et tu ?" is wrong; "et tu vas bien" is correct French.
+            if onlyAtClauseEnd, end < tokens.count, !tokens[end - 1].endsClause { return false }
+            return true
+        }
+    }
+
     // MARK: - Idioms
 
     /// Suggests the more natural wording for phrases in the idiom list.
@@ -429,12 +661,12 @@ nonisolated struct FrenchGrammar: Grammar {
         var issues: [Issue] = []
         for idiom in idioms {
             let phrase = FrenchTokenizer.tokens(in: idiom.phrase).map(\.normalized)
-            guard !phrase.isEmpty, tokens.count >= phrase.count else { continue }
-            for start in 0...(tokens.count - phrase.count) {
-                let window = tokens[start..<(start + phrase.count)]
-                let matches = zip(window, phrase).allSatisfy { $0.normalized == $1 }
-                let isContiguous = window.dropLast().allSatisfy(\.isAdjacentToNext)
-                guard matches, isContiguous else { continue }
+            let starts = occurrences(
+                of: phrase, in: tokens,
+                unlessAfter: idiom.unlessAfter, onlyAfter: idiom.onlyAfter,
+                unlessBefore: idiom.unlessBefore, onlyAtClauseEnd: false
+            )
+            for start in starts {
                 issues.append(issue(
                     .idiom, .suggestion, from: start, through: start + phrase.count - 1, in: tokens,
                     replacement: matchingCase(of: tokens[start].text, idiom.suggestion),
