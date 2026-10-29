@@ -61,7 +61,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
-| Idioms | bon pour ta santé → bon pour la santé | Suggestion | Idiom list |
+| Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
 
 Errors block play and English; warnings and suggestions never do, and
@@ -144,7 +144,8 @@ Everything is plain folders in one Xcode project:
 - `Fonts/` — IBM Plex Sans and Mono, registered at launch, so there's
   no Info.plist entry.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
-  Lexique table.
+  Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
+  `Tools/fr.adjective-overrides.json`.
 - `quiver-demo-coquilleTests/` — 44 XCTest cases, including the
   false-positive traps above.
 
@@ -162,6 +163,20 @@ carries the same license. To rebuild it:
 swift Tools/BuildLexicon.swift /path/to/Lexique383.tsv \
   quiver-demo-coquille/LanguagePacks/French/fr.lexicon.json
 ```
+
+Lexique leaves the gender blank on some common nouns, including maison,
+main and voiture, which would otherwise be stored as both genders and
+never checked. `Tools/fr.noun-gender-overrides.json` gives 36 of them
+their one everyday gender, hand-checked, and the build applies it to
+each noun and its regular plural. Nouns that really take either gender,
+such as enfant or livre, stay out of the list.
+
+Lexique also splits some adjectives across entries (nouveau and
+nouvelle, mou and molle) and leaves gaps in others (globales, animaux).
+Agreement only checks a form that belongs to one adjective, so those
+went unchecked. `Tools/fr.adjective-overrides.json` completes 15 of them
+and removes 8 partial or stray entries; the build refuses a removal
+that would drop a spelling the app knows.
 
 The fonts are [IBM Plex](https://github.com/IBM/plex), licensed under the
 SIL Open Font License 1.1; the license ships beside them as

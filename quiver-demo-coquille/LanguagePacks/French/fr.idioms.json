@@ -1,15 +1,5 @@
 [
   {
-    "phrase": "bon pour ta santé",
-    "suggestion": "bon pour la santé",
-    "note": "For health in general, French uses the definite article."
-  },
-  {
-    "phrase": "bon pour votre santé",
-    "suggestion": "bon pour la santé",
-    "note": "For health in general, French uses the definite article."
-  },
-  {
     "phrase": "fait du sens",
     "suggestion": "a du sens",
     "note": "Faire du sens copies the English “make sense”; French usually says avoir du sens."
@@ -17,46 +7,41 @@
   {
     "phrase": "je suis excité",
     "suggestion": "j'ai hâte",
-    "note": "Je suis excité can suggest overexcitement or arousal; for looking forward to something, French says j'ai hâte."
+    "note": "Je suis excité can suggest overexcitement or arousal. If you mean you're looking forward to something, French says j'ai hâte."
   },
   {
     "phrase": "je suis froid",
     "suggestion": "j'ai froid",
-    "note": "Je suis froid describes a cold person or a cold body; for feeling cold, French says avoir froid."
+    "note": "Je suis froid describes a cold person or a cold body. If you mean you feel cold, French says avoir froid."
   },
   {
     "phrase": "je suis froide",
     "suggestion": "j'ai froid",
-    "note": "Je suis froid describes a cold person or a cold body; for feeling cold, French says avoir froid."
+    "note": "Je suis froid describes a cold person or a cold body. If you mean you feel cold, French says avoir froid."
   },
   {
     "phrase": "je suis chaud",
     "suggestion": "j'ai chaud",
-    "note": "Je suis chaud is slang for being up for something and can sound suggestive; for feeling warm, French says avoir chaud."
+    "note": "Je suis chaud is slang for being up for something and can sound suggestive. If you mean you feel warm, French says avoir chaud."
   },
   {
     "phrase": "je suis chaude",
     "suggestion": "j'ai chaud",
-    "note": "Je suis chaud is slang for being up for something and can sound suggestive; for feeling warm, French says avoir chaud."
+    "note": "Je suis chaud is slang for being up for something and can sound suggestive. If you mean you feel warm, French says avoir chaud."
   },
   {
     "phrase": "je suis fini",
     "suggestion": "j'ai fini",
-    "note": "Je suis fini means being done for; for finishing something, French says j'ai fini."
+    "note": "Je suis fini means being done for. If you mean you've finished something, French says j'ai fini."
   },
   {
     "phrase": "je suis finie",
     "suggestion": "j'ai fini",
-    "note": "Je suis fini means being done for; for finishing something, French says j'ai fini."
+    "note": "Je suis fini means being done for. If you mean you've finished something, French says j'ai fini."
   },
   {
     "phrase": "j'ai réalisé que",
     "suggestion": "je me suis rendu compte que",
-    "note": "Réaliser in the sense of realize is borrowed from English; careful writing prefers se rendre compte."
-  },
-  {
-    "phrase": "c'est très délicieux",
-    "suggestion": "c'est délicieux",
-    "note": "Délicieux is already as strong as it gets, so très sounds off."
+    "note": "Réaliser in the sense of realize is common, but some style guides call it an English borrowing. Careful writing often prefers se rendre compte."
   }
 ]

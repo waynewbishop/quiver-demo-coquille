@@ -39,6 +39,11 @@ nonisolated struct PhraseFix: Codable, Equatable, Sendable {
     let fix: String
     /// Words after which the phrase is correct French, so the rule stays silent, as in "il cava".
     let unlessAfter: [String]
+    /// Words that must come right before the phrase, as in "a fait une décision", where the
+    /// fix depends on the tense. `nil` means the phrase applies after any word.
+    var onlyAfter: [String]? = nil
+    /// Words after which the phrase is correct French, so the rule stays silent, as in "cava un trou".
+    var unlessBefore: [String]? = nil
     /// Why the phrase is wrong, without the answer.
     let note: String
 }

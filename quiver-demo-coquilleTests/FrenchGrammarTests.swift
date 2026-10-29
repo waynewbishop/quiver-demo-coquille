@@ -127,6 +127,106 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Il dort plus que moi."), [])
     }
 
+    // MARK: - The accent on à
+
+    // Where a can't be the verb avoir, it's the preposition à.
+    func testMissingAccentOnA() throws {
+        XCTAssertEqual(try fixes("Je veux faire du vélo dans a la maison."), ["dans a → à"])
+        XCTAssertEqual(try fixes("Je vais a Paris."), ["a → à"])
+        XCTAssertEqual(try fixes("Nous restons jusqu'a demain."), ["a → à"])
+        XCTAssertEqual(try grammar().check("Je vais a Paris.").first?.kind, .accent)
+    }
+
+    // With a subject before it, a is the verb avoir, which is correct French.
+    func testAWithASubjectIsTheVerb() throws {
+        XCTAssertEqual(try fixes("Il a la maison."), [])
+        XCTAssertEqual(try fixes("Il y a un chat."), [])
+        XCTAssertEqual(try fixes("Ce qu'il dit a du sens."), [])
+        XCTAssertEqual(try fixes("Je vais à Paris."), [])
+    }
+
+    // MARK: - Regression corpora
+
+    /// Correct French that must raise nothing. Add every false positive found here.
+    private static let correctFrench = [
+        // Caver, "to dig," in the passé simple.
+        "Pierre cava un trou.",
+        "Il cava un trou.",
+        // A relative clause is the subject of avoir.
+        "Ce qu'il dit a du sens.",
+        "Le livre qu'il lit a disparu.",
+        "Tout ce qu'elle veut a un prix.",
+        // A as avoir after a subject or a pronoun.
+        "Il a la maison.",
+        "Il y a un chat.",
+        "Elle en a deux.",
+        // Prendre une décision in every tense the rules know.
+        "J'ai pris une décision.",
+        "Il prend une décision.",
+        "Nous prenons une décision.",
+        "Il n'a jamais pris une décision.",
+        // Nouns Lexique leaves blank that really take either gender.
+        "Une enfant joue.",
+        "Le livre coûte une livre.",
+        // An adjective standing in for a noun agrees with its own article.
+        "Tu veux la bleue ou la rouge?",
+        "Je prends la gauche.",
+        // Hand-checked genders, used correctly.
+        "Une maison, une voiture et le plat.",
+        // Adjectives Lexique splits or leaves incomplete, now whole.
+        "Une maison nouvelle.",
+        "Des filles jolies.",
+        "Des chaises molles.",
+        "Des questions globales.",
+        // Natural French the idiom list once questioned.
+        "C'est bon pour ta santé.",
+        "C'est bon pour votre santé.",
+        "C'est très délicieux."
+    ]
+
+    /// Wrong French, each with the one fix the rules must offer.
+    private static let wrongFrench: [(text: String, fix: String)] = [
+        ("Il fait une décision.", "fait une décision → prend une décision"),
+        ("J'ai fait une décision.", "fait une décision → pris une décision"),
+        ("Elle avait fait une décision.", "fait une décision → pris une décision"),
+        ("Je fais une décision.", "fais une décision → prends une décision"),
+        ("Ils font une décision.", "font une décision → prennent une décision"),
+        ("Comment cava?", "cava → ça va"),
+        ("Je pense qu'il va a Paris.", "a → à"),
+        ("Je sais qu'elle va a la plage.", "a → à"),
+        // Hand-checked genders for nouns Lexique leaves blank.
+        ("Il a un maison.", "un maison → une maison"),
+        ("Le voiture est rouge.", "Le voiture → La voiture"),
+        ("Il lève le main.", "le main → la main"),
+        ("Une espace libre.", "Une espace → Un espace"),
+        // Adjectives Lexique splits or leaves incomplete.
+        ("Une maison nouveau.", "nouveau → nouvelle"),
+        ("Des filles jolie.", "jolie → jolies"),
+        ("Une chaise mou.", "mou → molle"),
+        ("Des questions global.", "global → globales"),
+        ("Des filles impoli.", "impoli → impolies")
+    ]
+
+    // Every sentence in the correct-French corpus passes.
+    func testCorrectFrenchCorpus() throws {
+        for text in Self.correctFrench {
+            XCTAssertEqual(try fixes(text), [], text)
+        }
+    }
+
+    // Every sentence in the wrong-French corpus gets its fix, and applying it leaves nothing to flag.
+    func testWrongFrenchCorpus() throws {
+        for (text, expected) in Self.wrongFrench {
+            let issues = try grammar().check(text)
+            XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, [expected], text)
+            guard let issue = issues.first, let replacement = issue.replacement else { continue }
+            let start = text.index(text.startIndex, offsetBy: issue.offset)
+            let end = text.index(start, offsetBy: issue.length)
+            let fixed = text.replacingCharacters(in: start..<end, with: replacement)
+            XCTAssertEqual(try fixes(fixed), [], fixed)
+        }
+    }
+
     // MARK: - Look-alikes
 
     // Words that are each French but wrong together are errors, fixed to ça va.
@@ -173,14 +273,15 @@ final class FrenchGrammarTests: XCTestCase {
         let issues = try grammar().check("Je suis froid.")
         XCTAssertEqual(issues.map(\.replacement), ["J'ai froid"])
         XCTAssertEqual(issues.first?.severity, .suggestion)
-        XCTAssertEqual(try fixes("C'est très délicieux."), ["C'est très délicieux → C'est délicieux"])
+        // The note names the meaning the suggestion is for, rather than calling the original wrong.
+        XCTAssertTrue(issues.first?.reason.contains("If you mean you feel cold") == true)
         XCTAssertEqual(try fixes("Il fait froid."), [])
     }
 
     // A correct but unidiomatic phrase gets a suggestion, never an error.
     func testIdiomSuggestion() throws {
-        let issues = try grammar().check("C'est bon pour ta santé.")
-        XCTAssertEqual(issues.map(\.replacement), ["bon pour la santé"])
+        let issues = try grammar().check("Ça fait du sens.")
+        XCTAssertEqual(issues.map(\.replacement), ["a du sens"])
         XCTAssertEqual(issues.first?.severity, .suggestion)
     }
 

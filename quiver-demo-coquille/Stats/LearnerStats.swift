@@ -14,7 +14,7 @@
 import Foundation
 
 /// The learner's history: which sentences they checked, what the linter flagged,
-/// and the nouns they keep getting wrong. Stored only on the device.
+/// and the words they keep getting wrong. Stored only on the device.
 nonisolated struct LearnerStats: Codable, Equatable, Sendable {
 
     /// The sentences checked on one day.
@@ -27,8 +27,9 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     var days: [String: Day] = [:]
     /// Issue kind raw value → times flagged.
     var issueCounts: [String: Int] = [:]
-    /// Noun → times its gender was wrong.
-    var nounMistakes: [String: Int] = [:]
+    /// Word → times the learner got it wrong: a noun's gender, an adjective's agreement,
+    /// its spelling, or a missing accent.
+    var wordMistakes: [String: Int] = [:]
     var errorsFixed = 0
     /// Errors the learner fixed by typing, out of `errorsFixed`.
     var fixedByLearner = 0
@@ -54,8 +55,8 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
             for issue in flagged where !countedIssues.contains(sentence.text + "|" + issue.ignoreKey) {
                 countedIssues.insert(sentence.text + "|" + issue.ignoreKey)
                 issueCounts[issue.kind.rawValue, default: 0] += 1
-                if issue.kind == .gender, let noun = issue.original.split(separator: " ").last {
-                    nounMistakes[noun.lowercased(), default: 0] += 1
+                if let word = Self.missedWord(in: issue) {
+                    wordMistakes[word, default: 0] += 1
                 }
             }
         }
@@ -114,14 +115,36 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
             .sorted { $0.count != $1.count ? $0.count > $1.count : $0.kind.rawValue < $1.kind.rawValue }
     }
 
-    /// Nouns missed more than once, most missed first.
+    /// The most tricky words shown at once.
+    static let trickyWordLimit = 12
+
+    /// Words missed at least once, most missed first, up to `trickyWordLimit`.
     var trickyWords: [String] {
-        nounMistakes.filter { $0.value > 1 }
-            .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+        wordMistakes.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+            .prefix(Self.trickyWordLimit)
             .map(\.key)
     }
 
     // MARK: - Helpers
+
+    /// Returns the correct word behind a word-level mistake, such as "fromage" for
+    /// "une fromage", "gentille" for "gentile", or "à" for "a", or `nil` for other kinds.
+    ///
+    /// A spelling fix that only adds an accent, such as "tete" to "tête", counts here too.
+    ///
+    /// The correct spelling is kept rather than the typo, so "gentile" and "gentil"
+    /// both count toward "gentille".
+    static func missedWord(in issue: Issue) -> String? {
+        guard let replacement = issue.replacement else { return nil }
+        switch issue.kind {
+        case .gender:
+            return replacement.split(separator: " ").last.map { $0.lowercased() }
+        case .agreement, .spelling, .accent:
+            return replacement.lowercased()
+        default:
+            return nil
+        }
+    }
 
     /// Returns the calendar day of `date` as "yyyy-MM-dd".
     static func dayKey(for date: Date, calendar: Calendar) -> String {
@@ -149,12 +172,18 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
 
 nonisolated extension LearnerStats {
 
+    /// Keeps the saved key "nounMistakes" from before the list covered every word kind.
+    private enum CodingKeys: String, CodingKey {
+        case days, issueCounts, errorsFixed, fixedByLearner, countedIssues
+        case wordMistakes = "nounMistakes"
+    }
+
     /// Decodes saved stats, including files written before `fixedByLearner` existed.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         days = try container.decode([String: Day].self, forKey: .days)
         issueCounts = try container.decode([String: Int].self, forKey: .issueCounts)
-        nounMistakes = try container.decode([String: Int].self, forKey: .nounMistakes)
+        wordMistakes = try container.decode([String: Int].self, forKey: .wordMistakes)
         errorsFixed = try container.decode(Int.self, forKey: .errorsFixed)
         fixedByLearner = try container.decodeIfPresent(Int.self, forKey: .fixedByLearner) ?? 0
         countedIssues = try container.decode(Set<String>.self, forKey: .countedIssues)

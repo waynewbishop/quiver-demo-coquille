@@ -1,0 +1,21 @@
+{
+  "note": "Adjectives Lexique 3.83 splits across lemmas or leaves incomplete. forms sets all four forms (masculine singular, feminine singular, masculine plural, feminine plural); remove drops a partial or stray lemma whose forms belong to a complete one, so each form maps to a single adjective. The prenominal forms bel, nouvel, vieil, fol and mol stay as their own lemmas.",
+  "forms": {
+    "nouveau": ["nouveau", "nouvelle", "nouveaux", "nouvelles"],
+    "mou": ["mou", "molle", "mous", "molles"],
+    "continu": ["continu", "continue", "continus", "continues"],
+    "global": ["global", "globale", "globaux", "globales"],
+    "animal": ["animal", "animale", "animaux", "animales"],
+    "impoli": ["impoli", "impolie", "impolis", "impolies"],
+    "brisé": ["brisé", "brisée", "brisés", "brisées"],
+    "soûl": ["soûl", "soûle", "soûls", "soûles"],
+    "affirmatif": ["affirmatif", "affirmative", "affirmatifs", "affirmatives"],
+    "jumeau": ["jumeau", "jumelle", "jumeaux", "jumelles"],
+    "lesbien": ["lesbien", "lesbienne", "lesbiens", "lesbiennes"],
+    "miséricordieux": ["miséricordieux", "miséricordieuse", "miséricordieux", "miséricordieuses"],
+    "conditionnel": ["conditionnel", "conditionnelle", "conditionnels", "conditionnelles"],
+    "adjoint": ["adjoint", "adjointe", "adjoints", "adjointes"],
+    "faisable": ["faisable", "faisable", "faisables", "faisables"]
+  },
+  "remove": ["nouvelle", "mou,mol", "continue", "jolie", "fausses", "seconder", "enleve", "vénére"]
+}

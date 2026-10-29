@@ -48,15 +48,35 @@ final class LearnerStatsTests: XCTestCase {
             stats.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
         }
         XCTAssertEqual(stats.issueCounts[IssueKind.gender.rawValue], 1)
-        XCTAssertEqual(stats.trickyWords, [])
+        XCTAssertEqual(stats.wordMistakes["fromage"], 1)
     }
 
-    // A noun missed in two different sentences becomes a tricky word.
+    // A missed noun becomes a tricky word, and the most missed words come first.
     func testTrickyWords() throws {
         var stats = LearnerStats()
         stats.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
-        stats.record(text: "Oh une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
         XCTAssertEqual(stats.trickyWords, ["fromage"])
+
+        let spellingIssue = Issue(
+            kind: .spelling, severity: .error, offset: 4, length: 7,
+            original: "gentile", replacement: "gentille", reason: "", hint: "", source: ""
+        )
+        stats.record(text: "Oh une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
+        stats.record(text: "Il gentile.", issues: [spellingIssue], on: try day(27), calendar: calendar)
+        XCTAssertEqual(stats.trickyWords, ["fromage", "gentille"])
+    }
+
+    // Spelling, agreement and accent misses count under the correct word; look-alikes don't count.
+    func testMissedWordKinds() {
+        let agreement = Issue(kind: .agreement, severity: .error, offset: 0, length: 5, original: "rouge", replacement: "rouges", reason: "", hint: "", source: "")
+        let unknown = Issue(kind: .spelling, severity: .warning, offset: 0, length: 4, original: "Ahdo", replacement: nil, reason: "", hint: "", source: "")
+        let lookAlike = Issue(kind: .lookAlike, severity: .error, offset: 0, length: 4, original: "cava", replacement: "ça va", reason: "", hint: "", source: "")
+        XCTAssertEqual(LearnerStats.missedWord(in: genderIssue), "fromage")
+        XCTAssertEqual(LearnerStats.missedWord(in: agreement), "rouges")
+        let accent = Issue(kind: .accent, severity: .error, offset: 0, length: 1, original: "a", replacement: "à", reason: "", hint: "", source: "")
+        XCTAssertEqual(LearnerStats.missedWord(in: accent), "à")
+        XCTAssertNil(LearnerStats.missedWord(in: unknown))
+        XCTAssertNil(LearnerStats.missedWord(in: lookAlike))
     }
 
     // The streak counts back from today, or from yesterday before today's first sentence.
@@ -77,5 +97,13 @@ final class LearnerStatsTests: XCTestCase {
         XCTAssertEqual(stats.errorsFixed, 3)
         XCTAssertEqual(stats.fixedByLearner, 0)
         XCTAssertEqual(stats.issueCounts["gender"], 2)
+    }
+
+    // Saved tricky words survive the rename from nouns to words.
+    func testDecodesSavedNounMistakes() throws {
+        let json = #"{"days":{},"issueCounts":{},"nounMistakes":{"fromage":2},"errorsFixed":0,"countedIssues":[]}"#
+        let stats = try JSONDecoder().decode(LearnerStats.self, from: Data(json.utf8))
+        XCTAssertEqual(stats.trickyWords, ["fromage"])
+        XCTAssertTrue(try String(decoding: JSONEncoder().encode(stats), as: UTF8.self).contains("nounMistakes"))
     }
 }

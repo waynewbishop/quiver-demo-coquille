@@ -181,6 +181,17 @@ struct EditorScreen: View {
         model.jumpToFirstError()
     }
 
+    /// The placeholder's top offset, matching where the editor draws its first line.
+    ///
+    /// The editor is padded 12 points; UITextView adds an 8-point top inset, NSTextView adds none.
+    private var placeholderTopInset: CGFloat {
+        #if os(macOS)
+        12
+        #else
+        20
+        #endif
+    }
+
     /// The French editor, with a placeholder when it is empty.
     private var editor: some View {
         TextEditor(text: $model.text, selection: $model.selection)
@@ -189,6 +200,8 @@ struct EditorScreen: View {
             .scrollContentBackground(.hidden)
             // The learner's own mistakes are the point: never let the keyboard fix them.
             .autocorrectionDisabled()
+            // Pasted text keeps only Coquille's own styling, never the source's fonts or colors.
+            .attributedTextFormattingDefinition(EditorAttributes.self)
             .focused($editorIsFocused)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -205,7 +218,7 @@ struct EditorScreen: View {
                         }
                     }
                     .padding(.horizontal, 25)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, placeholderTopInset)
                 }
             }
             .onChange(of: model.text) { model.textDidChange() }
@@ -213,6 +226,12 @@ struct EditorScreen: View {
             .onChange(of: model.narrator.spokenRange) { model.spokenWordDidChange() }
             .onChange(of: model.narrator.state) { model.spokenWordDidChange() }
     }
+}
+
+/// The only attributes the French editor accepts: the issue underlines and the highlights.
+struct EditorAttributes: AttributeScope {
+    let underlineStyle: AttributeScopes.SwiftUIAttributes.UnderlineStyleAttribute
+    let backgroundColor: AttributeScopes.SwiftUIAttributes.BackgroundColorAttribute
 }
 
 /// A pane's small uppercase label, such as "FRANÇAIS" or "ENGLISH · ON-DEVICE".

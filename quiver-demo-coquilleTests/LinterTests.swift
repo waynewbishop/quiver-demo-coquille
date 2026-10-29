@@ -131,6 +131,27 @@ final class LinterTests: XCTestCase {
         XCTAssertThrowsError(try ExplanationTemplates(data: data))
     }
 
+    // A template naming a value its rule never fills fails at load, rather than showing "{nuon}".
+    func testTemplatesRejectUnknownPlaceholders() throws {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "fr.explanations", withExtension: "json"))
+        var entries = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: [String: String]])
+        entries["articleGender"]?["template"] = "{nuon} is {gender}."
+        let data = try JSONSerialization.data(withJSONObject: entries)
+        XCTAssertThrowsError(try ExplanationTemplates(data: data)) { error in
+            XCTAssertEqual(error as? ExplanationTemplates.UnknownPlaceholder, .init(key: "articleGender", placeholder: "nuon"))
+        }
+    }
+
+    // Every bundled template renders with its declared values and leaves no placeholder behind.
+    func testBundledTemplatesFillCompletely() throws {
+        let templates = try XCTUnwrap(try? LanguagePack.french()).explanations
+        for key in ExplanationKey.allCases {
+            let values = Dictionary(uniqueKeysWithValues: key.placeholders.map { ($0, "x") })
+            let explanation = templates.render(key, values)
+            XCTAssertTrue(ExplanationTemplates.placeholders(in: explanation.reason + explanation.hint).isEmpty, key.rawValue)
+        }
+    }
+
     // MARK: - Gender model plumbing
 
     /// Trains a two-ending model: -tion feminine, -ment masculine.

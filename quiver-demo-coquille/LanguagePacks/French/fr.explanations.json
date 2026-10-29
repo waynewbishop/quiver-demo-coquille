@@ -53,9 +53,24 @@
     "template": "In writing, “no longer” is ne… plus: {corrected}. Without ne, this reads as “more.”",
     "example": "In writing, “no longer” is ne… plus: il ne dort plus. Without ne, this reads as “more.”"
   },
+  "accentAfterVerb": {
+    "hint": "a without an accent is the verb avoir, which can't follow another verb like {verb}.",
+    "template": "a without an accent is the verb avoir, which can't follow another verb like {verb}. Here it's the preposition à.",
+    "example": "a without an accent is the verb avoir, which can't follow another verb like vais. Here it's the preposition à."
+  },
+  "accentAfterJusqu": {
+    "hint": "a without an accent is the verb avoir, which never follows jusqu'.",
+    "template": "a without an accent is the verb avoir. After jusqu', it's always the preposition à.",
+    "example": "a without an accent is the verb avoir. After jusqu', it's always the preposition à."
+  },
+  "accentAfterDans": {
+    "hint": "a without an accent is the verb avoir, which can't follow dans.",
+    "template": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans.",
+    "example": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans."
+  },
   "idiom": {
     "hint": "This is correct, but a native would usually say it another way. {note}",
     "template": "This is correct. Here's how a native would usually say it: {suggestion}. {note}",
-    "example": "This is correct. Here's how a native would usually say it: bon pour la santé. For health in general, French uses the definite article."
+    "example": "This is correct. Here's how a native would usually say it: a du sens. Faire du sens copies the English “make sense”; French usually says avoir du sens."
   }
 }

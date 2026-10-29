@@ -69,6 +69,37 @@
     "phrase": "fait une décision",
     "fix": "pris une décision",
     "unlessAfter": [],
+    "onlyAfter": ["ai", "as", "a", "avons", "avez", "ont", "avais", "avait", "avions", "aviez", "avaient", "aurais", "aurait", "aurions", "auriez", "auraient", "avoir", "ayant"],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "fais une décision",
+    "fix": "prends une décision",
+    "unlessAfter": [],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "fait une décision",
+    "fix": "prend une décision",
+    "unlessAfter": ["ai", "as", "a", "avons", "avez", "ont", "avais", "avait", "avions", "aviez", "avaient", "aurais", "aurait", "aurions", "auriez", "auraient", "avoir", "ayant", "jamais", "déjà", "pas", "bien"],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "faisons une décision",
+    "fix": "prenons une décision",
+    "unlessAfter": [],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "faites une décision",
+    "fix": "prenez une décision",
+    "unlessAfter": [],
+    "note": "French takes a decision, with prendre, rather than making one."
+  },
+  {
+    "phrase": "font une décision",
+    "fix": "prennent une décision",
+    "unlessAfter": [],
     "note": "French takes a decision, with prendre, rather than making one."
   },
   {

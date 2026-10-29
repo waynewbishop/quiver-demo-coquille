@@ -45,6 +45,7 @@ nonisolated struct FrenchGrammar: Grammar {
         var issues: [Issue] = []
         issues += articleIssues(in: tokens)
         issues += contractionIssues(in: tokens)
+        issues += accentIssues(in: tokens)
         issues += agreementIssues(in: tokens)
         issues += phraseFixIssues(in: tokens, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
         issues += phraseFixIssues(in: tokens, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
@@ -75,6 +76,17 @@ nonisolated struct FrenchGrammar: Grammar {
     /// Subject pronouns that can open "il dort plus".
     private static let subjectPronouns: Set<String> = [
         "je", "j'", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"
+    ]
+
+    /// Words that sit between a subject and its verb, as in "il y a", "elle l'a" or "il n'a".
+    private static let preverbalWords: Set<String> = [
+        "y", "en", "le", "la", "les", "l'", "lui", "leur", "me", "m'", "te", "t'", "se", "s'", "nous", "vous",
+        "ne", "n'"
+    ]
+
+    /// Pronouns that a relative que can follow, as in "ce qu'il dit".
+    private static let relativeAntecedents: Set<String> = [
+        "ce", "c'", "celui", "celle", "ceux", "celles", "tout"
     ]
 
     /// Preposition + article pairs that French always contracts.
@@ -112,6 +124,8 @@ nonisolated struct FrenchGrammar: Grammar {
             if isPronounPosition(of: tokens, articleAt: index) { continue }
             // "une petit maison": the word after the article is an adjective before the real noun.
             if modifiesFollowingNoun(tokens, at: index + 1) { continue }
+            // "la rouge", as in "la bleue ou la rouge": an adjective that agrees stands in for a noun.
+            if isAgreeingAdjective(noun.normalized, gender: marked.gender) { continue }
 
             let word = noun.normalized
             let expected = { (gender: Gender) in
@@ -167,6 +181,13 @@ nonisolated struct FrenchGrammar: Grammar {
         lexicon.isVerb(word) && ["er", "ir", "re", "oir"].contains { word.hasSuffix($0) }
     }
 
+    /// Whether a word is a singular adjective form of `gender`, such as rouge for la.
+    private func isAgreeingAdjective(_ word: String, gender: Gender) -> Bool {
+        lexicon.adjectiveLemmas(of: word).contains { lemma in
+            lexicon.readings(of: word, lemma: lemma).contains { $0.gender == gender && $0.number == .singular }
+        }
+    }
+
     /// Whether the word at `index` is an adjective directly followed by a known noun.
     private func modifiesFollowingNoun(_ tokens: [Token], at index: Int) -> Bool {
         guard index + 1 < tokens.count, tokens[index].isAdjacentToNext else { return false }
@@ -206,6 +227,67 @@ nonisolated struct FrenchGrammar: Grammar {
             ))
         }
         return issues
+    }
+
+    // MARK: - The accent on à
+
+    /// Flags a, the verb avoir, where only the preposition à fits: after a subject and
+    /// its verb ("je vais a Paris"), after jusqu', and after dans ("dans a la maison").
+    ///
+    /// Anywhere else a can have a subject, as in "il a la maison", so the rule stays silent.
+    private func accentIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropFirst() where tokens[index].normalized == "a" {
+            let previous = tokens[index - 1]
+            guard previous.isAdjacentToNext else { continue }
+
+            if previous.normalized == "jusqu'" {
+                issues.append(accentIssue(from: index, through: index, in: tokens, explanation: .accentAfterJusqu))
+            } else if previous.normalized == "dans" {
+                // Two prepositions can't share one noun, so à replaces dans rather than joining it.
+                issues.append(accentIssue(from: index - 1, through: index, in: tokens, explanation: .accentAfterDans))
+            } else if index >= 2, lexicon.isVerb(previous.normalized),
+                      // "il y a", "il l'a", "il n'a": a pronoun or ne before a makes it avoir.
+                      !Self.preverbalWords.contains(previous.normalized),
+                      tokens[index - 2].isAdjacentToNext,
+                      Self.subjectPronouns.contains(tokens[index - 2].normalized),
+                      !isRelativeClauseSubject(tokens, before: index - 2) {
+                issues.append(accentIssue(
+                    from: index, through: index, in: tokens,
+                    explanation: .accentAfterVerb, ["verb": previous.text]
+                ))
+            }
+        }
+        return issues
+    }
+
+    /// Whether the subject at `subject` opens a relative clause, as in "ce qu'il dit a du sens"
+    /// or "le livre qu'il lit a disparu", where the whole clause is the subject of avoir.
+    ///
+    /// After a verb, que starts a reported clause instead ("je pense qu'il va a Paris"),
+    /// so the accent rule still applies there.
+    private func isRelativeClauseSubject(_ tokens: [Token], before subject: Int) -> Bool {
+        guard subject >= 1, ["que", "qu'"].contains(tokens[subject - 1].normalized) else { return false }
+        // At the start of the text there is nothing to tell the two apart, so stay silent.
+        guard subject >= 2 else { return true }
+        let antecedent = tokens[subject - 2].normalized
+        return Self.relativeAntecedents.contains(antecedent) || lexicon.noun(antecedent) != nil
+    }
+
+    /// Builds an accent issue that replaces tokens `first` through `last` with à.
+    private func accentIssue(
+        from first: Int,
+        through last: Int,
+        in tokens: [Token],
+        explanation key: ExplanationKey,
+        _ values: [String: String] = [:]
+    ) -> Issue {
+        issue(
+            .accent, .error, from: first, through: last, in: tokens,
+            replacement: matchingCase(of: tokens[first].text, "à"),
+            explanation: explanations.render(key, values),
+            source: "Accent rule"
+        )
     }
 
     // MARK: - Adjective agreement
@@ -320,11 +402,15 @@ nonisolated struct FrenchGrammar: Grammar {
                 let matches = zip(window, phrase).allSatisfy { $0.normalized == $1 }
                 let isContiguous = window.dropLast().allSatisfy(\.isAdjacentToNext)
                 guard matches, isContiguous else { continue }
+                let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
+                let end = start + phrase.count
+                let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
                 // "il cava" is the verb caver, which is correct French.
-                if start > 0, tokens[start - 1].isAdjacentToNext,
-                   fix.unlessAfter.contains(tokens[start - 1].normalized) {
-                    continue
-                }
+                if let before, fix.unlessAfter.contains(before) { continue }
+                // "a fait une décision" takes pris; "il fait une décision" takes prend.
+                if let onlyAfter = fix.onlyAfter, !onlyAfter.contains(before ?? "") { continue }
+                // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
+                if let after, fix.unlessBefore?.contains(after) == true { continue }
                 issues.append(issue(
                     kind, .error, from: start, through: start + phrase.count - 1, in: tokens,
                     replacement: matchingCase(of: tokens[start].text, fix.fix),

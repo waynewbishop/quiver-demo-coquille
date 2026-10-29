@@ -3,6 +3,7 @@
     "phrase": "cava",
     "fix": "ça va",
     "unlessAfter": ["il", "elle", "on", "qui"],
+    "unlessBefore": ["un", "une", "le", "la", "les", "l'", "des", "du"],
     "note": "cava is a past form of caver, “to dig,” as in il cava un trou."
   },
   {

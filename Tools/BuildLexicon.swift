@@ -14,7 +14,12 @@
 // Builds the French lexicon slice the app bundles, from the full Lexique 3.83 table.
 //
 // Usage:
-//   swift Tools/BuildLexicon.swift /path/to/Lexique383.tsv quiver-demo-coquille/LanguagePacks/French/fr.lexicon.json
+//   swift Tools/BuildLexicon.swift /path/to/Lexique383.tsv quiver-demo-coquille/LanguagePacks/French/fr.lexicon.json [Tools/fr.noun-gender-overrides.json]
+//
+// The optional third file sets the gender of common nouns Lexique leaves blank,
+// such as maison; it defaults to Tools/fr.noun-gender-overrides.json when present.
+// Tools/fr.adjective-overrides.json, when present, completes adjectives Lexique
+// splits or leaves incomplete, such as nouveau and nouvelle.
 //
 // The raw table (about 142,000 rows, 26 MB) never ships in the app. The slice keeps
 // only what the linter's rules read: each noun's gender and number, each adjective's
@@ -44,8 +49,8 @@ struct LexiconFile: Codable {
 // MARK: - Reading Lexique
 
 let arguments = CommandLine.arguments
-guard arguments.count == 3 else {
-    FileHandle.standardError.write(Data("usage: swift BuildLexicon.swift <Lexique383.tsv> <output.json>\n".utf8))
+guard arguments.count == 3 || arguments.count == 4 else {
+    FileHandle.standardError.write(Data("usage: swift BuildLexicon.swift <Lexique383.tsv> <output.json> [overrides.json]\n".utf8))
     exit(1)
 }
 
@@ -115,6 +120,37 @@ for line in lines {
     }
 }
 
+// MARK: - Gender overrides
+
+/// The hand-checked genders in `fr.noun-gender-overrides.json`.
+struct GenderOverrides: Codable {
+    let note: String
+    /// Singular noun → "m" or "f".
+    let nouns: [String: String]
+}
+
+let overridesPath = arguments.count == 4 ? arguments[3] : "Tools/fr.noun-gender-overrides.json"
+var overridden = 0
+if let overridesData = FileManager.default.contents(atPath: overridesPath) {
+    let overrides = try JSONDecoder().decode(GenderOverrides.self, from: overridesData)
+    for (noun, gender) in overrides.nouns {
+        guard let letter = gender.first, gender.count == 1, "mf".contains(letter), nounGenders[noun] != nil else {
+            FileHandle.standardError.write(Data("bad override \(noun): \(gender)\n".utf8))
+            exit(1)
+        }
+        nounGenders[noun] = [letter]
+        overridden += 1
+        // The regular plural shares the gender, as in maisons; souris and pas are their own plural.
+        let plural = noun + "s"
+        if !noun.hasSuffix("s"), nounGenders[plural] != nil {
+            nounGenders[plural] = [letter]
+        }
+    }
+} else if arguments.count == 4 {
+    FileHandle.standardError.write(Data("missing overrides file \(overridesPath)\n".utf8))
+    exit(1)
+}
+
 // MARK: - Writing the slice
 
 /// Collapses a set of gender or number codes into one letter, `x` when both apply.
@@ -130,6 +166,43 @@ for (form, genders) in nounGenders {
 var adjectives: [String: [String]] = [:]
 for (lemma, slots) in adjectiveSlots {
     adjectives[lemma] = ["ms", "fs", "mp", "fp"].map { slots[$0] ?? "" }
+}
+
+// MARK: - Adjective overrides
+
+/// The hand-checked adjectives in `fr.adjective-overrides.json`.
+struct AdjectiveOverrides: Codable {
+    let note: String
+    /// Lemma → its four forms, replacing whatever Lexique lists.
+    let forms: [String: [String]]
+    /// Partial or stray lemmas whose forms all belong to another adjective.
+    let remove: [String]
+}
+
+var adjectiveOverrides = 0
+if let overridesData = FileManager.default.contents(atPath: "Tools/fr.adjective-overrides.json") {
+    let overrides = try JSONDecoder().decode(AdjectiveOverrides.self, from: overridesData)
+    for (lemma, forms) in overrides.forms {
+        guard adjectives[lemma] != nil, forms.count == 4, !forms.contains("") else {
+            FileHandle.standardError.write(Data("bad adjective override \(lemma): \(forms)\n".utf8))
+            exit(1)
+        }
+        adjectives[lemma] = forms
+        adjectiveOverrides += 1
+    }
+    for lemma in overrides.remove {
+        guard let forms = adjectives.removeValue(forKey: lemma) else {
+            FileHandle.standardError.write(Data("unknown adjective to remove: \(lemma)\n".utf8))
+            exit(1)
+        }
+        // Removing a lemma must never drop a spelling the app knows.
+        let remaining = Set(adjectives.values.flatMap { $0 })
+        for form in forms where !form.isEmpty && !remaining.contains(form) {
+            FileHandle.standardError.write(Data("removing \(lemma) would drop \(form)\n".utf8))
+            exit(1)
+        }
+        adjectiveOverrides += 1
+    }
 }
 
 let adjectiveForms = Set(adjectives.values.flatMap { $0 })
@@ -150,4 +223,4 @@ encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
 let data = try encoder.encode(file)
 try data.write(to: URL(fileURLWithPath: arguments[2]))
 
-print("nouns \(nouns.count) · adjective lemmas \(adjectives.count) · verb forms \(verbs.count) · other words \(otherWords.count) · \(data.count / 1024) KB")
+print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · other words \(otherWords.count) · \(data.count / 1024) KB")

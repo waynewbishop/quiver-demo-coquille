@@ -20,6 +20,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case contraction
     case agreement
     case lookAlike
+    case accent
     case wordChoice
     case negation
     case idiom
@@ -32,6 +33,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .contraction: "CONTRACTION"
         case .agreement: "AGREEMENT"
         case .lookAlike: "LOOK-ALIKE"
+        case .accent: "ACCENT"
         case .wordChoice: "WORD CHOICE"
         case .negation: "NEGATION"
         case .idiom: "IDIOM"
@@ -46,6 +48,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .contraction: "Contractions (à + le)"
         case .agreement: "Adjective agreement"
         case .lookAlike: "Look-alike words (ça va)"
+        case .accent: "Accents (a vs. à)"
         case .wordChoice: "Word choice (j'ai faim)"
         case .negation: "Negation (ne… plus)"
         case .idiom: "Idioms"

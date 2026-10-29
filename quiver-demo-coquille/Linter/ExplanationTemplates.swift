@@ -27,6 +27,26 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case wordChoice
     case negation
     case idiom
+    case accentAfterVerb
+    case accentAfterJusqu
+    case accentAfterDans
+
+    /// The placeholders the rule fills for this key. A template may use any of them and no others.
+    var placeholders: Set<String> {
+        switch self {
+        case .articleGender: ["noun", "gender", "article"]
+        case .articleGenderPredicted: ["noun", "gender", "reason", "article"]
+        case .contraction: ["preposition", "article", "contraction"]
+        case .agreementGender, .agreementNumber, .agreementGenderAndNumber: ["noun", "gender", "number"]
+        case .spelling: ["word", "suggestion"]
+        case .unknownWord: ["word"]
+        case .lookAlike, .wordChoice: ["note", "fix"]
+        case .negation: ["corrected"]
+        case .idiom: ["suggestion", "note"]
+        case .accentAfterVerb: ["verb"]
+        case .accentAfterJusqu, .accentAfterDans: []
+        }
+    }
 }
 
 /// A verdict worded twice: a hint that names the rule without the answer, and the
@@ -55,17 +75,30 @@ nonisolated struct ExplanationTemplates: Sendable {
         let key: String
     }
 
+    /// Thrown when a template names a placeholder its rule never fills, which would
+    /// otherwise show the learner a raw "{name}".
+    struct UnknownPlaceholder: Error, Equatable {
+        let key: String
+        let placeholder: String
+    }
+
     private let entries: [ExplanationKey: Entry]
 
-    /// Decodes the templates and checks that every key has an entry.
+    /// Decodes the templates and checks that every key has an entry whose placeholders its rule fills.
     ///
-    /// - Throws: `MissingEntry` when a key has no template, or a decoding error.
+    /// - Throws: `MissingEntry` when a key has no template, `UnknownPlaceholder` when a
+    ///   hint or template names a value its rule never supplies, or a decoding error.
     init(data: Data) throws {
         let decoded = try JSONDecoder().decode([String: Entry].self, from: data)
         var entries: [ExplanationKey: Entry] = [:]
         for key in ExplanationKey.allCases {
             guard let entry = decoded[key.rawValue] else {
                 throw MissingEntry(key: key.rawValue)
+            }
+            for text in [entry.template, entry.hint ?? ""] {
+                if let unknown = Self.placeholders(in: text).subtracting(key.placeholders).sorted().first {
+                    throw UnknownPlaceholder(key: key.rawValue, placeholder: unknown)
+                }
             }
             entries[key] = entry
         }
@@ -79,6 +112,11 @@ nonisolated struct ExplanationTemplates: Sendable {
         }
         let reason = Self.fill(entry.template, values)
         return Explanation(hint: entry.hint.map { Self.fill($0, values) } ?? reason, reason: reason)
+    }
+
+    /// Returns the `{name}` placeholders in `text`.
+    static func placeholders(in text: String) -> Set<String> {
+        Set(text.matches(of: /\{([A-Za-z]+)\}/).map { String($0.output.1) })
     }
 
     /// Replaces each `{name}` in `text` with its value.

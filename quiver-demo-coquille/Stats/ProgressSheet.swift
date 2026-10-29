@@ -90,7 +90,7 @@ struct ProgressSheet: View {
         }
     }
 
-    /// Nouns the learner has missed more than once.
+    /// Words the learner has missed, most often first.
     @ViewBuilder
     private var trickyWords: some View {
         let words = stats.trickyWords
@@ -106,7 +106,7 @@ struct ProgressSheet: View {
                             .background(.tint.opacity(0.12), in: Capsule())
                     }
                 }
-                Text("Nouns you've missed more than once.")
+                Text("Words you've missed, most often first.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
