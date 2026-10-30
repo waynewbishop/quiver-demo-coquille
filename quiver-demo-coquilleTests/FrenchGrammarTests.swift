@@ -145,6 +145,14 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Je vais à Paris."), [])
     }
 
+    // MARK: - Être or avoir
+
+    // The être that replaces avoir takes the subject's person, not the person of the avoir typed.
+    func testAuxiliaryFixTakesTheSubjectsPerson() throws {
+        XCTAssertTrue(try fixes("Ils a allé.").contains("Ils a allé → Ils sont allés"))
+        XCTAssertTrue(try fixes("Tu a resté.").contains("Tu a resté → Tu es resté"))
+    }
+
     // MARK: - Regression corpora
 
     /// Correct French that must raise nothing. Add every false positive found here.
@@ -251,7 +259,26 @@ final class FrenchGrammarTests: XCTestCase {
         "Je préfère demain.",
         "Le fromage que j'aime est bon.",
         "J'aime le hockey.",
-        "J'aime dîner tard."
+        "J'aime dîner tard.",
+        // Pronouns that aren't the subject of the verb after them.
+        "Je le mange.",
+        "Nous nous levons.",
+        "Il nous parle.",
+        "Il vous aime.",
+        "Lui et elle sont partis.",
+        "Toi et moi, nous sommes amis.",
+        "Je pense à vous.",
+        "Pour vous aider, je reste.",
+        "Ils mangent et tu es fatigué.",
+        "Vous êtes là, on a mangé.",
+        // Si meaning "whether" or "yes", and si clauses already right.
+        "Je ne sais pas si tu viendras.",
+        "Je me demande s'il viendra.",
+        "Si tu viens, je serai content.",
+        "Si j'avais le temps, je viendrais.",
+        "Si, je viendrai demain.",
+        "Il s'est levé.",
+        "Il fera beau si tu viens."
     ]
 
     /// Wrong French, each with the one fix the rules must offer.
@@ -310,6 +337,19 @@ final class FrenchGrammarTests: XCTestCase {
         ("Je déteste eau.", "eau → l'eau"),
         ("Je n'aime pas fromage.", "fromage → le fromage"),
         ("J'aime bien chocolat.", "chocolat → le chocolat"),
+        // The verb takes its subject pronoun's person.
+        ("Je va à la gare.", "va → vais"),
+        ("Ils mange.", "mange → mangent"),
+        ("Tu est fatigué.", "est → es"),
+        ("Nous allez au cinéma.", "allez → allons"),
+        ("Il ont mangé.", "ont → a"),
+        ("Elle sont gentilles.", "sont → est"),
+        // No future or conditional after si meaning "if".
+        ("Si tu viendras, je serai content.", "viendras → viens"),
+        ("Si j'aurais le temps, je viendrais.", "aurais → avais"),
+        ("Demain, s'il pleuvra, je reste.", "pleuvra → pleut"),
+        ("Si nous irons à la plage, il fera beau.", "irons → allons"),
+        ("Si tu ne viendras pas, je reste.", "viendras → viens"),
         ("Je voudrais un du billet.", "un du → un"),
         ("Ça va, et tu?", "et tu → et toi"),
         ("Je vais à montagne.", "à montagne → à la montagne"),

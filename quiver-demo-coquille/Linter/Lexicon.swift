@@ -14,8 +14,8 @@
 import Foundation
 
 /// The bundled slice of Lexique: gender and number for nouns, the four forms of each
-/// adjective, each past participle's verb, gender and number, and every verb and other
-/// known spelling.
+/// adjective, each past participle's verb, gender and number, each conjugated form's
+/// verb, tense and person, and every verb and other known spelling.
 ///
 /// The file is produced by `Tools/BuildLexicon.swift` and is derived from Lexique 3.83,
 /// licensed CC BY-SA 4.0.
@@ -35,6 +35,8 @@ nonisolated struct Lexicon: Sendable {
         let verbs: [String]
         /// Past participle → [verb, gender and number code], as for nouns: "mangée" → [["manger", "fs"]].
         let participles: [String: [[String]]]
+        /// Conjugated form → [verb, tense-and-person codes], such as "va" → [["aller", "ip3s"]].
+        let conjugations: [String: [[String]]]
         let otherWords: [String]
     }
 
@@ -42,6 +44,13 @@ nonisolated struct Lexicon: Sendable {
     struct Noun: Equatable, Sendable {
         let gender: Gender?
         let number: GrammaticalNumber?
+    }
+
+    /// One reading of a conjugated form: its verb and the tense-and-person codes it serves,
+    /// such as "ip1s" for present, first person singular.
+    struct Conjugation: Equatable, Sendable {
+        let verb: String
+        let codes: Set<String>
     }
 
     /// A past participle's verb, gender and number; `nil` means the form serves both.
@@ -62,6 +71,9 @@ nonisolated struct Lexicon: Sendable {
     private let participlesByForm: [String: [Participle]]
     /// Verb → its participle forms, for finding the one a gender and number need.
     private let participleFormsByVerb: [String: [String]]
+    private let conjugationsByForm: [String: [Conjugation]]
+    /// "verb|code" → the form for it, such as "aller|ip1s" → "vais".
+    private let formsByConjugation: [String: String]
     private let otherWords: Set<String>
 
     /// Builds a lexicon from its decoded file.
@@ -88,6 +100,25 @@ nonisolated struct Lexicon: Sendable {
         }
         self.participlesByForm = participlesByForm
         self.participleFormsByVerb = participleFormsByVerb.mapValues { $0.sorted() }
+
+        var conjugationsByForm: [String: [Conjugation]] = [:]
+        // "verb|code" → candidate forms with how many codes each serves.
+        var candidates: [String: [(form: String, breadth: Int)]] = [:]
+        for (form, readings) in file.conjugations {
+            for reading in readings where reading.count == 2 {
+                let codes = Set(reading[1].split(separator: " ").map(String.init))
+                conjugationsByForm[form, default: []].append(Conjugation(verb: reading[0], codes: codes))
+                for code in codes {
+                    candidates[reading[0] + "|" + code, default: []].append((form, codes.count))
+                }
+            }
+        }
+        self.conjugationsByForm = conjugationsByForm
+        // Where Lexique gives two forms, as "suis" and "es" for être with tu, the form made
+        // for fewer persons is the one that belongs to this one.
+        formsByConjugation = candidates.compactMapValues { forms in
+            forms.min { $0.breadth != $1.breadth ? $0.breadth < $1.breadth : $0.form < $1.form }?.form
+        }
 
         var lemmasByForm: [String: [String]] = [:]
         for (lemma, forms) in file.adjectives where forms.count == 4 {
@@ -163,6 +194,16 @@ nonisolated struct Lexicon: Sendable {
         let exact = readings.first { $0.1.gender == gender && $0.1.number == number }
         let serves = readings.first { ($0.1.gender ?? gender) == gender && ($0.1.number ?? number) == number }
         return (exact ?? serves)?.0
+    }
+
+    /// Returns the conjugated readings of a form, such as aller, present, third person singular, for "va".
+    func conjugations(_ form: String) -> [Conjugation] {
+        conjugationsByForm[form] ?? []
+    }
+
+    /// Returns a verb's form for a tense-and-person code, such as "vais" for aller and "ip1s".
+    func conjugate(_ verb: String, _ code: String) -> String? {
+        formsByConjugation[verb + "|" + code]
     }
 
     /// Reads a two-letter gender and number code such as "fs" or "mx"; `x` means both.

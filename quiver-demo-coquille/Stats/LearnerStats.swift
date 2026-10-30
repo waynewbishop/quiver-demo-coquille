@@ -148,7 +148,7 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
         switch issue.kind {
         case .gender:
             return replacement.split(separator: " ").last.map { $0.lowercased() }
-        case .agreement, .spelling, .accent, .participle:
+        case .agreement, .spelling, .accent, .participle, .conjugation:
             return replacement.lowercased()
         default:
             return nil

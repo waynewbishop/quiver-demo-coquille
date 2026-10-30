@@ -23,8 +23,8 @@
 //
 // The raw table (about 142,000 rows, 26 MB) never ships in the app. The slice keeps
 // only what the linter's rules read: each noun's gender and number, each adjective's
-// four forms, every verb form, each past participle's verb, gender and number, and every
-// other known spelling. The output is derived
+// four forms, every verb form, each past participle's verb, gender and number, each
+// conjugated form's verb, tense and person, and every other known spelling. The output is derived
 // from Lexique and so carries Lexique's CC BY-SA 4.0 license.
 
 import Foundation
@@ -46,6 +46,11 @@ struct LexiconFile: Codable {
     /// Past participle → each verb it belongs to and its gender and number code, as for
     /// nouns: "mangée" → [["manger", "fs"]].
     let participles: [String: [[String]]]
+    /// Conjugated verb form → each verb it belongs to and the tense-and-person codes it
+    /// serves: "va" → [["aller", "ip3s"]]. A code is a tense (ip present, ii imperfect,
+    /// if future, is simple past, cp conditional, sp subjunctive, si imperfect
+    /// subjunctive) then a person and number, as in "ip1s".
+    let conjugations: [String: [[String]]]
     /// Every remaining spelling: adverbs, prepositions, pronouns, determiners and so on.
     let otherWords: [String]
 }
@@ -86,6 +91,10 @@ var nounNumbers: [String: Set<Character>] = [:]
 var adjectiveSlots: [String: [String: String]] = [:]
 var adjectiveSlotIsSpecific: [String: [String: Bool]] = [:]
 var verbs: Set<String> = []
+/// Lexique's finite tenses and the two letters each one is stored as.
+let tenseCodes = ["ind:pre": "ip", "ind:imp": "ii", "ind:fut": "if", "ind:pas": "is", "cnd:pre": "cp", "sub:pre": "sp", "sub:imp": "si"]
+// "form|lemma" → the tense-and-person codes its rows serve.
+var conjugationCodes: [String: Set<String>] = [:]
 // "form|lemma" → the genders and numbers its participle rows serve.
 var participleGenders: [String: Set<Character>] = [:]
 var participleNumbers: [String: Set<Character>] = [:]
@@ -124,6 +133,12 @@ for line in lines {
     case "VER", "AUX":
         verbs.insert(form)
         // Past participles keep their verb, gender and number for the auxiliary rules.
+        for entry in fields[verbInfoColumn].split(separator: ";") {
+            let parts = entry.split(separator: ":").map(String.init)
+            if parts.count == 3, let tense = tenseCodes[parts[0] + ":" + parts[1]] {
+                conjugationCodes[form + "|" + fields[lemmaColumn], default: []].insert(tense + parts[2])
+            }
+        }
         if fields[verbInfoColumn].contains("par:pas") {
             let key = form + "|" + fields[lemmaColumn]
             participleGenders[key, default: []].formUnion(genders)
@@ -229,6 +244,16 @@ for form in participles.keys {
     participles[form]?.sort { $0[0] < $1[0] }
 }
 
+var conjugations: [String: [[String]]] = [:]
+for (key, codes) in conjugationCodes {
+    let parts = key.split(separator: "|", maxSplits: 1).map(String.init)
+    guard parts.count == 2 else { continue }
+    conjugations[parts[0], default: []].append([parts[1], codes.sorted().joined(separator: " ")])
+}
+for form in conjugations.keys {
+    conjugations[form]?.sort { $0[0] < $1[0] }
+}
+
 let adjectiveForms = Set(adjectives.values.flatMap { $0 })
 let otherWords = others.subtracting(nouns.keys).subtracting(adjectiveForms).subtracting(verbs)
 
@@ -240,6 +265,7 @@ let file = LexiconFile(
     adjectives: adjectives,
     verbs: verbs.sorted(),
     participles: participles,
+    conjugations: conjugations,
     otherWords: otherWords.sorted()
 )
 
@@ -248,4 +274,4 @@ encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
 let data = try encoder.encode(file)
 try data.write(to: URL(fileURLWithPath: arguments[2]))
 
-print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · participles \(participles.count) · other words \(otherWords.count) · \(data.count / 1024) KB")
+print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · participles \(participles.count) · conjugated forms \(conjugations.count) · other words \(otherWords.count) · \(data.count / 1024) KB")

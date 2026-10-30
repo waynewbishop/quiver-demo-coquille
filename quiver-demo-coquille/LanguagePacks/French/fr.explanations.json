@@ -88,6 +88,16 @@
     "template": "After {verb}, a noun for something in general takes le, la or les: {fix}.",
     "example": "After aimer, a noun for something in general takes le, la or les: le fromage."
   },
+  "subjectVerb": {
+    "hint": "With {subject}, {verb} takes its own form.",
+    "template": "With {subject}, {verb} takes the form {fix}.",
+    "example": "With je, aller takes the form vais."
+  },
+  "siClause": {
+    "hint": "After si meaning if, French doesn't use the future or the conditional.",
+    "template": "After si meaning if, French uses the {tense} instead: {fix}.",
+    "example": "After si meaning if, French uses the present instead: viens."
+  },
   "idiom": {
     "hint": "This is correct, but a native would usually say it another way. {note}",
     "template": "This is correct. Here's how a native would usually say it: {suggestion}. {note}",

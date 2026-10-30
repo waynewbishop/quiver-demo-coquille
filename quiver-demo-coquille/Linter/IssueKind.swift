@@ -24,6 +24,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case auxiliary
     case participle
     case article
+    case conjugation
+    case siClause
     case wordChoice
     case negation
     case idiom
@@ -40,6 +42,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .auxiliary: "ÊTRE OR AVOIR"
         case .participle: "PARTICIPLE"
         case .article: "ARTICLE"
+        case .conjugation: "CONJUGATION"
+        case .siClause: "SI CLAUSE"
         case .wordChoice: "WORD CHOICE"
         case .negation: "NEGATION"
         case .idiom: "IDIOM"
@@ -58,6 +62,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .auxiliary: "Être or avoir (je suis allé)"
         case .participle: "Past participles (il a mangé)"
         case .article: "Articles (j'aime le fromage)"
+        case .conjugation: "Conjugation (je vais)"
+        case .siClause: "Si clauses (si tu viens)"
         case .wordChoice: "Word choice (j'ai faim)"
         case .negation: "Negation (ne… plus)"
         case .idiom: "Idioms"

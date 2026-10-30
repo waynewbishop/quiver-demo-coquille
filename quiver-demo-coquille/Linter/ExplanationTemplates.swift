@@ -34,6 +34,8 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case participleWithAvoir
     case participleWithEtre
     case generalArticle
+    case subjectVerb
+    case siClause
 
     /// The placeholders the rule fills for this key. A template may use any of them and no others.
     var placeholders: Set<String> {
@@ -53,6 +55,8 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .participleWithAvoir: ["fix"]
         case .participleWithEtre: ["subject", "fix"]
         case .generalArticle: ["verb", "fix"]
+        case .subjectVerb: ["subject", "verb", "fix"]
+        case .siClause: ["tense", "fix"]
         }
     }
 }

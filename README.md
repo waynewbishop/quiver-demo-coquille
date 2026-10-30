@@ -60,9 +60,11 @@ Nous avons acheté une fromage et des pommes rouge.
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
+| Conjugation | je va → je vais, ils mange → ils mangent | Error | Conjugation rule, Lexique verb forms |
 | Être or avoir | j'ai allé → je suis allé | Error | Auxiliary rule, Lexique participles |
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
 | Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
+| Si clauses | si tu viendras → si tu viens | Error | Si clause rule, Lexique verb forms |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
@@ -194,9 +196,10 @@ Everything is plain folders in one Xcode project:
 Word data comes from [Lexique 3.83](http://www.lexique.org) by Boris
 New and Christophe Pallier, licensed
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The
-full table (142,000 rows) never ships. The app bundles a 2.6 MB slice
+full table (142,000 rows) never ships. The app bundles a 4.1 MB slice
 of nouns with gender and number, adjectives with their four forms, verb
-forms, and each past participle's verb, gender and number. Because it's derived from Lexique, `fr.lexicon.json`
+forms with their tense and person, and each past participle's verb,
+gender and number. Because it's derived from Lexique, `fr.lexicon.json`
 carries the same license. To rebuild it:
 
 ```bash

@@ -47,6 +47,8 @@ nonisolated struct FrenchGrammar: Grammar {
         issues += contractionIssues(in: tokens)
         issues += accentIssues(in: tokens)
         issues += auxiliaryIssues(in: tokens)
+        issues += conjugationIssues(in: tokens)
+        issues += siClauseIssues(in: tokens)
         issues += participleWithEtreIssues(in: tokens)
         issues += generalArticleIssues(in: tokens)
         issues += agreementIssues(in: tokens)
@@ -309,10 +311,17 @@ nonisolated struct FrenchGrammar: Grammar {
         "rentrer", "passer", "repasser", "retourner", "entrer"
     ]
 
-    /// Each present and imperfect form of avoir, with the form of être that replaces it.
-    private static let avoirToEtre: [String: String] = [
-        "ai": "suis", "as": "es", "a": "est", "avons": "sommes", "avez": "êtes", "ont": "sont",
-        "avais": "étais", "avait": "était", "avions": "étions", "aviez": "étiez", "avaient": "étaient"
+    /// Each present and imperfect form of avoir, with its tense code. The être that replaces
+    /// it takes that tense and the subject's person, so "ils a allé" becomes "ils sont allés".
+    private static let avoirTenses: [String: String] = [
+        "ai": "ip", "as": "ip", "a": "ip", "avons": "ip", "avez": "ip", "ont": "ip",
+        "avais": "ii", "avait": "ii", "avions": "ii", "aviez": "ii", "avaient": "ii"
+    ]
+
+    /// The person and number code each subject pronoun takes, as in "ip1s" for je.
+    private static let subjectPersons: [String: String] = [
+        "je": "1s", "j'": "1s", "tu": "2s", "il": "3s", "elle": "3s", "on": "3s",
+        "nous": "1p", "vous": "2p", "ils": "3p", "elles": "3p"
     ]
 
     /// Subjects that settle a participle's gender and number after être. Je, tu, on and vous
@@ -336,7 +345,10 @@ nonisolated struct FrenchGrammar: Grammar {
             let participle = tokens[index + 2]
             guard Self.subjectPronouns.contains(subject.normalized),
                   subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
-                  let etre = Self.avoirToEtre[auxiliary.normalized],
+                  !isCoordinated(tokens, subjectAt: index),
+                  let tense = Self.avoirTenses[auxiliary.normalized],
+                  let person = Self.subjectPersons[subject.normalized],
+                  let etre = lexicon.conjugate("être", tense + person),
                   // "la pomme qu'il a mangée": the participle agrees with the object before it.
                   index == 0 || !["que", "qu'"].contains(tokens[index - 1].normalized) else { continue }
             let readings = lexicon.participles(participle.normalized)
@@ -375,6 +387,110 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
+    // MARK: - Conjugation
+
+    /// Tenses in the order a fix prefers them when a form could belong to several.
+    private static let tensePriority = ["ip", "ii", "if", "cp", "sp", "is", "si"]
+
+    /// Words after which nous, vous or elle is an object or follows a preposition rather than
+    /// being the subject: "il nous parle", "pour vous aider", "lui et elle sont partis".
+    private static let notBeforeSubject: Set<String> = [
+        "je", "j'", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "ne", "n'",
+        "et", "ou", "à", "de", "d'", "pour", "avec", "chez", "sans", "sur", "sous", "par",
+        "vers", "contre", "entre", "après", "avant", "devant", "derrière", "comme", "que", "qu'"
+    ]
+
+    /// Flags a verb that doesn't take its subject pronoun's person: "je va" → "vais",
+    /// "ils mange" → "mangent".
+    ///
+    /// A form is flagged only when no reading of it, for any verb or tense, fits the subject,
+    /// so "je suis" (être or suivre) and "je mange" (present or subjunctive) are never in doubt.
+    /// The fix keeps the verb and tense and changes the person.
+    private func conjugationIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let subject = tokens[index]
+            let verbToken = tokens[index + 1]
+            guard let person = Self.subjectPersons[subject.normalized], subject.isAdjacentToNext,
+                  index == 0 || !tokens[index - 1].isAdjacentToNext
+                    || !Self.notBeforeSubject.contains(tokens[index - 1].normalized) else { continue }
+            // Lexique lists n' and y as verb forms; a pronoun, ne or an elision is never the verb here.
+            guard !Self.preverbalWords.contains(verbToken.normalized), !verbToken.normalized.hasSuffix("'") else { continue }
+            let readings = lexicon.conjugations(verbToken.normalized)
+            guard !readings.isEmpty,
+                  !readings.contains(where: { $0.codes.contains { $0.hasSuffix(person) } }),
+                  let reading = readings.first, readings.count == 1,
+                  let tense = Self.tensePriority.first(where: { tense in reading.codes.contains { $0.hasPrefix(tense) } }),
+                  let fix = lexicon.conjugate(reading.verb, tense + person),
+                  fix != verbToken.normalized else { continue }
+
+            // "j'va" can't keep its elision: it becomes "je vais".
+            let keepsElision = subject.normalized != "j'" || fix.first.map { "aeiouyàâéèêëîïôûh".contains($0) } == true
+            let first = keepsElision ? index + 1 : index
+            let replacement = keepsElision
+                ? matchingCase(of: verbToken.text, fix)
+                : matchingCase(of: subject.text, "je") + " " + fix
+            issues.append(issue(
+                .conjugation, .error, from: first, through: index + 1, in: tokens,
+                replacement: replacement,
+                explanation: explanations.render(.subjectVerb, [
+                    "subject": subject.normalized == "j'" ? "je" : subject.normalized,
+                    "verb": reading.verb,
+                    "fix": fix
+                ]),
+                source: "Conjugation rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Si clauses
+
+    /// Flags the future or the conditional after si meaning "if": "si tu viendras" → "viens",
+    /// "si j'aurais" → "avais". The future becomes the present and the conditional the imperfect.
+    ///
+    /// Only a si (or s'il) that opens a sentence or follows a comma is judged: after a verb,
+    /// "je ne sais pas si tu viendras" means "whether", and the future is correct there.
+    private func siClauseIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            let si = tokens[index]
+            let subject = tokens[index + 1]
+            // "s'il" is si elided before il; elsewhere s' is se, as in "il s'est levé".
+            let isSi = si.normalized == "si" || (si.normalized == "s'" && ["il", "ils"].contains(subject.normalized))
+            guard isSi, si.isAdjacentToNext, subject.isAdjacentToNext,
+                  index == 0 || tokens[index - 1].endsClause,
+                  let person = Self.subjectPersons[subject.normalized] else { continue }
+
+            // Look past ne and object pronouns: "si tu ne viendras pas", "si tu m'aideras".
+            var verbIndex = index + 2
+            while verbIndex < tokens.count - 1, verbIndex < index + 4,
+                  Self.preverbalWords.contains(tokens[verbIndex].normalized), tokens[verbIndex].isAdjacentToNext {
+                verbIndex += 1
+            }
+            let verbToken = tokens[verbIndex]
+            let readings = lexicon.conjugations(verbToken.normalized)
+            guard let reading = readings.first, readings.count == 1,
+                  reading.codes.allSatisfy({ $0.hasPrefix("if") || $0.hasPrefix("cp") }),
+                  reading.codes.contains(where: { $0.hasSuffix(person) }) else { continue }
+
+            let isFuture = reading.codes.contains { $0.hasPrefix("if") }
+            guard let fix = lexicon.conjugate(reading.verb, (isFuture ? "ip" : "ii") + person) else { continue }
+            issues.append(issue(
+                .siClause, .error, from: verbIndex, through: verbIndex, in: tokens,
+                replacement: matchingCase(of: verbToken.text, fix),
+                explanation: explanations.render(.siClause, ["tense": isFuture ? "present" : "imperfect", "fix": fix]),
+                source: "Si clause rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    /// Whether the pronoun at `index` is only part of the subject, as elle in "lui et elle sont partis".
+    private func isCoordinated(_ tokens: [Token], subjectAt index: Int) -> Bool {
+        index > 0 && tokens[index - 1].isAdjacentToNext && ["et", "ou", "ni"].contains(tokens[index - 1].normalized)
+    }
+
     // MARK: - Participle agreement with être
 
     /// The present and imperfect forms of être.
@@ -406,7 +522,8 @@ nonisolated struct FrenchGrammar: Grammar {
             let participle = tokens[index + 2]
             guard let agreement = Self.etreSubjectAgreement[subject.normalized],
                   subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
-                  Self.etreForms.contains(auxiliary.normalized) else { continue }
+                  Self.etreForms.contains(auxiliary.normalized),
+                  !isCoordinated(tokens, subjectAt: index) else { continue }
             let readings = lexicon.participles(participle.normalized)
             guard let verb = readings.first?.verb, readings.allSatisfy({ $0.verb == verb }) else { continue }
 
