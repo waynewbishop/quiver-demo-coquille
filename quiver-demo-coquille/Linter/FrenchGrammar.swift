@@ -39,24 +39,56 @@ nonisolated struct FrenchGrammar: Grammar {
     /// where the ending rule really holds.
     static let predictionThreshold = 0.95
 
-    /// Returns every grammar issue in `text`, ordered by position.
-    func check(_ text: String) -> [Issue] {
-        let tokens = FrenchTokenizer.tokens(in: text)
-        var issues: [Issue] = []
-        issues += articleIssues(in: tokens)
-        issues += contractionIssues(in: tokens)
-        issues += accentIssues(in: tokens)
-        issues += auxiliaryIssues(in: tokens)
-        issues += conjugationIssues(in: tokens)
-        issues += siClauseIssues(in: tokens)
-        issues += participleWithEtreIssues(in: tokens)
-        issues += generalArticleIssues(in: tokens)
-        issues += agreementIssues(in: tokens)
-        issues += phraseFixIssues(in: tokens, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
-        issues += phraseFixIssues(in: tokens, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
-        issues += negationIssues(in: tokens)
-        issues += idiomIssues(in: tokens)
-        return issues.sorted { $0.offset < $1.offset }
+    /// The French rule families in the order they run, each with the layer it
+    /// demonstrates and the CEFR level at which its feedback is introduced.
+    ///
+    /// The order matters: when two issues of the same severity cover the same words,
+    /// the resolution matrix keeps the one from the earlier rule.
+    var rules: [GrammarRule] {
+        [
+            GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
+                articleGenderIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.gender.predicted", layer: .localMorphosyntax, targetLevel: .a1) {
+                predictedGenderIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.contraction", layer: .localMorphosyntax, targetLevel: .a1) {
+                contractionIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.accent", layer: .localMorphosyntax, targetLevel: .a1) {
+                accentIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.auxiliary", layer: .relationalGrammar, targetLevel: .a2) {
+                auxiliaryIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
+                conjugationIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.siClause", layer: .relationalGrammar, targetLevel: .b1) {
+                siClauseIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.participle", layer: .relationalGrammar, targetLevel: .a2) {
+                participleWithEtreIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.article", layer: .localMorphosyntax, targetLevel: .a2) {
+                generalArticleIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.agreement", layer: .localMorphosyntax, targetLevel: .a1) {
+                agreementIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.lookAlike", layer: .orthography, targetLevel: .a1) {
+                phraseFixIssues(in: $0, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
+            },
+            GrammarRule(identifier: "grammar.wordChoice", layer: .contextualSemantics, targetLevel: .a2) {
+                phraseFixIssues(in: $0, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
+            },
+            GrammarRule(identifier: "grammar.negation", layer: .relationalGrammar, targetLevel: .a2) {
+                negationIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.idiom", layer: .contextualSemantics, targetLevel: .b2) {
+                idiomIssues(in: $0)
+            }
+        ]
     }
 
     // MARK: - Word lists
@@ -117,58 +149,77 @@ nonisolated struct FrenchGrammar: Grammar {
 
     // MARK: - Article gender
 
-    /// Flags le/la/un/une before a noun of the other gender.
-    private func articleIssues(in tokens: [Token]) -> [Issue] {
-        var issues: [Issue] = []
-        for index in tokens.indices.dropLast() {
+    /// Flags le/la/un/une before a known noun of the other gender.
+    private func articleGenderIssues(in tokens: [Token]) -> [Issue] {
+        articleNounPairs(in: tokens).compactMap { index, marked in
             let article = tokens[index]
             let noun = tokens[index + 1]
-            guard let marked = Self.articles[article.normalized], article.isAdjacentToNext else { continue }
-            // Before a vowel or h, le and la elide to l', which is a separate rule.
-            if marked.isDefinite && noun.startsWithVowelOrH { continue }
-            if isPronounPosition(of: tokens, articleAt: index) { continue }
-            // "une petit maison": the word after the article is an adjective before the real noun.
-            if modifiesFollowingNoun(tokens, at: index + 1) { continue }
-            // "la rouge", as in "la bleue ou la rouge": an adjective that agrees stands in for a noun.
-            if isAgreeingAdjective(noun.normalized, gender: marked.gender) { continue }
-
-            let word = noun.normalized
-            let expected = { (gender: Gender) in
-                marked.isDefinite ? gender.definiteArticle : gender.indefiniteArticle
-            }
-
-            if let entry = lexicon.noun(word) {
-                guard let gender = entry.gender, entry.number != .plural, gender != marked.gender else { continue }
-                let fix = matchingCase(of: article.text, expected(gender))
-                issues.append(issue(
-                    .gender, .error, from: index, through: index + 1, in: tokens,
-                    replacement: fix + article.gap + noun.text,
-                    explanation: explanations.render(.articleGender, [
-                        "noun": noun.text, "gender": gender.rawValue, "article": expected(gender)
-                    ]),
-                    source: "Lexique · known noun"
-                ))
-            } else if !lexicon.contains(word),
-                      let prediction = genderPredictor?.gender(of: word),
-                      prediction.gender != marked.gender,
-                      prediction.probability >= Self.predictionThreshold,
-                      // Without an ending of two letters or more, there's no rule to teach.
-                      let ending = prediction.ending.map({ "-\($0)" }) {
-                let fix = matchingCase(of: article.text, expected(prediction.gender))
-                issues.append(issue(
-                    .gender, .warning, from: index, through: index + 1, in: tokens,
-                    replacement: fix + article.gap + noun.text,
-                    explanation: explanations.render(.articleGenderPredicted, [
-                        "noun": noun.text,
-                        "gender": prediction.gender.rawValue,
-                        "reason": "words ending in \(ending) usually are.",
-                        "article": expected(prediction.gender)
-                    ]),
-                    source: "Quiver prediction · ending \(ending)"
-                ))
-            }
+            guard let entry = lexicon.noun(noun.normalized),
+                  let gender = entry.gender,
+                  entry.number != .plural,
+                  gender != marked.gender else { return nil }
+            let expected = marked.isDefinite ? gender.definiteArticle : gender.indefiniteArticle
+            return issue(
+                .gender, .error, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: article.text, expected) + article.gap + noun.text,
+                explanation: explanations.render(.articleGender, [
+                    "noun": noun.text, "gender": gender.rawValue, "article": expected
+                ]),
+                source: "Lexique · known noun"
+            )
         }
-        return issues
+    }
+
+    /// Warns when the gender model is sure an unknown noun takes the other article.
+    ///
+    /// Only nouns missing from the lexicon reach the model, so this rule never
+    /// disagrees with `articleGenderIssues`; it covers the words that rule can't.
+    private func predictedGenderIssues(in tokens: [Token]) -> [Issue] {
+        guard let genderPredictor else { return [] }
+        return articleNounPairs(in: tokens).compactMap { index, marked in
+            let article = tokens[index]
+            let noun = tokens[index + 1]
+            let word = noun.normalized
+            guard lexicon.noun(word) == nil,
+                  !lexicon.contains(word),
+                  let prediction = genderPredictor.gender(of: word),
+                  prediction.gender != marked.gender,
+                  prediction.probability >= Self.predictionThreshold,
+                  // Without an ending of two letters or more, there's no rule to teach.
+                  let ending = prediction.ending.map({ "-\($0)" }) else { return nil }
+            let expected = marked.isDefinite ? prediction.gender.definiteArticle : prediction.gender.indefiniteArticle
+            return issue(
+                .gender, .warning, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: article.text, expected) + article.gap + noun.text,
+                explanation: explanations.render(.articleGenderPredicted, [
+                    "noun": noun.text,
+                    "gender": prediction.gender.rawValue,
+                    "reason": "words ending in \(ending) usually are.",
+                    "article": expected
+                ]),
+                source: "Quiver prediction · ending \(ending)"
+            )
+        }
+    }
+
+    /// Finds each le/la/un/une that directly marks the gender of the word after it.
+    ///
+    /// Both gender rules share these skips, so a known noun and a predicted one are
+    /// judged in exactly the same positions.
+    private func articleNounPairs(in tokens: [Token]) -> [(index: Int, marked: (gender: Gender, isDefinite: Bool))] {
+        tokens.indices.dropLast().compactMap { index in
+            let article = tokens[index]
+            let noun = tokens[index + 1]
+            guard let marked = Self.articles[article.normalized], article.isAdjacentToNext else { return nil }
+            // Before a vowel or h, le and la elide to l', which is a separate rule.
+            if marked.isDefinite && noun.startsWithVowelOrH { return nil }
+            if isPronounPosition(of: tokens, articleAt: index) { return nil }
+            // "une petit maison": the word after the article is an adjective before the real noun.
+            if modifiesFollowingNoun(tokens, at: index + 1) { return nil }
+            // "la rouge", as in "la bleue ou la rouge": an adjective that agrees stands in for a noun.
+            if isAgreeingAdjective(noun.normalized, gender: marked.gender) { return nil }
+            return (index, marked)
+        }
     }
 
     /// Whether le/la at `index` is likely an object pronoun before a verb, as in

@@ -13,16 +13,16 @@
 
 import Foundation
 
-/// Adapts the existing grammar implementation to the shared filter contract.
-/// Individual rules can move into their own filters as they become teaching examples.
-struct LocalGrammarFilter: LinguisticFilter {
-    let identifier = "grammar.local"
-    let layer = LinguisticLayer.localMorphosyntax
-    let targetLevel = CefrLevel.a2
+/// Runs one grammar rule family as its own filter, so each rule carries its own layer and level.
+struct GrammarRuleFilter: LinguisticFilter {
+    let rule: GrammarRule
 
-    let grammar: any Grammar
+    var identifier: String { rule.identifier }
+    var layer: LinguisticLayer { rule.layer }
+    var targetLevel: CefrLevel { rule.targetLevel }
 
+    /// Runs the rule on the pass's shared tokens, so the text is tokenized once.
     func evaluate(_ context: LintContext) -> [Issue] {
-        grammar.check(context.text)
+        rule.check(context.tokens)
     }
 }

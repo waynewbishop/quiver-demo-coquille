@@ -16,10 +16,19 @@ import Foundation
 /// A language's grammar rules: the seam where a second language plugs in.
 ///
 /// Agreement and contraction rules are code rather than data, so each language
-/// implements its own conformer. The linter never asks which language it is checking.
+/// implements its own conformer. The linter never asks which language it is checking:
+/// it runs each rule family as its own filter, tagged with its layer and CEFR level.
 nonisolated protocol Grammar: Sendable {
-    /// Returns every grammar issue in `text`, ordered by position.
-    func check(_ text: String) -> [Issue]
+    /// The language's rule families, in the order they run.
+    var rules: [GrammarRule] { get }
+}
+
+nonisolated extension Grammar {
+    /// Returns every grammar issue in `text` from every rule, ordered by position.
+    func check(_ text: String) -> [Issue] {
+        let tokens = FrenchTokenizer.tokens(in: text)
+        return rules.flatMap { $0.check(tokens) }.sorted { $0.offset < $1.offset }
+    }
 }
 
 /// A fixed phrase that is correct but has a more natural alternative, from `fr.idioms.json`.
