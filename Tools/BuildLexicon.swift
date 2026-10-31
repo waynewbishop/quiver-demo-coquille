@@ -19,7 +19,9 @@
 // The optional third file sets the gender of common nouns Lexique leaves blank,
 // such as maison; it defaults to Tools/fr.noun-gender-overrides.json when present.
 // Tools/fr.adjective-overrides.json, when present, completes adjectives Lexique
-// splits or leaves incomplete, such as nouveau and nouvelle.
+// splits or leaves incomplete, such as nouveau and nouvelle. Apple's French spellchecker
+// adds the œ spelling of every word Lexique writes with oe, such as sœur beside soeur,
+// so the script runs on a Mac.
 //
 // The raw table (about 142,000 rows, 26 MB) never ships in the app. The slice keeps
 // only what the linter's rules read: each noun's gender and number, each adjective's
@@ -27,6 +29,7 @@
 // conjugated form's verb, tense and person, and every other known spelling. The output is derived
 // from Lexique and so carries Lexique's CC BY-SA 4.0 license.
 
+import AppKit
 import Foundation
 
 // MARK: - Output shape
@@ -254,6 +257,53 @@ for form in conjugations.keys {
     conjugations[form]?.sort { $0[0] < $1[0] }
 }
 
+// MARK: - Ligature spellings
+
+// Lexique writes œ as oe (soeur, coeur, oeuf), but learners type sœur. Apple's French
+// spellchecker, the one the app runs, decides which oe spellings take the ligature: an oe
+// spelling gains an œ twin only when the spellchecker accepts the œ form, so moelle and
+// coefficient stay as they are. It accepts soeur as well as sœur, so the oe spelling is
+// never tested. Both spellings are kept, and each œ entry's forms and verbs use œ too, so
+// a suggestion matches the spelling the learner typed.
+
+/// Returns true when Apple's French spellchecker finds nothing misspelled in the word.
+func isAccepted(_ word: String) -> Bool {
+    NSSpellChecker.shared.checkSpelling(
+        of: word, startingAt: 0, language: "fr", wrap: false, inSpellDocumentWithTag: 0, wordCount: nil
+    ).location == NSNotFound
+}
+
+let oeSpellings = Set(
+    Array(nouns.keys) + Array(adjectives.keys) + adjectives.values.flatMap { $0 } + Array(verbs)
+        + Array(participles.keys) + Array(conjugations.keys) + Array(others)
+        + participles.values.flatMap { $0.map { $0[0] } } + conjugations.values.flatMap { $0.map { $0[0] } }
+).filter { $0.contains("oe") }
+
+// The oe spelling → its œ spelling, for every word the spellchecker writes with œ.
+var ligatures: [String: String] = [:]
+for spelling in oeSpellings.sorted() {
+    let ligature = spelling.replacingOccurrences(of: "oe", with: "œ")
+    if isAccepted(ligature) {
+        ligatures[spelling] = ligature
+    }
+}
+
+/// Returns the œ spelling of a word when it has one, or the word unchanged.
+func withLigature(_ word: String) -> String {
+    ligatures[word] ?? word
+}
+
+for (spelling, ligature) in ligatures {
+    if let code = nouns[spelling] { nouns[ligature] = code }
+    if verbs.contains(spelling) { verbs.insert(ligature) }
+    if let entries = participles[spelling] { participles[ligature] = entries.map { [withLigature($0[0]), $0[1]] } }
+    if let entries = conjugations[spelling] { conjugations[ligature] = entries.map { [withLigature($0[0]), $0[1]] } }
+    if others.contains(spelling) { others.insert(ligature) }
+}
+for (lemma, forms) in adjectives where ligatures[lemma] != nil {
+    adjectives[withLigature(lemma)] = forms.map(withLigature)
+}
+
 let adjectiveForms = Set(adjectives.values.flatMap { $0 })
 let otherWords = others.subtracting(nouns.keys).subtracting(adjectiveForms).subtracting(verbs)
 
@@ -275,3 +325,4 @@ let data = try encoder.encode(file)
 try data.write(to: URL(fileURLWithPath: arguments[2]))
 
 print("nouns \(nouns.count) (\(overridden) gender overrides) · adjective lemmas \(adjectives.count) (\(adjectiveOverrides) overrides) · verb forms \(verbs.count) · participles \(participles.count) · conjugated forms \(conjugations.count) · other words \(otherWords.count) · \(data.count / 1024) KB")
+print("œ spellings added (\(ligatures.count)): " + ligatures.values.sorted().joined(separator: ", "))

@@ -78,6 +78,12 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Je vois la arbre."), [])
     }
 
+    // Nouns typed with œ have a gender, though Lexique spells them with oe.
+    func testLigatureSpellingsHaveAGender() throws {
+        XCTAssertEqual(try fixes("Le sœur et la cœur."), ["Le sœur → La sœur", "la cœur → le cœur"])
+        XCTAssertEqual(try fixes("La soeur et le coeur."), [])
+    }
+
     // MARK: - Contractions
 
     // à + le and de + les contract before a noun.
@@ -278,7 +284,13 @@ final class FrenchGrammarTests: XCTestCase {
         "Si j'avais le temps, je viendrais.",
         "Si, je viendrai demain.",
         "Il s'est levé.",
-        "Il fera beau si tu viens."
+        "Il fera beau si tu viens.",
+        // Tous and sur after a noun start a new phrase rather than agreeing with it.
+        "Je prends une douche tous les matins.",
+        "Il y a des photos sur le mur.",
+        // Plus and moins after an article start a superlative, not a noun.
+        "C'était la plus belle journée de l'année.",
+        "C'est le moins cher."
     ]
 
     /// Wrong French, each with the one fix the rules must offer.

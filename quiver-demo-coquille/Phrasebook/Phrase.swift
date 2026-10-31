@@ -16,25 +16,43 @@ import Foundation
 /// The everyday situation a phrase belongs to, in the order the phrasebook lists them.
 nonisolated enum Situation: String, CaseIterable, Codable, Sendable {
     case greetings
+    case politeness
+    case smallTalk
+    case today
+    case weather
+    case feelings
+    case clothing
+    case people
+    case home
+    case meals
+    case workAndSchool
+    case freeTime
     case cafe
     case shopping
     case directions
     case travel
-    case smallTalk
-    case politeness
     case journal
 
     /// The section title shown in the phrasebook.
     var title: String {
         switch self {
         case .greetings: "Greetings"
+        case .politeness: "Politeness and apologies"
+        case .smallTalk: "Small talk"
+        case .today: "Today's date"
+        case .weather: "Weather"
+        case .feelings: "How I feel"
+        case .clothing: "What I'm wearing"
+        case .people: "Describing people"
+        case .home: "Where I live"
+        case .meals: "Meals"
+        case .workAndSchool: "Work and school"
+        case .freeTime: "Free time"
         case .cafe: "Café and restaurant"
         case .shopping: "Shopping"
         case .directions: "Directions"
         case .travel: "Travel"
-        case .smallTalk: "Small talk"
-        case .politeness: "Politeness and apologies"
-        case .journal: "Journal starters"
+        case .journal: "Journal starters and linking phrases"
         }
     }
 }

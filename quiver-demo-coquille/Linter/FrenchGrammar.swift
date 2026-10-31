@@ -121,6 +121,16 @@ nonisolated struct FrenchGrammar: Grammar {
         "ne", "n'"
     ]
 
+    /// Words Lexique lists as adjectives that, right after a noun, almost always start
+    /// something else: "une douche tous les matins", "des photos sur le mur".
+    private static let nonAgreeingAfterNoun: Set<String> = [
+        "tout", "toute", "tous", "toutes", "sur"
+    ]
+
+    /// Words that, after le or la, start a superlative rather than name a noun:
+    /// "la plus belle journée", "le moins cher".
+    private static let superlativeMarkers: Set<String> = ["plus", "moins"]
+
     /// Pronouns that a relative que can follow, as in "ce qu'il dit".
     private static let relativeAntecedents: Set<String> = [
         "ce", "c'", "celui", "celle", "ceux", "celles", "tout"
@@ -214,6 +224,7 @@ nonisolated struct FrenchGrammar: Grammar {
             // Before a vowel or h, le and la elide to l', which is a separate rule.
             if marked.isDefinite && noun.startsWithVowelOrH { return nil }
             if isPronounPosition(of: tokens, articleAt: index) { return nil }
+            if Self.superlativeMarkers.contains(noun.normalized) { return nil }
             // "une petit maison": the word after the article is an adjective before the real noun.
             if modifiesFollowingNoun(tokens, at: index + 1) { return nil }
             // "la rouge", as in "la bleue ou la rouge": an adjective that agrees stands in for a noun.
@@ -682,13 +693,14 @@ nonisolated struct FrenchGrammar: Grammar {
             let adjective = tokens[index + 2]
             guard let marked = Self.determiners[determiner.normalized],
                   determiner.isAdjacentToNext, noun.isAdjacentToNext,
+                  !Self.superlativeMarkers.contains(noun.normalized),
                   let entry = lexicon.noun(noun.normalized) else { continue }
             // "je le porte tous les jours": le is a pronoun, so porte is a verb with no adjective.
             if Self.articles[determiner.normalized] != nil, isPronounPosition(of: tokens, articleAt: index) { continue }
 
             let word = adjective.normalized
             // Past participles ("des pommes achetées") are verb forms with their own rules.
-            guard !lexicon.isVerb(word) else { continue }
+            guard !lexicon.isVerb(word), !Self.nonAgreeingAfterNoun.contains(word) else { continue }
             let lemmas = lexicon.adjectiveLemmas(of: word)
             guard lemmas.count == 1, let lemma = lemmas.first,
                   let gender = entry.gender ?? marked.gender,

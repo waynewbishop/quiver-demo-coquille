@@ -92,6 +92,2607 @@
     "register": "either"
   },
   {
+    "situation": "greetings",
+    "french": "Je te présente ma femme.",
+    "english": "This is my wife.",
+    "register": "tu",
+    "note": "Présenter introduces someone: je te présente ma femme."
+  },
+  {
+    "situation": "greetings",
+    "french": "Enchanté de faire votre connaissance.",
+    "english": "Pleased to meet you.",
+    "register": "vous",
+    "note": "A woman writes enchantée."
+  },
+  {
+    "situation": "greetings",
+    "french": "À tout à l'heure !",
+    "english": "See you later!",
+    "register": "either"
+  },
+  {
+    "situation": "greetings",
+    "french": "Bonne soirée !",
+    "english": "Have a good evening!",
+    "register": "either",
+    "note": "Bonsoir greets; bonne soirée says goodbye."
+  },
+  {
+    "situation": "greetings",
+    "french": "Bonne nuit, dors bien.",
+    "english": "Good night, sleep well.",
+    "register": "tu"
+  },
+  {
+    "situation": "greetings",
+    "french": "Bonjour, madame. Bonjour, monsieur.",
+    "english": "Hello, ma'am. Hello, sir.",
+    "register": "either",
+    "note": "Adding madame or monsieur makes a greeting polite."
+  },
+  {
+    "situation": "greetings",
+    "french": "Salut, ça fait longtemps !",
+    "english": "Hi, it's been a while!",
+    "register": "tu"
+  },
+  {
+    "situation": "greetings",
+    "french": "Voici mon numéro de téléphone.",
+    "english": "Here's my phone number.",
+    "register": "either",
+    "note": "Voici points to something here; voilà to something there."
+  },
+  {
+    "situation": "greetings",
+    "french": "Voilà mon frère !",
+    "english": "There's my brother!",
+    "register": "either"
+  },
+  {
+    "situation": "greetings",
+    "french": "Oh, quelle surprise !",
+    "english": "Oh, what a surprise!",
+    "register": "either"
+  },
+  {
+    "situation": "greetings",
+    "french": "Je vous souhaite une bonne journée.",
+    "english": "I wish you a good day.",
+    "register": "vous"
+  },
+  {
+    "situation": "greetings",
+    "french": "Embrasse tes parents pour moi.",
+    "english": "Give your parents a hug from me.",
+    "register": "tu"
+  },
+  {
+    "situation": "politeness",
+    "french": "S'il vous plaît.",
+    "english": "Please.",
+    "register": "vous",
+    "note": "To a friend, say s'il te plaît."
+  },
+  {
+    "situation": "politeness",
+    "french": "S'il te plaît.",
+    "english": "Please.",
+    "register": "tu"
+  },
+  {
+    "situation": "politeness",
+    "french": "Merci beaucoup.",
+    "english": "Thank you very much.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "De rien.",
+    "english": "You're welcome.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Excusez-moi.",
+    "english": "Excuse me.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Pardon.",
+    "english": "Sorry. / Excuse me.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je suis désolé.",
+    "english": "I'm sorry.",
+    "register": "either",
+    "note": "A woman writes désolée."
+  },
+  {
+    "situation": "politeness",
+    "french": "Ce n'est pas grave.",
+    "english": "It doesn't matter.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je ne comprends pas.",
+    "english": "I don't understand.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Vous parlez anglais ?",
+    "english": "Do you speak English?",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Avec plaisir.",
+    "english": "With pleasure.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Bien sûr.",
+    "english": "Of course.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Merci beaucoup pour le cadeau.",
+    "english": "Thank you very much for the gift.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je vous remercie pour votre aide.",
+    "english": "Thank you for your help.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Excusez-moi de vous déranger.",
+    "english": "Sorry to bother you.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Avec plaisir !",
+    "english": "With pleasure!",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Ce n'est pas votre faute.",
+    "english": "It's not your fault.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Bonne chance pour ton examen !",
+    "english": "Good luck with your exam!",
+    "register": "tu"
+  },
+  {
+    "situation": "politeness",
+    "french": "Pardonnez-moi, je ne voulais pas vous déranger.",
+    "english": "Forgive me, I didn't mean to bother you.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je regrette, ce n'est pas possible.",
+    "english": "I'm sorry, that's not possible.",
+    "register": "either"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je vous propose de venir dîner samedi.",
+    "english": "I'd like to invite you to dinner on Saturday.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Ce n'est pas la peine.",
+    "english": "There's no need.",
+    "register": "either",
+    "note": "Ce n'est pas la peine means it's not worth the trouble."
+  },
+  {
+    "situation": "politeness",
+    "french": "Vous pouvez garder la monnaie.",
+    "english": "You can keep the change.",
+    "register": "vous"
+  },
+  {
+    "situation": "politeness",
+    "french": "Je peux vous aider à porter ça ?",
+    "english": "Can I help you carry that?",
+    "register": "vous"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Vous venez d'où ?",
+    "english": "Where are you from?",
+    "register": "vous",
+    "note": "D'où means from where."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je suis américain.",
+    "english": "I'm American.",
+    "register": "either",
+    "note": "A woman writes américaine."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "J'apprends le français.",
+    "english": "I'm learning French.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je parle un peu français.",
+    "english": "I speak a little French.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Qu'est-ce que tu fais ce week-end ?",
+    "english": "What are you doing this weekend?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "J'aime faire du vélo.",
+    "english": "I like cycling.",
+    "register": "either",
+    "note": "Liking takes le and doing takes du: j'aime le vélo, je fais du vélo."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je fais du sport le matin.",
+    "english": "I exercise in the mornings.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'était super !",
+    "english": "It was great!",
+    "register": "either",
+    "note": "C'était means it was."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu as des enfants ?",
+    "english": "Do you have children?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu connais mon ami ?",
+    "english": "Do you know my friend?",
+    "register": "tu",
+    "note": "Connaître is to know a person or place; savoir is to know a fact."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je crois que oui.",
+    "english": "I think so.",
+    "register": "either",
+    "note": "Je crois que non means I don't think so."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Qu'est-ce que tu en penses ?",
+    "english": "What do you think of it?",
+    "register": "tu",
+    "note": "En stands for the thing being discussed."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Vous vivez ici depuis longtemps ?",
+    "english": "Have you lived here long?",
+    "register": "vous"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est vrai ?",
+    "english": "Really?",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est absolument génial !",
+    "english": "That's absolutely great!",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Ce n'est pas possible !",
+    "english": "That's not possible!",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Il a raison.",
+    "english": "He's right.",
+    "register": "either",
+    "note": "Avoir raison and avoir tort: to be right and to be wrong."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Moi aussi.",
+    "english": "Me too.",
+    "register": "either",
+    "note": "After a negative, say moi non plus: me neither."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Il y a beaucoup de monde ici.",
+    "english": "There are a lot of people here.",
+    "register": "either",
+    "note": "Du monde means people, not the world."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Les gens sont très sympathiques dans ce village.",
+    "english": "People are very friendly in this village.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu as une idée ?",
+    "english": "Do you have an idea?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je n'ai aucune idée.",
+    "english": "I have no idea.",
+    "register": "either",
+    "note": "Aucune means not a single one."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Quel âge as-tu ?",
+    "english": "How old are you?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu as un animal ?",
+    "english": "Do you have a pet?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "J'ai un chat et deux oiseaux.",
+    "english": "I have a cat and two birds.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Qu'est-ce que tu fais dans la vie ?",
+    "english": "What do you do for a living?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je suis d'accord avec toi.",
+    "english": "I agree with you.",
+    "register": "tu",
+    "note": "D'accord means OK; être d'accord avec means to agree with."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Peut-être demain.",
+    "english": "Maybe tomorrow.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Pourquoi pas ?",
+    "english": "Why not?",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est la première fois que je viens ici.",
+    "english": "It's my first time here.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "J'habite ici depuis trois ans.",
+    "english": "I've lived here for three years.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu sais où il habite ?",
+    "english": "Do you know where he lives?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je ne sais pas, je vais deviner.",
+    "english": "I don't know, I'll guess.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Quel est ton avis ?",
+    "english": "What's your opinion?",
+    "register": "tu",
+    "note": "À mon avis means in my opinion."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "À mon avis, c'est une bonne idée.",
+    "english": "In my opinion, it's a good idea.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est vraiment bizarre.",
+    "english": "That's really strange.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu es complètement fou !",
+    "english": "You're completely crazy!",
+    "register": "tu",
+    "note": "A woman is folle."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Il parle trois langues.",
+    "english": "He speaks three languages.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu viens d'où exactement ?",
+    "english": "Where exactly are you from?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je préfère plutôt le thé.",
+    "english": "I'd rather have tea.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Ça m'intéresse beaucoup.",
+    "english": "That interests me a lot.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je n'ai pas le choix.",
+    "english": "I have no choice.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est le contraire.",
+    "english": "It's the opposite.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Par exemple ?",
+    "english": "For example?",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "J'ai l'impression que tu es fatigué.",
+    "english": "I get the feeling you're tired.",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Nous avons les mêmes goûts.",
+    "english": "We have the same tastes.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Il y a un problème ?",
+    "english": "Is there a problem?",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Je vais réfléchir.",
+    "english": "I'll think about it.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tu fumes ?",
+    "english": "Do you smoke?",
+    "register": "tu"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Non, je ne fume pas de cigarettes.",
+    "english": "No, I don't smoke cigarettes.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Ce n'est pas normal.",
+    "english": "That's not normal.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Tout est simple pour lui.",
+    "english": "Everything is easy for him.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Ils sont mariés depuis dix ans.",
+    "english": "They've been married for ten years.",
+    "register": "either"
+  },
+  {
+    "situation": "smallTalk",
+    "french": "Elles sont parties tôt.",
+    "english": "They left early.",
+    "register": "either",
+    "note": "Elles is for a group of women only."
+  },
+  {
+    "situation": "smallTalk",
+    "french": "C'est un secret entre nous.",
+    "english": "It's a secret between us.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Aujourd'hui, nous sommes mardi.",
+    "english": "Today is Tuesday.",
+    "register": "either",
+    "note": "Days and months take no capital letter: mardi, janvier."
+  },
+  {
+    "situation": "today",
+    "french": "Mon anniversaire est en février.",
+    "english": "My birthday is in February.",
+    "register": "either",
+    "note": "Months take en: en février, en juillet."
+  },
+  {
+    "situation": "today",
+    "french": "Il est huit heures du matin.",
+    "english": "It's eight in the morning.",
+    "register": "either",
+    "note": "Telling the time takes il est: il est huit heures."
+  },
+  {
+    "situation": "today",
+    "french": "Le samedi, je dors jusqu'à midi.",
+    "english": "On Saturdays I sleep until noon.",
+    "register": "either",
+    "note": "Le before a day means every: le samedi, every Saturday."
+  },
+  {
+    "situation": "today",
+    "french": "En hiver, la nuit tombe très tôt.",
+    "english": "In winter, night falls very early.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Au printemps, il fait doux.",
+    "english": "In spring, the weather is mild.",
+    "register": "either",
+    "note": "Au printemps, but en été, en automne and en hiver."
+  },
+  {
+    "situation": "today",
+    "french": "Lundi, je commence le travail à neuf heures.",
+    "english": "On Monday I start work at nine.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Mon anniversaire est le dix avril.",
+    "english": "My birthday is April tenth.",
+    "register": "either",
+    "note": "Dates take le and a plain number: le dix avril. Only the first is le premier."
+  },
+  {
+    "situation": "today",
+    "french": "En août, nous partons en vacances.",
+    "english": "In August we go on vacation.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "L'été est ma saison préférée.",
+    "english": "Summer is my favorite season.",
+    "register": "either",
+    "note": "Préféré comes after the noun: ma saison préférée."
+  },
+  {
+    "situation": "today",
+    "french": "En automne, les feuilles tombent.",
+    "english": "In autumn the leaves fall.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Le dimanche après-midi, je me repose.",
+    "english": "On Sunday afternoons I rest.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Je me couche avant minuit.",
+    "english": "I go to bed before midnight.",
+    "register": "either",
+    "note": "Se coucher is to go to bed; dormir is to sleep."
+  },
+  {
+    "situation": "today",
+    "french": "Il y a douze mois dans une année.",
+    "english": "There are twelve months in a year.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Quelle est la date aujourd'hui ?",
+    "english": "What's the date today?",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Je suis né en septembre.",
+    "english": "I was born in September.",
+    "register": "either",
+    "note": "Naître takes être: je suis né. A woman writes née."
+  },
+  {
+    "situation": "today",
+    "french": "Jeudi prochain, je vais voir mes parents.",
+    "english": "Next Thursday I'm going to see my parents.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Je travaille du lundi au vendredi.",
+    "english": "I work Monday to Friday.",
+    "register": "either",
+    "note": "Du lundi au vendredi means from Monday through Friday."
+  },
+  {
+    "situation": "today",
+    "french": "En janvier, il fait très froid.",
+    "english": "In January it's very cold.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Le printemps commence en mars.",
+    "english": "Spring begins in March.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "En octobre et en novembre, il pleut beaucoup.",
+    "english": "In October and November it rains a lot.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "En juin, les jours sont plus longs.",
+    "english": "In June the days are longer.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Le dimanche, les magasins sont fermés.",
+    "english": "On Sundays the shops are closed.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Ce mois-ci, je suis très occupé.",
+    "english": "This month I'm very busy.",
+    "register": "either",
+    "note": "Ce mois-ci means this month; ce mois-là means that month."
+  },
+  {
+    "situation": "today",
+    "french": "En décembre, nous fêtons la fin de l'année.",
+    "english": "In December we celebrate the end of the year.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Le mercredi, je vais à la piscine.",
+    "english": "On Wednesdays I go to the pool.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "En mai, il y a beaucoup de fleurs.",
+    "english": "In May there are lots of flowers.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Il est presque midi.",
+    "english": "It's almost noon.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "Le lendemain, il faisait beau.",
+    "english": "The next day the weather was nice.",
+    "register": "either"
+  },
+  {
+    "situation": "today",
+    "french": "J'ai rendez-vous chez le docteur à dix heures.",
+    "english": "I have a doctor's appointment at ten.",
+    "register": "either",
+    "note": "Un rendez-vous is a fixed meeting time, with a doctor or a friend."
+  },
+  {
+    "situation": "today",
+    "french": "Attends une seconde !",
+    "english": "Wait a second!",
+    "register": "tu"
+  },
+  {
+    "situation": "weather",
+    "french": "Il fait beau aujourd'hui.",
+    "english": "It's nice out today.",
+    "register": "either",
+    "note": "Weather takes il fait: il fait beau, il fait froid."
+  },
+  {
+    "situation": "weather",
+    "french": "Il fait froid.",
+    "english": "It's cold.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il pleut.",
+    "english": "It's raining.",
+    "register": "either",
+    "note": "Rain has its own verb: il pleut now, il va pleuvoir later."
+  },
+  {
+    "situation": "weather",
+    "french": "Il va pleuvoir demain.",
+    "english": "It's going to rain tomorrow.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il y a des nuages.",
+    "english": "It's cloudy.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il y a du soleil.",
+    "english": "It's sunny.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Quel temps fait-il ?",
+    "english": "What's the weather like?",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il neige depuis ce matin.",
+    "english": "It's been snowing since this morning.",
+    "register": "either",
+    "note": "Depuis with the present says how long something has been going on."
+  },
+  {
+    "situation": "weather",
+    "french": "Le vent est très fort aujourd'hui.",
+    "english": "The wind is very strong today.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il fait trente degrés, il fait très chaud.",
+    "english": "It's thirty degrees; it's very hot.",
+    "register": "either",
+    "note": "Temperatures in France are in degrees Celsius."
+  },
+  {
+    "situation": "weather",
+    "french": "La météo annonce un orage pour ce soir.",
+    "english": "The forecast says there'll be a storm tonight.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il y a du brouillard sur la route.",
+    "english": "There's fog on the road.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il va neiger cette nuit.",
+    "english": "It's going to snow tonight.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Je n'aime pas la pluie.",
+    "english": "I don't like the rain.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Quelle est la température dehors ?",
+    "english": "What's the temperature outside?",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Le ciel est gris aujourd'hui.",
+    "english": "The sky is gray today.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Après la pluie, l'air est frais.",
+    "english": "After the rain, the air is cool.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il fait tellement chaud !",
+    "english": "It's so hot!",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Le soleil est déjà haut dans le ciel.",
+    "english": "The sun is already high in the sky.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "Il ne pleut pas, c'est sec.",
+    "english": "It's not raining; it's dry.",
+    "register": "either"
+  },
+  {
+    "situation": "weather",
+    "french": "La chaleur est terrible cet été.",
+    "english": "The heat is terrible this summer.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je suis très content aujourd'hui.",
+    "english": "I'm very happy today.",
+    "register": "either",
+    "note": "A woman writes contente."
+  },
+  {
+    "situation": "feelings",
+    "french": "Elle est triste parce que son chat est malade.",
+    "english": "She's sad because her cat is sick.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Nous sommes fatigués après le voyage.",
+    "english": "We're tired after the trip.",
+    "register": "either",
+    "note": "Fatigué agrees with who is tired: fatigués for a group, fatiguées for a group of women."
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai mal à la tête et au ventre.",
+    "english": "I have a headache and a stomachache.",
+    "register": "either",
+    "note": "Avoir mal à names what hurts: à la tête, au ventre, aux dents."
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai de la fièvre, je vais chez le médecin.",
+    "english": "I have a fever, so I'm going to the doctor.",
+    "register": "either",
+    "note": "Chez means at someone's place: chez le médecin, chez moi."
+  },
+  {
+    "situation": "feelings",
+    "french": "Mon frère a peur des chiens.",
+    "english": "My brother is afraid of dogs.",
+    "register": "either",
+    "note": "Avoir peur de: de and les join as des."
+  },
+  {
+    "situation": "feelings",
+    "french": "Je suis heureux de vous voir.",
+    "english": "I'm happy to see you.",
+    "register": "vous",
+    "note": "A woman writes heureuse."
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai un rhume et mal à la gorge.",
+    "english": "I have a cold and a sore throat.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Prenez ce médicament trois fois par jour.",
+    "english": "Take this medicine three times a day.",
+    "register": "vous"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je suis nerveux avant un examen.",
+    "english": "I get nervous before an exam.",
+    "register": "either",
+    "note": "A woman writes nerveuse."
+  },
+  {
+    "situation": "feelings",
+    "french": "Il est en colère contre son frère.",
+    "english": "He's angry with his brother.",
+    "register": "either",
+    "note": "En colère contre means angry with someone."
+  },
+  {
+    "situation": "feelings",
+    "french": "Restez calme, ce n'est pas grave.",
+    "english": "Stay calm, it's not serious.",
+    "register": "vous"
+  },
+  {
+    "situation": "feelings",
+    "french": "La santé, c'est important.",
+    "english": "Health matters.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai une douleur dans le dos.",
+    "english": "I have a pain in my back.",
+    "register": "either",
+    "note": "Body parts take le, not mon: dans le dos."
+  },
+  {
+    "situation": "feelings",
+    "french": "Tu as l'air triste, qu'est-ce qui se passe ?",
+    "english": "You look sad. What's wrong?",
+    "register": "tu",
+    "note": "Avoir l'air plus an adjective means to look: tu as l'air triste."
+  },
+  {
+    "situation": "feelings",
+    "french": "Je me sens mieux aujourd'hui.",
+    "english": "I feel better today.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai sommeil, je vais dormir.",
+    "english": "I'm sleepy, so I'm going to sleep.",
+    "register": "either",
+    "note": "French has sleepiness, hunger and fear: avoir sommeil, avoir faim, avoir peur."
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai honte de mon erreur.",
+    "english": "I'm ashamed of my mistake.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai confiance en toi.",
+    "english": "I trust you.",
+    "register": "tu",
+    "note": "Avoir confiance en means to trust."
+  },
+  {
+    "situation": "feelings",
+    "french": "Je suis amoureux d'elle.",
+    "english": "I'm in love with her.",
+    "register": "either",
+    "note": "A woman writes amoureuse."
+  },
+  {
+    "situation": "feelings",
+    "french": "Je déteste attendre.",
+    "english": "I hate waiting.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je ne me sens pas bien.",
+    "english": "I don't feel well.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je suis inquiet pour mon fils.",
+    "english": "I'm worried about my son.",
+    "register": "either",
+    "note": "A woman writes inquiète."
+  },
+  {
+    "situation": "feelings",
+    "french": "Ne t'inquiète pas.",
+    "english": "Don't worry.",
+    "register": "tu"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je ressens une grande joie.",
+    "english": "I feel great joy.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Le bonheur, c'est simple.",
+    "english": "Happiness is simple.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Respire doucement.",
+    "english": "Breathe slowly.",
+    "register": "tu"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je souffre du dos depuis lundi.",
+    "english": "My back has been hurting since Monday.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Elle a souri quand elle m'a vu.",
+    "english": "She smiled when she saw me.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Il est triste, mais il cache ses sentiments.",
+    "english": "He's sad, but he hides his feelings.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai crié de surprise.",
+    "english": "I cried out in surprise.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je rêve de voyager.",
+    "english": "I dream of traveling.",
+    "register": "either",
+    "note": "Rêver de plus a verb: je rêve de voyager."
+  },
+  {
+    "situation": "feelings",
+    "french": "J'ai fait un rêve étrange.",
+    "english": "I had a strange dream.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Je me sens libre.",
+    "english": "I feel free.",
+    "register": "either"
+  },
+  {
+    "situation": "feelings",
+    "french": "Reste tranquille, tout va bien.",
+    "english": "Stay calm, everything's fine.",
+    "register": "tu"
+  },
+  {
+    "situation": "clothing",
+    "french": "Je porte un pull bleu et un jean.",
+    "english": "I'm wearing a blue sweater and jeans.",
+    "register": "either",
+    "note": "Colors come after the noun: un pull bleu."
+  },
+  {
+    "situation": "clothing",
+    "french": "Il fait froid, je mets mon manteau.",
+    "english": "It's cold, so I'm putting on my coat.",
+    "register": "either",
+    "note": "Mettre is to put on; porter is to wear."
+  },
+  {
+    "situation": "clothing",
+    "french": "Elle a une robe rouge et des chaussures noires.",
+    "english": "She has a red dress and black shoes.",
+    "register": "either",
+    "note": "Colors agree too: noires, because chaussures is feminine plural."
+  },
+  {
+    "situation": "clothing",
+    "french": "Ces chaussettes sont trop petites.",
+    "english": "These socks are too small.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "En été, je porte un short et un chapeau.",
+    "english": "In summer I wear shorts and a hat.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Je m'habille vite le matin.",
+    "english": "I get dressed quickly in the morning.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Il porte un costume et une cravate pour le travail.",
+    "english": "He wears a suit and tie for work.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Elle met une jupe et une veste noire.",
+    "english": "She's putting on a skirt and a black jacket.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "En hiver, je porte des bottes, des gants et une écharpe.",
+    "english": "In winter I wear boots, gloves and a scarf.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Mon père porte toujours une casquette.",
+    "english": "My father always wears a cap.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Où sont mes lunettes ?",
+    "english": "Where are my glasses?",
+    "register": "either",
+    "note": "Lunettes is always plural: mes lunettes."
+  },
+  {
+    "situation": "clothing",
+    "french": "Ce pantalon est trop long.",
+    "english": "These trousers are too long.",
+    "register": "either",
+    "note": "Un pantalon is singular in French."
+  },
+  {
+    "situation": "clothing",
+    "french": "Cette chemise blanche est sale.",
+    "english": "This white shirt is dirty.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Je vais laver mes vêtements.",
+    "english": "I'm going to wash my clothes.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Enlève ton manteau, il fait chaud.",
+    "english": "Take off your coat, it's warm.",
+    "register": "tu"
+  },
+  {
+    "situation": "clothing",
+    "french": "Cette jupe est un peu courte.",
+    "english": "This skirt is a little short.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Il a un gros pull pour l'hiver.",
+    "english": "He has a thick sweater for winter.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "Ce sac est léger.",
+    "english": "This bag is light.",
+    "register": "either"
+  },
+  {
+    "situation": "clothing",
+    "french": "J'aime ce genre de chaussures.",
+    "english": "I like this kind of shoe.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Ma sœur a les cheveux longs.",
+    "english": "My sister has long hair.",
+    "register": "either",
+    "note": "Hair is plural in French: les cheveux."
+  },
+  {
+    "situation": "people",
+    "french": "Mon père est grand et il a les yeux bleus.",
+    "english": "My father is tall and has blue eyes.",
+    "register": "either",
+    "note": "Œil becomes yeux in the plural."
+  },
+  {
+    "situation": "people",
+    "french": "Mon oncle habite dans une petite ville.",
+    "english": "My uncle lives in a small town.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mon frère a vingt ans.",
+    "english": "My brother is twenty.",
+    "register": "either",
+    "note": "Age takes avoir: il a vingt ans."
+  },
+  {
+    "situation": "people",
+    "french": "Mon meilleur ami est petit et très drôle.",
+    "english": "My best friend is short and very funny.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Nous sommes une famille de cinq personnes.",
+    "english": "We're a family of five.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Ma tante est blonde et mince.",
+    "english": "My aunt is blond and slim.",
+    "register": "either",
+    "note": "A woman is blonde; a man is blond."
+  },
+  {
+    "situation": "people",
+    "french": "Mon neveu a les cheveux bruns.",
+    "english": "My nephew has brown hair.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Ma nièce est un bébé de six mois.",
+    "english": "My niece is a six-month-old baby.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mes grands-parents habitent à la campagne.",
+    "english": "My grandparents live in the country.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Ma grand-mère raconte toujours des histoires.",
+    "english": "My grandmother is always telling stories.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mon grand-père est vieux, mais il court encore.",
+    "english": "My grandfather is old, but he still runs.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Je suis marié et j'ai deux fils.",
+    "english": "I'm married and I have two sons.",
+    "register": "either",
+    "note": "Fils stays the same in the plural: un fils, deux fils."
+  },
+  {
+    "situation": "people",
+    "french": "Ma cousine est célibataire.",
+    "english": "My cousin is single.",
+    "register": "either",
+    "note": "Cousin is a man, cousine a woman."
+  },
+  {
+    "situation": "people",
+    "french": "Mon mari est plus grand que moi.",
+    "english": "My husband is taller than me.",
+    "register": "either",
+    "note": "Plus and que compare: plus grand que moi."
+  },
+  {
+    "situation": "people",
+    "french": "Sa femme est médecin à l'hôpital.",
+    "english": "His wife is a doctor at the hospital.",
+    "register": "either",
+    "note": "Femme means both woman and wife."
+  },
+  {
+    "situation": "people",
+    "french": "Le bébé ressemble à sa maman.",
+    "english": "The baby looks like his mom.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Papa, tu peux m'aider ?",
+    "english": "Dad, can you help me?",
+    "register": "tu"
+  },
+  {
+    "situation": "people",
+    "french": "Il a un petit nez et une grande bouche.",
+    "english": "He has a small nose and a big mouth.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Elle a mal au genou et à l'épaule.",
+    "english": "Her knee and shoulder hurt.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Lève la main pour répondre.",
+    "english": "Raise your hand to answer.",
+    "register": "tu"
+  },
+  {
+    "situation": "people",
+    "french": "Je me lave les dents et les mains.",
+    "english": "I brush my teeth and wash my hands.",
+    "register": "either",
+    "note": "Body parts take les, not mes: je me lave les mains."
+  },
+  {
+    "situation": "people",
+    "french": "Il a mal aux jambes après le sport.",
+    "english": "His legs hurt after sport.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "J'ai froid aux oreilles et au cou.",
+    "english": "My ears and neck are cold.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Fais attention à ton dos.",
+    "english": "Be careful with your back.",
+    "register": "tu"
+  },
+  {
+    "situation": "people",
+    "french": "Il a de grands bras et de longs doigts.",
+    "english": "He has big arms and long fingers.",
+    "register": "either",
+    "note": "Before an adjective, des becomes de: de grands bras."
+  },
+  {
+    "situation": "people",
+    "french": "Elle a un joli visage.",
+    "english": "She has a pretty face.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Le sport est bon pour le corps.",
+    "english": "Sport is good for the body.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mon copain est très sérieux.",
+    "english": "My boyfriend is very serious.",
+    "register": "either",
+    "note": "Copain is a friend or a boyfriend; copine a friend or a girlfriend."
+  },
+  {
+    "situation": "people",
+    "french": "Ce garçon est le frère de mon ami.",
+    "english": "That boy is my friend's brother.",
+    "register": "either",
+    "note": "French says the brother of my friend: le frère de mon ami."
+  },
+  {
+    "situation": "people",
+    "french": "Cet homme a les yeux verts.",
+    "english": "That man has green eyes.",
+    "register": "either",
+    "note": "Ce becomes cet before a vowel or a mute h: cet homme."
+  },
+  {
+    "situation": "people",
+    "french": "Ma grand-mère vit seule.",
+    "english": "My grandmother lives alone.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mes amis sont toujours là pour moi.",
+    "english": "My friends are always there for me.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Elle est jeune et très jolie.",
+    "english": "She's young and very pretty.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Il ressemble à son père.",
+    "english": "He looks like his father.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Chacun a sa place à table.",
+    "english": "Everyone has a place at the table.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Mes parents me manquent.",
+    "english": "I miss my parents.",
+    "register": "either",
+    "note": "Manquer turns English around: mes parents me manquent means I miss my parents."
+  },
+  {
+    "situation": "people",
+    "french": "Je ne connais personne ici.",
+    "english": "I don't know anyone here.",
+    "register": "either",
+    "note": "Ne and personne mean nobody."
+  },
+  {
+    "situation": "people",
+    "french": "Quelqu'un a appelé pour toi.",
+    "english": "Someone called for you.",
+    "register": "tu"
+  },
+  {
+    "situation": "people",
+    "french": "Les enfants jouent entre eux.",
+    "english": "The children are playing among themselves.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Leur fille est très gentille.",
+    "english": "Their daughter is very kind.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Leurs enfants vont à l'école du village.",
+    "english": "Their children go to the village school.",
+    "register": "either",
+    "note": "Leur for one thing, leurs for several."
+  },
+  {
+    "situation": "people",
+    "french": "Nos voisins ont un cheval.",
+    "english": "Our neighbors have a horse.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Vos enfants sont adorables.",
+    "english": "Your children are adorable.",
+    "register": "vous"
+  },
+  {
+    "situation": "people",
+    "french": "Tes amis sont toujours les bienvenus.",
+    "english": "Your friends are always welcome.",
+    "register": "tu"
+  },
+  {
+    "situation": "people",
+    "french": "Cette dame a une belle voix.",
+    "english": "That lady has a beautiful voice.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Il a la peau très claire.",
+    "english": "He has very fair skin.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Le mariage de ma sœur est en juin.",
+    "english": "My sister's wedding is in June.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Elle a épousé un homme gentil.",
+    "english": "She married a kind man.",
+    "register": "either"
+  },
+  {
+    "situation": "people",
+    "french": "Lui, il est grand ; elle, elle est petite.",
+    "english": "He's tall; she's short.",
+    "register": "either",
+    "note": "Lui and elle stress who you mean."
+  },
+  {
+    "situation": "home",
+    "french": "J'habite dans un petit appartement.",
+    "english": "I live in a small apartment.",
+    "register": "either",
+    "note": "Habiter dans for a building, habiter à for a city: j'habite à Paris."
+  },
+  {
+    "situation": "home",
+    "french": "Il y a deux chambres et une grande cuisine.",
+    "english": "There are two bedrooms and a big kitchen.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "La salle de bain est à côté de la cuisine.",
+    "english": "The bathroom is next to the kitchen.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Nous avons un jardin derrière la maison.",
+    "english": "We have a garden behind the house.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Mes voisins sont très gentils.",
+    "english": "My neighbors are very kind.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Le salon a un grand canapé et une lampe.",
+    "english": "The living room has a big sofa and a lamp.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Je prends une douche tous les matins.",
+    "english": "I take a shower every morning.",
+    "register": "either",
+    "note": "Tous les matins means every morning."
+  },
+  {
+    "situation": "home",
+    "french": "Je ne trouve pas mes clés.",
+    "english": "I can't find my keys.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Ouvre la fenêtre, il fait chaud.",
+    "english": "Open the window, it's hot.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "Nous louons un appartement près du centre.",
+    "english": "We rent an apartment near the center.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Le loyer est cher dans ce quartier.",
+    "english": "The rent is expensive in this neighborhood.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a du lait dans le frigo.",
+    "english": "There's milk in the fridge.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Le gâteau est dans le four.",
+    "english": "The cake is in the oven.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "La voiture est dans le garage.",
+    "english": "The car is in the garage.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Mes vêtements sont dans l'armoire.",
+    "english": "My clothes are in the wardrobe.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Je monte l'escalier jusqu'au troisième étage.",
+    "english": "I climb the stairs to the third floor.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Nous mangeons dans la salle à manger.",
+    "english": "We eat in the dining room.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a des photos sur le mur.",
+    "english": "There are photos on the wall.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a quatre chaises autour de la table.",
+    "english": "There are four chairs around the table.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Le soir, je lis dans mon lit.",
+    "english": "In the evening I read in bed.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Du balcon, on voit la mer.",
+    "english": "From the balcony you can see the sea.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Ma chambre est petite mais propre.",
+    "english": "My bedroom is small but clean.",
+    "register": "either",
+    "note": "Propre after the noun means clean; ma propre chambre means my own room."
+  },
+  {
+    "situation": "home",
+    "french": "La maison est vide pendant les vacances.",
+    "english": "The house is empty during the holidays.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Ferme la porte, s'il te plaît.",
+    "english": "Close the door, please.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "J'allume la lumière.",
+    "english": "I'm turning on the light.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a un arbre devant la maison.",
+    "english": "There's a tree in front of the house.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a des fleurs dans le jardin.",
+    "english": "There are flowers in the garden.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Entre, je t'en prie.",
+    "english": "Come in, please.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a un trou dans le mur.",
+    "english": "There's a hole in the wall.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Range ta chambre, s'il te plaît.",
+    "english": "Tidy your room, please.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "Pose ton sac dans le coin.",
+    "english": "Put your bag in the corner.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "La machine à laver est en panne.",
+    "english": "The washing machine is broken.",
+    "register": "either",
+    "note": "En panne means broken down, for machines and cars."
+  },
+  {
+    "situation": "home",
+    "french": "J'ai installé une lampe au-dessus du lit.",
+    "english": "I put a lamp above the bed.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il y a une pièce de plus au fond du couloir.",
+    "english": "There's an extra room at the end of the hall.",
+    "register": "either",
+    "note": "Une pièce is any room; une chambre is a bedroom."
+  },
+  {
+    "situation": "home",
+    "french": "Notre maison est ancienne.",
+    "english": "Our house is old.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Les clés sont dessus.",
+    "english": "The keys are on top.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Ne laisse pas la porte ouverte.",
+    "english": "Don't leave the door open.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "Le téléphone sonne !",
+    "english": "The phone is ringing!",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "J'ai mis mes papiers dans le tiroir.",
+    "english": "I put my papers in the drawer.",
+    "register": "either"
+  },
+  {
+    "situation": "home",
+    "french": "Il fait sombre, allume la lumière.",
+    "english": "It's dark; turn on the light.",
+    "register": "tu"
+  },
+  {
+    "situation": "home",
+    "french": "La cuisine est l'endroit que je préfère.",
+    "english": "The kitchen is my favorite place.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le soir, je mange avec ma famille.",
+    "english": "In the evening I eat with my family.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Au petit-déjeuner, je prends du pain et de la confiture.",
+    "english": "For breakfast I have bread and jam.",
+    "register": "either",
+    "note": "Du, de la and des mean some: du pain, de la confiture."
+  },
+  {
+    "situation": "meals",
+    "french": "Je n'aime pas le poisson, je préfère la viande.",
+    "english": "I don't like fish; I prefer meat.",
+    "register": "either",
+    "note": "Liking takes le or la: j'aime le poisson. Eating takes du: je mange du poisson."
+  },
+  {
+    "situation": "meals",
+    "french": "Nous dînons à vingt heures.",
+    "english": "We have dinner at eight.",
+    "register": "either",
+    "note": "French times often use the 24-hour clock: vingt heures is 8 p.m."
+  },
+  {
+    "situation": "meals",
+    "french": "Je bois un verre d'eau.",
+    "english": "I'm drinking a glass of water.",
+    "register": "either",
+    "note": "After a quantity, de stands alone: un verre d'eau, une tasse de thé."
+  },
+  {
+    "situation": "meals",
+    "french": "Ma mère cuisine des légumes avec du riz.",
+    "english": "My mother cooks vegetables with rice.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le matin, je bois un jus d'orange.",
+    "english": "In the morning I drink orange juice.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Tu veux du sucre dans ton café ?",
+    "english": "Do you want sugar in your coffee?",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Passe-moi le sel et le poivre, s'il te plaît.",
+    "english": "Pass me the salt and pepper, please.",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Il n'y a plus de lait.",
+    "english": "There's no more milk.",
+    "register": "either",
+    "note": "Ne and plus mean no more: il n'y a plus de lait."
+  },
+  {
+    "situation": "meals",
+    "french": "Je fais une salade de tomates.",
+    "english": "I'm making a tomato salad.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Pour le dessert, il y a un gâteau au chocolat.",
+    "english": "For dessert there's a chocolate cake.",
+    "register": "either",
+    "note": "Au chocolat names the flavor: une glace à la fraise."
+  },
+  {
+    "situation": "meals",
+    "french": "J'adore les fraises et les bananes.",
+    "english": "I love strawberries and bananas.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Nous mangeons des pâtes avec du fromage.",
+    "english": "We're eating pasta with cheese.",
+    "register": "either",
+    "note": "Pâtes is plural, like lunettes."
+  },
+  {
+    "situation": "meals",
+    "french": "Le poulet avec des frites, c'est mon plat préféré.",
+    "english": "Chicken and fries is my favorite dish.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je prends un sandwich au jambon.",
+    "english": "I'll have a ham sandwich.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Un verre de vin ou une bière ?",
+    "english": "A glass of wine or a beer?",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le couteau est à droite et la fourchette à gauche.",
+    "english": "The knife goes on the right and the fork on the left.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Une cuillère de sucre, c'est assez.",
+    "english": "One spoonful of sugar is enough.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je lave les assiettes et les tasses.",
+    "english": "I'm washing the plates and cups.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le repas est prêt !",
+    "english": "The meal is ready!",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je fais une soupe avec des carottes et des pommes de terre.",
+    "english": "I'm making a soup with carrots and potatoes.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je cuisine souvent pour mes amis.",
+    "english": "I often cook for my friends.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je déjeune avec mes collègues à midi.",
+    "english": "I have lunch with my colleagues at noon.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Ouvre la bouteille d'eau, s'il te plaît.",
+    "english": "Open the bottle of water, please.",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Un œuf et du pain, ça suffit.",
+    "english": "An egg and some bread is enough.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je ne mange pas de viande.",
+    "english": "I don't eat meat.",
+    "register": "either",
+    "note": "After a negative, du and de la become de: pas de viande."
+  },
+  {
+    "situation": "meals",
+    "french": "Je mange un yaourt aux fruits.",
+    "english": "I'm eating a fruit yogurt.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Avec du beurre, c'est meilleur.",
+    "english": "It's better with butter.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Une glace à la fraise, s'il vous plaît.",
+    "english": "A strawberry ice cream, please.",
+    "register": "vous"
+  },
+  {
+    "situation": "meals",
+    "french": "Je mange une pomme tous les jours.",
+    "english": "I eat an apple every day.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "J'aime cuisiner le dimanche.",
+    "english": "I like cooking on Sundays.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Je prépare des pommes de terre pour le dîner.",
+    "english": "I'm making potatoes for dinner.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Coupe le pain en morceaux.",
+    "english": "Cut the bread into pieces.",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Ajoute un peu de sel.",
+    "english": "Add a little salt.",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Il ne faut pas jeter le pain.",
+    "english": "You shouldn't throw away bread.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Garde-moi la moitié du gâteau.",
+    "english": "Save me half the cake.",
+    "register": "tu"
+  },
+  {
+    "situation": "meals",
+    "french": "Ça sent bon dans la cuisine !",
+    "english": "It smells good in the kitchen!",
+    "register": "either",
+    "note": "Sentir bon means to smell good."
+  },
+  {
+    "situation": "meals",
+    "french": "Cette odeur de café me réveille.",
+    "english": "The smell of coffee wakes me up.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le verre est plein.",
+    "english": "The glass is full.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Le frigo est vide.",
+    "english": "The fridge is empty.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "Ce fromage a un goût différent.",
+    "english": "This cheese tastes different.",
+    "register": "either"
+  },
+  {
+    "situation": "meals",
+    "french": "J'aime surtout les fruits rouges.",
+    "english": "I especially like red berries.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je travaille dans une banque.",
+    "english": "I work at a bank.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je suis étudiant à l'université.",
+    "english": "I'm a student at the university.",
+    "register": "either",
+    "note": "Jobs and studies take no article after être: je suis étudiant. A woman writes étudiante."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Le professeur écrit une phrase au tableau.",
+    "english": "The teacher writes a sentence on the board.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'ai un examen de français vendredi.",
+    "english": "I have a French exam on Friday.",
+    "register": "either",
+    "note": "A day without le means the coming one: vendredi, this Friday."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Ma fille apprend à lire à l'école.",
+    "english": "My daughter is learning to read at school.",
+    "register": "either",
+    "note": "Apprendre à plus a verb: apprendre à lire."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'ai oublié mon stylo, tu as un crayon ?",
+    "english": "I forgot my pen. Do you have a pencil?",
+    "register": "tu"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Ouvrez votre cahier à la page dix.",
+    "english": "Open your notebook to page ten.",
+    "register": "vous"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il y a vingt élèves dans la classe.",
+    "english": "There are twenty students in the class.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Mon fils va au collège et ma fille va au lycée.",
+    "english": "My son goes to middle school and my daughter to high school.",
+    "register": "either",
+    "note": "Collège is middle school; lycée is high school."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'étudie à la bibliothèque le soir.",
+    "english": "I study at the library in the evening.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Quel est ton métier ?",
+    "english": "What do you do for a living?",
+    "register": "tu"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je travaille dans une grande entreprise.",
+    "english": "I work for a big company.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je discute avec mes collègues.",
+    "english": "I'm chatting with my colleagues.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Le cours commence à huit heures.",
+    "english": "The class starts at eight.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je ne comprends pas ce mot.",
+    "english": "I don't understand this word.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Faites l'exercice à la maison.",
+    "english": "Do the exercise at home.",
+    "register": "vous"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Tu peux me prêter ta gomme ?",
+    "english": "Can you lend me your eraser?",
+    "register": "tu"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Le travail est fini, je rentre.",
+    "english": "Work is done, so I'm going home.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je cherche du travail.",
+    "english": "I'm looking for work.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je réponds aux questions du professeur.",
+    "english": "I answer the teacher's questions.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "La leçon est facile aujourd'hui.",
+    "english": "Today's lesson is easy.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Mon patron est en réunion.",
+    "english": "My boss is in a meeting.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'ai un problème avec mon ordinateur.",
+    "english": "I have a problem with my computer.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Le bureau est au premier étage.",
+    "english": "The office is on the first floor.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Pouvez-vous expliquer cet exercice ?",
+    "english": "Can you explain this exercise?",
+    "register": "vous"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'ai réussi mon examen !",
+    "english": "I passed my exam!",
+    "register": "either",
+    "note": "Réussir un examen means to pass; passer un examen only means to take it."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je dois terminer ce travail avant midi.",
+    "english": "I have to finish this work before noon.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il y a une erreur dans ma réponse.",
+    "english": "There's a mistake in my answer.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je pose une question au professeur.",
+    "english": "I'm asking the teacher a question.",
+    "register": "either",
+    "note": "Poser une question means to ask a question."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Écrivez votre nom sur la feuille.",
+    "english": "Write your name on the sheet.",
+    "register": "vous"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Mon chef est très exigeant.",
+    "english": "My boss is very demanding.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "J'ai trouvé un nouveau boulot.",
+    "english": "I found a new job.",
+    "register": "either",
+    "note": "Boulot is everyday French for travail."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il est capable de tout faire.",
+    "english": "He can do anything.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je suis en train de travailler.",
+    "english": "I'm working right now.",
+    "register": "either",
+    "note": "Être en train de means to be in the middle of doing something."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je vais vérifier mes réponses.",
+    "english": "I'm going to check my answers.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Utilisez un crayon, pas un stylo.",
+    "english": "Use a pencil, not a pen.",
+    "register": "vous"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Le sujet de la leçon est l'art.",
+    "english": "The lesson is about art.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je compte jusqu'à cent.",
+    "english": "I'm counting to a hundred.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il y a mille élèves dans ce lycée.",
+    "english": "There are a thousand students at this high school.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Ce n'est pas juste !",
+    "english": "That's not fair!",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Ta réponse est fausse.",
+    "english": "Your answer is wrong.",
+    "register": "tu",
+    "note": "Faux, fausse: the feminine changes the ending."
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je n'ai pas de stylo, ni de crayon.",
+    "english": "I have neither a pen nor a pencil.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il fait un grand effort.",
+    "english": "He's making a big effort.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je vais en parler avec mon groupe.",
+    "english": "I'll talk about it with my group.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Il y a une ligne sous chaque mot.",
+    "english": "There's a line under each word.",
+    "register": "either"
+  },
+  {
+    "situation": "workAndSchool",
+    "french": "Je reprends le travail lundi.",
+    "english": "I go back to work on Monday.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Le week-end, je joue au tennis.",
+    "english": "On weekends I play tennis.",
+    "register": "either",
+    "note": "Sports take jouer à: jouer au tennis, au football."
+  },
+  {
+    "situation": "freeTime",
+    "french": "Ce soir, nous allons au cinéma avec des amis.",
+    "english": "Tonight we're going to the movies with friends.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'aime lire et écouter de la musique.",
+    "english": "I like reading and listening to music.",
+    "register": "either",
+    "note": "After aimer, the next verb stays in the infinitive."
+  },
+  {
+    "situation": "freeTime",
+    "french": "En été, on va à la plage.",
+    "english": "In summer we go to the beach.",
+    "register": "either",
+    "note": "On often means we in everyday French."
+  },
+  {
+    "situation": "freeTime",
+    "french": "Pendant les vacances, nous visitons des musées.",
+    "english": "During the holidays we visit museums.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Samedi, il y a une fête chez mon ami.",
+    "english": "On Saturday there's a party at my friend's place.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'aime chanter et danser.",
+    "english": "I like singing and dancing.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'écoute une chanson à la radio.",
+    "english": "I'm listening to a song on the radio.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Nous allons voir un concert ce soir.",
+    "english": "We're going to a concert tonight.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "On regarde un film à la télévision ?",
+    "english": "Shall we watch a film on TV?",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je fais une promenade avec mon chien.",
+    "english": "I'm taking a walk with my dog.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Il joue au football avec ses amis.",
+    "english": "He plays football with his friends.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je fais de la natation deux fois par semaine.",
+    "english": "I swim twice a week.",
+    "register": "either",
+    "note": "Doing a sport takes faire de: je fais de la natation."
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'apprends à nager.",
+    "english": "I'm learning to swim.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je joue à un jeu sur mon ordinateur.",
+    "english": "I'm playing a game on my computer.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Elle prend des photos avec son téléphone.",
+    "english": "She takes photos with her phone.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Nous aimons voyager en été.",
+    "english": "We like traveling in summer.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je vais au théâtre une fois par mois.",
+    "english": "I go to the theater once a month.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Le dimanche, nous nous promenons dans la forêt.",
+    "english": "On Sundays we go for a walk in the forest.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je prends un cours de danse.",
+    "english": "I'm taking a dance class.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je lis le journal le matin.",
+    "english": "I read the newspaper in the morning.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Notre équipe a gagné le match.",
+    "english": "Our team won the match.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'aime les animaux et la nature.",
+    "english": "I love animals and nature.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Nous faisons du camping au bord d'un lac.",
+    "english": "We go camping by a lake.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "On se retrouve devant le cinéma ?",
+    "english": "Shall we meet in front of the cinema?",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je regarde les oiseaux dans le parc.",
+    "english": "I watch the birds in the park.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je t'invite au cinéma.",
+    "english": "I'm taking you to the movies.",
+    "register": "tu",
+    "note": "Inviter means to invite, and often to pay too."
+  },
+  {
+    "situation": "freeTime",
+    "french": "Nous allons au cinéma, tu veux nous accompagner ?",
+    "english": "We're going to the movies; do you want to come with us?",
+    "register": "tu"
+  },
+  {
+    "situation": "freeTime",
+    "french": "On s'amuse bien ici !",
+    "english": "We're having fun here!",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je profite du soleil.",
+    "english": "I'm enjoying the sun.",
+    "register": "either",
+    "note": "Profiter de means to make the most of."
+  },
+  {
+    "situation": "freeTime",
+    "french": "Il saute dans l'eau.",
+    "english": "He jumps into the water.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'ai découvert une petite île.",
+    "english": "I discovered a small island.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Les enfants courent partout.",
+    "english": "The children are running everywhere.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Le cheval est dans le champ.",
+    "english": "The horse is in the field.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Il y a de l'herbe sur la colline.",
+    "english": "There's grass on the hill.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "J'ai pris une belle image de la côte.",
+    "english": "I took a beautiful picture of the coast.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Il n'y a pas un bruit, c'est le silence.",
+    "english": "There's not a sound; it's silent.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je fais du vélo, parfois de la course.",
+    "english": "I go cycling, sometimes running.",
+    "register": "either"
+  },
+  {
+    "situation": "freeTime",
+    "french": "Je joue seulement le week-end.",
+    "english": "I only play on weekends.",
+    "register": "either"
+  },
+  {
     "situation": "cafe",
     "french": "Je voudrais un thé, s'il vous plaît.",
     "english": "I'd like a tea, please.",
@@ -182,6 +2783,91 @@
     "register": "vous"
   },
   {
+    "situation": "cafe",
+    "french": "Qu'est-ce que vous me conseillez ?",
+    "english": "What do you recommend?",
+    "register": "vous"
+  },
+  {
+    "situation": "cafe",
+    "french": "Je voudrais la même chose.",
+    "english": "I'd like the same thing.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Le service est compris ?",
+    "english": "Is the tip included?",
+    "register": "either",
+    "note": "Service compris means the tip is in the price."
+  },
+  {
+    "situation": "cafe",
+    "french": "On peut s'asseoir ici ?",
+    "english": "Can we sit here?",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Attendez, je n'ai pas encore choisi.",
+    "english": "Wait, I haven't chosen yet.",
+    "register": "vous"
+  },
+  {
+    "situation": "cafe",
+    "french": "Tu veux partager un dessert ?",
+    "english": "Do you want to share a dessert?",
+    "register": "tu"
+  },
+  {
+    "situation": "cafe",
+    "french": "Le serveur apporte le menu.",
+    "english": "The waiter brings the menu.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "C'est bon, mais un peu froid.",
+    "english": "It's good, but a bit cold.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Le café est trop chaud, je vais attendre.",
+    "english": "The coffee is too hot; I'll wait.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Vous pouvez m'apporter de l'eau ?",
+    "english": "Can you bring me some water?",
+    "register": "vous"
+  },
+  {
+    "situation": "cafe",
+    "french": "Je prends la même chose que lui.",
+    "english": "I'll have the same as him.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Il y a une table libre ?",
+    "english": "Is there a free table?",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Le serveur sert les clients.",
+    "english": "The waiter serves the customers.",
+    "register": "either"
+  },
+  {
+    "situation": "cafe",
+    "french": "Je n'aime pas autant le thé que le café.",
+    "english": "I don't like tea as much as coffee.",
+    "register": "either"
+  },
+  {
     "situation": "shopping",
     "french": "C'est combien ?",
     "english": "How much is it?",
@@ -252,6 +2938,196 @@
     "note": "Many shops will wrap it for you."
   },
   {
+    "situation": "shopping",
+    "french": "Combien coûte ce livre ?",
+    "english": "How much does this book cost?",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Ça coûte dix euros.",
+    "english": "It costs ten euros.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je vais acheter du pain à la boulangerie.",
+    "english": "I'm going to buy bread at the bakery.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "La pharmacie est ouverte jusqu'à vingt heures.",
+    "english": "The pharmacy is open until 8 p.m.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je n'ai pas assez d'argent.",
+    "english": "I don't have enough money.",
+    "register": "either",
+    "note": "Assez de means enough: assez d'argent."
+  },
+  {
+    "situation": "shopping",
+    "french": "Le vendeur est très gentil avec les clients.",
+    "english": "The salesman is very nice to the customers.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "J'achète de la viande à la boucherie.",
+    "english": "I buy meat at the butcher's.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Il y a une épicerie dans ma rue.",
+    "english": "There's a grocery store on my street.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je cherche un livre à la librairie.",
+    "english": "I'm looking for a book at the bookstore.",
+    "register": "either",
+    "note": "Une librairie sells books; une bibliothèque lends them."
+  },
+  {
+    "situation": "shopping",
+    "french": "Le magasin ferme à dix-neuf heures.",
+    "english": "The shop closes at 7 p.m.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Ici, les prix sont bas.",
+    "english": "Prices are low here.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je vais à la poste pour envoyer une lettre.",
+    "english": "I'm going to the post office to send a letter.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Il vend des fruits au marché.",
+    "english": "He sells fruit at the market.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "On mange au restaurant ce soir ?",
+    "english": "Shall we eat at a restaurant tonight?",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je fais les courses au supermarché.",
+    "english": "I do the shopping at the supermarket.",
+    "register": "either",
+    "note": "Faire les courses is to do the grocery shopping."
+  },
+  {
+    "situation": "shopping",
+    "french": "On paie à la caisse ?",
+    "english": "Do we pay at the register?",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Cette boutique vend des vêtements.",
+    "english": "This shop sells clothes.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je voudrais une boîte de chocolats.",
+    "english": "I'd like a box of chocolates.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Quelle couleur préférez-vous ?",
+    "english": "Which color do you prefer?",
+    "register": "vous"
+  },
+  {
+    "situation": "shopping",
+    "french": "C'est un cadeau pour ma mère.",
+    "english": "It's a gift for my mother.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je peux essayer cette robe ?",
+    "english": "Can I try on this dress?",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je paie par carte.",
+    "english": "I'm paying by card.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Ce n'est pas cher, c'est une bonne occasion.",
+    "english": "It's not expensive; it's a good deal.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je voudrais rendre ce pull.",
+    "english": "I'd like to return this sweater.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Vous pouvez me montrer ce sac ?",
+    "english": "Can you show me this bag?",
+    "register": "vous"
+  },
+  {
+    "situation": "shopping",
+    "french": "Donnez-moi deux kilos de pommes.",
+    "english": "Give me two kilos of apples.",
+    "register": "vous"
+  },
+  {
+    "situation": "shopping",
+    "french": "Il manque un euro.",
+    "english": "One euro is missing.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Tous les magasins sont fermés sauf la pharmacie.",
+    "english": "All the shops are closed except the pharmacy.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Je cherche une sorte de sac de sport.",
+    "english": "I'm looking for a kind of sports bag.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "J'ai choisi la robe de mes rêves.",
+    "english": "I chose the dress of my dreams.",
+    "register": "either"
+  },
+  {
+    "situation": "shopping",
+    "french": "Ça vaut le prix.",
+    "english": "It's worth the price.",
+    "register": "either",
+    "note": "Valoir means to be worth."
+  },
+  {
     "situation": "directions",
     "french": "Excusez-moi, où est la gare ?",
     "english": "Excuse me, where's the station?",
@@ -319,6 +3195,117 @@
     "situation": "directions",
     "french": "Plus lentement, s'il vous plaît.",
     "english": "More slowly, please.",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "Continuez tout droit jusqu'au pont.",
+    "english": "Keep going straight to the bridge.",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "Le musée est en face de la gare.",
+    "english": "The museum is opposite the station.",
+    "register": "either",
+    "note": "En face de means opposite."
+  },
+  {
+    "situation": "directions",
+    "french": "Je cherche la place du marché.",
+    "english": "I'm looking for the market square.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Montez la rue, puis descendez l'escalier.",
+    "english": "Go up the street, then down the stairs.",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "Il faut traverser le pont.",
+    "english": "You have to cross the bridge.",
+    "register": "either",
+    "note": "Il faut plus a verb means you have to."
+  },
+  {
+    "situation": "directions",
+    "french": "Je suis perdu, pouvez-vous m'aider ?",
+    "english": "I'm lost; can you help me?",
+    "register": "vous",
+    "note": "A woman writes perdue."
+  },
+  {
+    "situation": "directions",
+    "french": "C'est à côté de l'hôpital.",
+    "english": "It's next to the hospital.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Le village est de l'autre côté de la rivière.",
+    "english": "The village is on the other side of the river.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Quelle direction pour le centre-ville ?",
+    "english": "Which way to the town center?",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Allez vers la gare, puis tournez à droite.",
+    "english": "Head toward the station, then turn right.",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "C'est là-bas, au coin de la rue.",
+    "english": "It's over there, on the corner.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Il est interdit d'entrer.",
+    "english": "Entry is forbidden.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "L'entrée est derrière l'église.",
+    "english": "The entrance is behind the church.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Le parc est à cinq cents mètres.",
+    "english": "The park is five hundred meters away.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "C'est au milieu de la ville.",
+    "english": "It's in the middle of the town.",
+    "register": "either"
+  },
+  {
+    "situation": "directions",
+    "french": "Je vais vous accompagner jusqu'à l'arrêt.",
+    "english": "I'll walk you to the stop.",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "Vous avez un plan de la ville ?",
+    "english": "Do you have a map of the town?",
+    "register": "vous"
+  },
+  {
+    "situation": "directions",
+    "french": "Vous ne pouvez pas vous tromper.",
+    "english": "You can't miss it.",
     "register": "vous"
   },
   {
@@ -403,173 +3390,192 @@
     "register": "either"
   },
   {
-    "situation": "smallTalk",
-    "french": "Il fait beau aujourd'hui.",
-    "english": "It's nice out today.",
+    "situation": "travel",
+    "french": "Je prends le métro pour aller au travail.",
+    "english": "I take the metro to get to work.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Le train part de quel quai ?",
+    "english": "Which platform does the train leave from?",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Je conduis ma voiture tous les jours.",
+    "english": "I drive my car every day.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Nous allons à l'aéroport en taxi.",
+    "english": "We're going to the airport by taxi.",
     "register": "either",
-    "note": "Weather takes il fait: il fait beau, il fait froid."
+    "note": "En for vehicles you ride in: en taxi, en avion. But à pied, on foot."
   },
   {
-    "situation": "smallTalk",
-    "french": "Il fait froid.",
-    "english": "It's cold.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Il pleut.",
-    "english": "It's raining.",
-    "register": "either",
-    "note": "Rain has its own verb: il pleut now, il va pleuvoir later."
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Il va pleuvoir demain.",
-    "english": "It's going to rain tomorrow.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Il y a des nuages.",
-    "english": "It's cloudy.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Il y a du soleil.",
-    "english": "It's sunny.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Vous venez d'où ?",
-    "english": "Where are you from?",
-    "register": "vous",
-    "note": "D'où means from where."
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Je suis américain.",
-    "english": "I'm American.",
-    "register": "either",
-    "note": "A woman writes américaine."
-  },
-  {
-    "situation": "smallTalk",
-    "french": "J'apprends le français.",
-    "english": "I'm learning French.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Je parle un peu français.",
-    "english": "I speak a little French.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Qu'est-ce que tu fais ce week-end ?",
-    "english": "What are you doing this weekend?",
-    "register": "tu"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "J'aime faire du vélo.",
-    "english": "I like cycling.",
-    "register": "either",
-    "note": "Liking takes le and doing takes du: j'aime le vélo, je fais du vélo."
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Je fais du sport le matin.",
-    "english": "I exercise in the mornings.",
-    "register": "either"
-  },
-  {
-    "situation": "smallTalk",
-    "french": "C'était super !",
-    "english": "It was great!",
-    "register": "either",
-    "note": "C'était means it was."
-  },
-  {
-    "situation": "smallTalk",
-    "french": "Tu as des enfants ?",
-    "english": "Do you have children?",
-    "register": "tu"
-  },
-  {
-    "situation": "politeness",
-    "french": "S'il vous plaît.",
-    "english": "Please.",
-    "register": "vous",
-    "note": "To a friend, say s'il te plaît."
-  },
-  {
-    "situation": "politeness",
-    "french": "S'il te plaît.",
-    "english": "Please.",
-    "register": "tu"
-  },
-  {
-    "situation": "politeness",
-    "french": "Merci beaucoup.",
-    "english": "Thank you very much.",
-    "register": "either"
-  },
-  {
-    "situation": "politeness",
-    "french": "De rien.",
-    "english": "You're welcome.",
-    "register": "either"
-  },
-  {
-    "situation": "politeness",
-    "french": "Excusez-moi.",
-    "english": "Excuse me.",
+    "situation": "travel",
+    "french": "Un ticket de métro, s'il vous plaît.",
+    "english": "One metro ticket, please.",
     "register": "vous"
   },
   {
-    "situation": "politeness",
-    "french": "Pardon.",
-    "english": "Sorry. / Excuse me.",
+    "situation": "travel",
+    "french": "Ma valise est trop lourde.",
+    "english": "My suitcase is too heavy.",
     "register": "either"
   },
   {
-    "situation": "politeness",
-    "french": "Je suis désolé.",
-    "english": "I'm sorry.",
+    "situation": "travel",
+    "french": "Le trajet dure une heure.",
+    "english": "The trip takes an hour.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "La station de métro est au bout de la rue.",
+    "english": "The metro station is at the end of the street.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Mon frère va au travail à moto.",
+    "english": "My brother goes to work by motorbike.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Nous traversons la mer en bateau.",
+    "english": "We cross the sea by boat.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "L'avion part à midi.",
+    "english": "The plane leaves at noon.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Où est-ce que je peux acheter un billet ?",
+    "english": "Where can I buy a ticket?",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Il y a beaucoup de voitures sur la route.",
+    "english": "There are a lot of cars on the road.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Je prends le tram pour aller en ville.",
+    "english": "I take the tram into town.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Le train a du retard.",
+    "english": "The train is late.",
     "register": "either",
-    "note": "A woman writes désolée."
+    "note": "Avoir du retard is to be late; être en retard is said of people."
   },
   {
-    "situation": "politeness",
-    "french": "Ce n'est pas grave.",
-    "english": "It doesn't matter.",
+    "situation": "travel",
+    "french": "J'ai une place près de la fenêtre.",
+    "english": "I have a window seat.",
     "register": "either"
   },
   {
-    "situation": "politeness",
-    "french": "Je ne comprends pas.",
-    "english": "I don't understand.",
+    "situation": "travel",
+    "french": "À quelle heure est le départ ?",
+    "english": "What time is the departure?",
     "register": "either"
   },
   {
-    "situation": "politeness",
-    "french": "Vous parlez anglais ?",
-    "english": "Do you speak English?",
-    "register": "vous"
-  },
-  {
-    "situation": "politeness",
-    "french": "Avec plaisir.",
-    "english": "With pleasure.",
+    "situation": "travel",
+    "french": "Mon passeport est dans ma poche.",
+    "english": "My passport is in my pocket.",
     "register": "either"
   },
   {
-    "situation": "politeness",
-    "french": "Bien sûr.",
-    "english": "Of course.",
+    "situation": "travel",
+    "french": "Attention, le train arrive !",
+    "english": "Careful, the train is coming!",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Bon voyage !",
+    "english": "Have a good trip!",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Le bus s'arrête devant la poste.",
+    "english": "The bus stops in front of the post office.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Ne roule pas trop vite !",
+    "english": "Don't drive too fast!",
+    "register": "tu"
+  },
+  {
+    "situation": "travel",
+    "french": "Le retour est prévu pour dimanche.",
+    "english": "The return is planned for Sunday.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Il y a eu un accident sur la route.",
+    "english": "There was an accident on the road.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Ce pays est très beau.",
+    "english": "This country is very beautiful.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "J'ai pris l'avion pour la première fois.",
+    "english": "I flew for the first time.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Je dois quitter l'hôtel avant midi.",
+    "english": "I have to leave the hotel before noon.",
+    "register": "either",
+    "note": "Quitter takes a direct object: quitter l'hôtel."
+  },
+  {
+    "situation": "travel",
+    "french": "Je reviens dans une semaine.",
+    "english": "I'm coming back in a week.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "Je retourne dans mon pays en été.",
+    "english": "I'm going back to my country in summer.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "La police vérifie les passeports.",
+    "english": "The police are checking passports.",
+    "register": "either"
+  },
+  {
+    "situation": "travel",
+    "french": "C'est dangereux de traverser ici.",
+    "english": "It's dangerous to cross here.",
     "register": "either"
   },
   {
@@ -663,5 +3669,563 @@
     "english": "I walked for two hours.",
     "register": "either",
     "note": "Pendant says how long something lasted."
+  },
+  {
+    "situation": "journal",
+    "french": "Je reste à la maison, car il pleut.",
+    "english": "I'm staying home, because it's raining.",
+    "register": "either",
+    "note": "Car gives a reason, like parce que, but never starts a sentence."
+  },
+  {
+    "situation": "journal",
+    "french": "Quand il fait beau, je marche dans le parc.",
+    "english": "When the weather is nice, I walk in the park.",
+    "register": "either",
+    "note": "Quand means when."
+  },
+  {
+    "situation": "journal",
+    "french": "Après le dîner, je lis un livre.",
+    "english": "After dinner, I read a book.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je n'ai pas encore fini mes devoirs.",
+    "english": "I haven't finished my homework yet.",
+    "register": "either",
+    "note": "Pas encore means not yet."
+  },
+  {
+    "situation": "journal",
+    "french": "Je suis souvent fatigué le soir.",
+    "english": "I'm often tired in the evening.",
+    "register": "either",
+    "note": "Souvent comes right after the verb."
+  },
+  {
+    "situation": "journal",
+    "french": "Hier soir, j'ai rencontré un ami au café.",
+    "english": "Last night I met a friend at the café.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Ce matin, je me suis réveillé tard.",
+    "english": "This morning I woke up late.",
+    "register": "either",
+    "note": "Reflexive verbs take être in the past: je me suis réveillé."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai reçu une lettre de ma mère.",
+    "english": "I got a letter from my mother.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai perdu mon chemin, puis j'ai retrouvé la rue.",
+    "english": "I lost my way, then found the street again.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il a commencé à pleuvoir, alors je suis rentré.",
+    "english": "It started to rain, so I went home.",
+    "register": "either",
+    "note": "Alors and donc both mean so."
+  },
+  {
+    "situation": "journal",
+    "french": "Je me souviens de mon premier jour à l'école.",
+    "english": "I remember my first day at school.",
+    "register": "either",
+    "note": "Se souvenir de: je me souviens de mon premier jour."
+  },
+  {
+    "situation": "journal",
+    "french": "Mon ami m'a dit quelque chose d'important.",
+    "english": "My friend told me something important.",
+    "register": "either",
+    "note": "After quelque chose, an adjective takes de: quelque chose d'important."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai décidé de changer de travail.",
+    "english": "I decided to change jobs.",
+    "register": "either",
+    "note": "Changer de takes no article: changer de travail."
+  },
+  {
+    "situation": "journal",
+    "french": "Je n'ai jamais vu la mer.",
+    "english": "I've never seen the sea.",
+    "register": "either",
+    "note": "Ne and jamais mean never."
+  },
+  {
+    "situation": "journal",
+    "french": "Elle est partie sans dire au revoir.",
+    "english": "She left without saying goodbye.",
+    "register": "either",
+    "note": "After sans, the verb stays in the infinitive."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai attendu le bus pendant vingt minutes.",
+    "english": "I waited for the bus for twenty minutes.",
+    "register": "either",
+    "note": "Attendre takes no preposition: attendre le bus."
+  },
+  {
+    "situation": "journal",
+    "french": "Nous avons passé la soirée ensemble.",
+    "english": "We spent the evening together.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je pense souvent à ma famille.",
+    "english": "I often think about my family.",
+    "register": "either",
+    "note": "Penser à means to think about."
+  },
+  {
+    "situation": "journal",
+    "french": "J'espère que tu vas bien.",
+    "english": "I hope you're well.",
+    "register": "tu"
+  },
+  {
+    "situation": "journal",
+    "french": "Il est devenu médecin.",
+    "english": "He became a doctor.",
+    "register": "either",
+    "note": "Devenir takes être in the past: il est devenu."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai beaucoup ri avec mes amis.",
+    "english": "I laughed a lot with my friends.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Maintenant, je comprends mieux.",
+    "english": "Now I understand better.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Pourtant, c'était difficile.",
+    "english": "And yet it was hard.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Soudain, j'ai entendu un bruit.",
+    "english": "Suddenly I heard a noise.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je suis sorti avec mes amis samedi soir.",
+    "english": "I went out with my friends on Saturday night.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je voudrais vivre à la campagne.",
+    "english": "I'd like to live in the country.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "C'était la plus belle journée de l'année.",
+    "english": "It was the best day of the year.",
+    "register": "either",
+    "note": "Jour counts days; journée is the whole day as you live it."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai appris beaucoup de choses aujourd'hui.",
+    "english": "I learned a lot of things today.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Mon voisin m'a aidé à porter mes valises.",
+    "english": "My neighbor helped me carry my suitcases.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je me suis levé tôt pour voir le soleil.",
+    "english": "I got up early to see the sun.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il faisait beau, donc nous sommes allés à la plage.",
+    "english": "The weather was nice, so we went to the beach.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Lorsque je suis arrivé, tout le monde dormait.",
+    "english": "When I arrived, everyone was asleep.",
+    "register": "either",
+    "note": "Lorsque means when, like quand."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai envie de partir en voyage.",
+    "english": "I feel like going on a trip.",
+    "register": "either",
+    "note": "Avoir envie de means to feel like."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai besoin d'aide.",
+    "english": "I need help.",
+    "register": "either",
+    "note": "Avoir besoin de means to need."
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai l'habitude de marcher le matin.",
+    "english": "I usually walk in the morning.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Au début, c'était difficile, mais maintenant ça va.",
+    "english": "At first it was hard, but now it's fine.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "À la fin du film, j'ai pleuré.",
+    "english": "At the end of the film, I cried.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Chaque jour, j'écris trois phrases en français.",
+    "english": "Every day I write three sentences in French.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je me demande pourquoi il est parti.",
+    "english": "I wonder why he left.",
+    "register": "either",
+    "note": "Se demander means to wonder."
+  },
+  {
+    "situation": "journal",
+    "french": "Il y avait quelques nuages, mais pas de pluie.",
+    "english": "There were a few clouds, but no rain.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Plusieurs amis sont venus à ma fête.",
+    "english": "Several friends came to my party.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je me suis trompé de train.",
+    "english": "I took the wrong train.",
+    "register": "either",
+    "note": "Se tromper de means to pick the wrong one."
+  },
+  {
+    "situation": "journal",
+    "french": "Ce jour-là, j'ai compris quelque chose.",
+    "english": "That day I understood something.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je n'oublierai jamais ce moment.",
+    "english": "I'll never forget that moment.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai eu de la chance.",
+    "english": "I was lucky.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Par hasard, j'ai rencontré mon ancien professeur.",
+    "english": "By chance I ran into my former teacher.",
+    "register": "either",
+    "note": "Ancien before the noun means former; after it, old."
+  },
+  {
+    "situation": "journal",
+    "french": "Grâce à mon ami, j'ai trouvé un appartement.",
+    "english": "Thanks to my friend, I found an apartment.",
+    "register": "either",
+    "note": "Grâce à means thanks to."
+  },
+  {
+    "situation": "journal",
+    "french": "Il a cessé de pleuvoir vers midi.",
+    "english": "It stopped raining around noon.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai recommencé à courir.",
+    "english": "I started running again.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je ne peux pas imaginer ma vie sans toi.",
+    "english": "I can't imagine my life without you.",
+    "register": "tu"
+  },
+  {
+    "situation": "journal",
+    "french": "Mon ami m'a promis de venir.",
+    "english": "My friend promised me he'd come.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il a refusé de répondre.",
+    "english": "He refused to answer.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai sûrement oublié quelque chose.",
+    "english": "I've surely forgotten something.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Comme il pleuvait, je suis resté à la maison.",
+    "english": "As it was raining, I stayed home.",
+    "register": "either",
+    "note": "Comme at the start of a sentence means since or as."
+  },
+  {
+    "situation": "journal",
+    "french": "C'était une époque heureuse.",
+    "english": "It was a happy time.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai reconnu sa voix au téléphone.",
+    "english": "I recognized her voice on the phone.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il est apparu à la porte.",
+    "english": "He appeared at the door.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Mon chat a disparu hier.",
+    "english": "My cat disappeared yesterday.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je l'ai rappelé le soir.",
+    "english": "I called him back in the evening.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai hésité, puis j'ai dit oui.",
+    "english": "I hesitated, then said yes.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je n'ose pas lui parler.",
+    "english": "I don't dare talk to him.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je lui ai dit la vérité.",
+    "english": "I told him the truth.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Cela me semble difficile.",
+    "english": "That seems hard to me.",
+    "register": "either",
+    "note": "Cela is the written form of ça."
+  },
+  {
+    "situation": "journal",
+    "french": "Les autres sont partis avant moi.",
+    "english": "The others left before me.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "D'autres amis sont arrivés plus tard.",
+    "english": "Other friends arrived later.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Certains jours, je suis très fatigué.",
+    "english": "Some days I'm very tired.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il faut toujours garder espoir.",
+    "english": "You must always keep hope.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il m'a donné un bon conseil.",
+    "english": "He gave me good advice.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai passé toute la journée dehors.",
+    "english": "I spent the whole day outside.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Le film raconte l'histoire d'un pauvre garçon.",
+    "english": "The film tells the story of a poor boy.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai reçu un message de ma sœur.",
+    "english": "I got a message from my sister.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Ça ne m'arrive pas souvent.",
+    "english": "That doesn't happen to me often.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Ah, voilà enfin le bus !",
+    "english": "Ah, here's the bus at last!",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Le pire, c'est d'attendre.",
+    "english": "The worst part is waiting.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je ne peux pas rester debout longtemps.",
+    "english": "I can't stand for long.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je suis vivant, c'est le plus important.",
+    "english": "I'm alive; that's what matters most.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je pousse la porte et j'entre.",
+    "english": "I push the door and go in.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il lance la balle à son chien.",
+    "english": "He throws the ball to his dog.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Le chat a attrapé un oiseau.",
+    "english": "The cat caught a bird.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je ne bouge pas, je reste ici.",
+    "english": "I'm not moving; I'm staying here.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je crois que tu mens.",
+    "english": "I think you're lying.",
+    "register": "tu"
+  },
+  {
+    "situation": "journal",
+    "french": "Je t'ai pardonné.",
+    "english": "I forgave you.",
+    "register": "tu"
+  },
+  {
+    "situation": "journal",
+    "french": "Cet été, je vais apprendre à conduire.",
+    "english": "This summer I'm going to learn to drive.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai cassé mon téléphone.",
+    "english": "I broke my phone.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Le feu est allumé, il fait bon.",
+    "english": "The fire is lit; it's cozy.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Je me cache derrière l'arbre.",
+    "english": "I hide behind the tree.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai brûlé le gâteau !",
+    "english": "I burned the cake!",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "Il a touché le mur avec la main.",
+    "english": "He touched the wall with his hand.",
+    "register": "either"
+  },
+  {
+    "situation": "journal",
+    "french": "J'ai couvert le bébé avec une couverture.",
+    "english": "I covered the baby with a blanket.",
+    "register": "either"
   }
 ]

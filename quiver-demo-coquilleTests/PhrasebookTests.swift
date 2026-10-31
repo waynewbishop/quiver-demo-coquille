@@ -107,6 +107,6 @@ final class PhrasebookTests: XCTestCase {
     // A word unlike anything in the phrasebook finds nothing.
     func testSearchWithNoMatchIsEmpty() throws {
         let phrases = try pack().phrases
-        XCTAssertEqual(PhraseSearch.matches(for: "xylophone", in: phrases), [])
+        XCTAssertEqual(PhraseSearch.matches(for: "zyzzyva", in: phrases), [])
     }
 }

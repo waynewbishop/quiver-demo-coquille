@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "quiver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/waynewbishop/quiver",
+      "state" : {
+        "revision" : "32725304c5b86f29657aaae732f5aa9249aba6d3",
+        "version" : "1.6.0"
+      }
+    }
+  ],
+  "version" : 2
+}

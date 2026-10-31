@@ -59,7 +59,7 @@ struct IssueListSheet: View {
     }
 
     /// What the suggestions toggle controls.
-    private static let suggestionsNote = "Suggestions point out a more natural way to say correct French. They never block play."
+    private static let suggestionsNote = "When on, Coquille also points out correct French that could sound more natural. Errors and warnings always show."
 
     #if os(macOS)
     /// The Mac sheet: a header, the issues, and the suggestions toggle and Done in a
@@ -75,9 +75,6 @@ struct IssueListSheet: View {
             Divider()
 
             List {
-                if model.visibleIssues.isEmpty {
-                    ContentUnavailableView("No issues", systemImage: "checkmark.circle")
-                }
                 ForEach(model.visibleIssues) { issue in
                     Button {
                         open(issue)
@@ -89,6 +86,12 @@ struct IssueListSheet: View {
                 }
             }
             .listStyle(.inset)
+            // An overlay, not a row, so the empty state sits in the middle of the list.
+            .overlay {
+                if model.visibleIssues.isEmpty {
+                    ContentUnavailableView("No issues", systemImage: "checkmark.circle")
+                }
+            }
 
             Divider()
 
