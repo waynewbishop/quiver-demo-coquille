@@ -13,11 +13,18 @@
 
 import SwiftUI
 
-/// The learner's progress: summary cards, weak spots, and tricky words.
+/// The learner's progress: summary cards, weak spots, tricky words, and a way to the
+/// corrections list. Reset Progress… starts it all over after asking.
 struct ProgressSheet: View {
 
-    let stats: LearnerStats
+    let store: StatsStore
     @Environment(\.dismiss) private var dismiss
+    @State private var confirmsReset = false
+
+    /// The stats as they stand, read from the store so a reset shows at once.
+    private var stats: LearnerStats {
+        store.stats
+    }
 
     var body: some View {
         NavigationStack {
@@ -26,15 +33,25 @@ struct ProgressSheet: View {
                     summary
                     weakSpots
                     trickyWords
+                    corrections
                     footer
                 }
                 .padding(24)
             }
             .navigationTitle("Your progress")
             .toolbar {
+                ToolbarItem(placement: .destructiveAction) {
+                    Button("Reset Progress…", role: .destructive) { confirmsReset = true }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .alert("Reset your progress?", isPresented: $confirmsReset) {
+                Button("Reset", role: .destructive) { store.reset() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This clears your streak, sentences checked, weak spots, tricky words and corrections. Your text isn't changed. This can't be undone.")
             }
         }
         .frame(minWidth: 380, minHeight: 520)
@@ -114,6 +131,25 @@ struct ProgressSheet: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    /// The way to every correction, with how many there are.
+    private var corrections: some View {
+        section("YOUR CORRECTIONS") {
+            NavigationLink {
+                CorrectionsView(store: store)
+            } label: {
+                HStack {
+                    Text(stats.corrections.isEmpty ? "Errors you fix will appear here." : "See all \(stats.corrections.count)")
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(stats.corrections.isEmpty ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+            .disabled(stats.corrections.isEmpty)
         }
     }
 

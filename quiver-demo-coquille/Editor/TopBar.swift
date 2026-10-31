@@ -20,8 +20,10 @@ struct TopBar: View {
     @Binding var showsIssueList: Bool
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
+    let newEntry: () -> Void
     let openFile: () -> Void
     let saveFile: () -> Void
+    let saveFileAs: () -> Void
 
     var body: some View {
         HStack(spacing: 4) {
@@ -36,8 +38,11 @@ struct TopBar: View {
             Spacer()
 
             Menu {
+                Button("New Entry", systemImage: "square.and.pencil", action: newEntry)
                 Button("Open…", systemImage: "folder", action: openFile)
-                Button("Save As…", systemImage: "square.and.arrow.down", action: saveFile)
+                Button("Save", systemImage: "square.and.arrow.down", action: saveFile)
+                    .disabled(!model.hasText)
+                Button("Save As…", systemImage: "square.and.arrow.down.on.square", action: saveFileAs)
                     .disabled(!model.hasText)
                 ShareLink(item: model.plainText)
                     .disabled(!model.hasText)

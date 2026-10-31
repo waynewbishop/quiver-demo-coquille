@@ -38,9 +38,15 @@ final class StatsStore {
         save()
     }
 
-    /// Counts a fixed error, typed or applied, and saves.
-    func recordFix(byLearner: Bool, issue: Issue? = nil) {
-        stats.recordFix(byLearner: byLearner, issue: issue)
+    /// Counts a fixed error, typed or applied, logs it with its sentence from `text`, and saves.
+    func recordFix(byLearner: Bool, issue: Issue? = nil, in text: String? = nil) {
+        stats.recordFix(byLearner: byLearner, issue: issue, in: text, on: .now)
+        save()
+    }
+
+    /// Starts the stats over, as on first launch, and saves.
+    func reset() {
+        stats = LearnerStats()
         save()
     }
 

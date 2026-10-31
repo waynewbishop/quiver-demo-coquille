@@ -338,4 +338,70 @@ final class EditorModelTests: XCTestCase {
         XCTAssertTrue(model.blockingIssues.isEmpty)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
     }
+
+    // A new entry replaces the text with today's French date and opening lines, the caret after "Il fait".
+    func testNewEntryStartsWithTheDate() throws {
+        let model = try makeModel()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        let checkedBefore = model.stats.stats.sentencesChecked
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12)))
+        model.newEntry(on: date)
+        XCTAssertTrue(model.plainText.hasPrefix("Le 1er novembre 2026\n\nIl fait "))
+        XCTAssertTrue(model.blockingIssues.isEmpty)
+        XCTAssertNil(model.fileURL)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+        // The date line has no full stop, so starting an entry checks no sentences.
+        XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)
+    }
+
+    // Other days of the month are plain numbers.
+    func testEntryHeaderDate() throws {
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 12)))
+        let header = EditorModel.entryHeader(for: date)
+        XCTAssertTrue(header.text.hasPrefix("Le 31 octobre 2026\n"))
+        XCTAssertEqual(String(header.text.prefix(header.caret)), "Le 31 octobre 2026\n\nIl fait ")
+    }
+
+    // Save writes back to an opened file; new text, cleared text and the example have none.
+    func testFileURLFollowsTheText() throws {
+        let model = try makeModel()
+        let url = URL(fileURLWithPath: "/tmp/entry.txt")
+        model.open("Il pleut.", from: url)
+        XCTAssertEqual(model.fileURL, url)
+        model.clear()
+        XCTAssertNil(model.fileURL)
+        model.didSave(to: url)
+        XCTAssertEqual(model.fileURL, url)
+        model.loadExample()
+        XCTAssertNil(model.fileURL)
+    }
+
+    // A typed fix shows in the corrections list with the sentence it was made in.
+    func testTypedFixIsLogged() throws {
+        let model = try makeModel()
+        type("Il pleut. Nous avons une fromage.", into: model)
+        model.lintNow()
+        type("Il pleut. Nous avons un fromage.", into: model)
+        model.lintNow()
+        let correction = try XCTUnwrap(model.stats.stats.corrections.last)
+        XCTAssertEqual(correction.corrected, "un fromage")
+        XCTAssertEqual(correction.sentence, "Nous avons une fromage.")
+    }
+}
+
+final class FrenchTextFileTests: XCTestCase {
+
+    // The story's title names the file, without the characters a file name can't hold.
+    func testSuggestedFilenameUsesTheTitle() {
+        XCTAssertEqual(FrenchTextFile.suggestedFilename(for: "Une journée au marché"), "Une journée au marché")
+        XCTAssertEqual(FrenchTextFile.suggestedFilename(for: "Paris: 1/2 journée"), "Paris 12 journée")
+    }
+
+    // With no title, or one that's only punctuation, the date names the file.
+    func testSuggestedFilenameFallsBackToTheDate() throws {
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 12)))
+        XCTAssertEqual(FrenchTextFile.suggestedFilename(for: nil, on: date), "2026-10-31")
+        XCTAssertEqual(FrenchTextFile.suggestedFilename(for: " / ", on: date), "2026-10-31")
+    }
 }

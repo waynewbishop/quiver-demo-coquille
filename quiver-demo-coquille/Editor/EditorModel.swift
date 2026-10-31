@@ -62,6 +62,9 @@ final class EditorModel {
     let stats: StatsStore
     /// Where the text is kept between launches, or `nil` to keep it only in memory.
     let draftURL: URL?
+    /// The file the text was opened from or last saved to, which Save writes back to.
+    /// New text, such as a new entry, the example, or an empty editor, has none.
+    private(set) var fileURL: URL?
 
     @ObservationIgnored private var linter: Linter?
     /// The text last written to `draftURL`, so an unchanged draft isn't written again.
@@ -217,7 +220,7 @@ final class EditorModel {
             // The errors before a rehearsal ended were the example's, so none of them count as fixed.
             if !wasRehearsal {
                 for fix in typedFixes(of: previousErrors, from: previousText, to: plain) {
-                    stats.recordFix(byLearner: true, issue: fix)
+                    stats.recordFix(byLearner: true, issue: fix, in: previousText)
                 }
             }
             stats.record(text: plain, issues: visibleIssues, editingAt: caretOffset())
@@ -316,9 +319,10 @@ final class EditorModel {
     func apply(_ issue: Issue) {
         guard plainText == lintedText, let replacement = issue.replacement,
               let range = attributedRange(for: issue.range) else { return }
+        let before = plainText
         text.replaceSubrange(range, with: AttributedString(replacement))
         if issue.severity == .error, !isRehearsal {
-            stats.recordFix(byLearner: false, issue: issue)
+            stats.recordFix(byLearner: false, issue: issue, in: before)
         }
         lint(applied: issue)
         selectNext(after: issue.offset)
@@ -355,6 +359,7 @@ final class EditorModel {
         ignoredKeys = []
         selectedIssueID = nil
         english = .idle
+        fileURL = nil
         text = AttributedString(Self.example)
         selection = AttributedTextSelection()
         isRehearsal = true
@@ -363,10 +368,64 @@ final class EditorModel {
     }
 
     /// Replaces the text with an opened file's, from a clean slate like the example.
+    /// Save then writes back to `url`.
     ///
     /// The old text's errors are dropped before the lint, so none of them count as
     /// fixed by the learner just because the new text happens to hold their fix.
-    func open(_ contents: String) {
+    func open(_ contents: String, from url: URL? = nil) {
+        replaceText(with: contents)
+        fileURL = url
+        lintNow()
+    }
+
+    /// Starts a new journal entry with today's date and opening lines for the weather,
+    /// the place, clothes and mood, with the caret after "Il fait".
+    func newEntry(on date: Date = .now) {
+        let entry = Self.entryHeader(for: date)
+        replaceText(with: entry.text)
+        fileURL = nil
+        let caret = text.characters.index(text.startIndex, offsetBy: entry.caret)
+        selection = AttributedTextSelection(insertionPoint: caret)
+        lintNow()
+    }
+
+    /// Notes the file a save went to, so the next Save writes there too.
+    func didSave(to url: URL) {
+        fileURL = url
+    }
+
+    /// Empties the editor.
+    func clear() {
+        narrator.stop()
+        fileURL = nil
+        text = AttributedString()
+        selection = AttributedTextSelection()
+        lintNow()
+    }
+
+    /// The French month names, as a journal writes them.
+    private static let frenchMonths = [
+        "janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"
+    ]
+
+    /// Returns a new entry's opening lines and the caret offset after "Il fait ".
+    ///
+    /// The date line has no full stop, so it never counts as a checked sentence on its
+    /// own, and the first of the month is written "1er", as French dates are.
+    static func entryHeader(for date: Date, calendar: Calendar = .current) -> (text: String, caret: Int) {
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        let day = parts.day == 1 ? "1er" : "\(parts.day ?? 1)"
+        let month = frenchMonths[min(max((parts.month ?? 1) - 1, 0), 11)]
+        let dateLine = "Le \(day) \(month) \(parts.year ?? 2026)\n\n"
+        let weather = "Il fait "
+        let text = dateLine + weather + "\nJe suis à \nJe porte \nJe me sens \n"
+        return (text, dateLine.count + weather.count)
+    }
+
+    /// Drops the old text and everything about it: its errors, ignored issues, the card,
+    /// playback and English, so nothing carries over into the new text.
+    private func replaceText(with contents: String) {
         narrator.stop()
         lintTask?.cancel()
         translationTask?.cancel()
@@ -377,15 +436,6 @@ final class EditorModel {
         isRehearsal = false
         text = AttributedString(contents)
         selection = AttributedTextSelection()
-        lintNow()
-    }
-
-    /// Empties the editor.
-    func clear() {
-        narrator.stop()
-        text = AttributedString()
-        selection = AttributedTextSelection()
-        lintNow()
     }
 
     // MARK: - Play

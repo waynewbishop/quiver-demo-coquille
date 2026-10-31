@@ -18,15 +18,18 @@ import UniformTypeIdentifiers
 /// English toggle. On wide windows the English sits beside the French.
 struct EditorScreen: View {
 
-    @State private var model = EditorModel(draftURL: EditorModel.defaultDraftURL())
+    @State private var model: EditorModel
     @State private var showsIssueList = false
     @State private var showsImporter = false
     @State private var showsExporter = false
-    /// Asks before Open… replaces text that's in the editor.
-    @State private var confirmsReplace = false
+    /// New Entry or Open… waiting on the learner's answer before replacing text in the editor.
+    @State private var pendingReplace: FileRequest?
     @State private var fileProblem: FileProblem?
-    /// Open… or Save As… chosen in the File menu, handled and cleared by this window.
+    /// A command chosen in the File menu, handled and cleared by this window.
     @State private var fileRequest: FileRequest?
+    /// The story's title from the on-device model, or `nil` to show the app's name.
+    /// Only the Mac window titles stories, so on iPhone and iPad it stays `nil`.
+    @State private var storyTitle: String?
     @State private var showsProgress = false
     @State private var showsPhrasebook = false
     @FocusState private var editorIsFocused: Bool
@@ -35,14 +38,17 @@ struct EditorScreen: View {
     @AppStorage("showsSuggestions") private var showsSuggestions = true
 
     #if os(macOS)
-    /// The story's title from the on-device model, or `nil` to show the app's name.
-    @State private var storyTitle: String?
     /// The English pane's share of the window, kept between launches.
     @AppStorage("englishPaneFraction") private var englishFraction = SplitPanes<EmptyView, EmptyView>.defaultFraction
     #endif
 
     /// Window width at which English moves from below the French to beside it.
     private static let splitWidth = 700.0
+
+    /// Creates the editor around the app's one stats store, which the Corrections window reads too.
+    init(stats: StatsStore) {
+        _model = State(initialValue: EditorModel(stats: stats, draftURL: EditorModel.defaultDraftURL()))
+    }
 
     var body: some View {
         screen
@@ -51,27 +57,29 @@ struct EditorScreen: View {
                 isPresented: $showsExporter,
                 document: FrenchTextFile(text: model.plainText),
                 contentType: .plainText,
-                defaultFilename: FrenchTextFile.defaultFilename,
+                defaultFilename: FrenchTextFile.suggestedFilename(for: storyTitle),
                 onCompletion: savedPicked
             )
-            .confirmationDialog("Replace the text in the editor?", isPresented: $confirmsReplace, titleVisibility: .visible) {
-                Button("Open…") { showsImporter = true }
+            .confirmationDialog("Replace the text in the editor?", isPresented: confirmsReplace, titleVisibility: .visible, presenting: pendingReplace) { request in
+                Button(request == .newEntry ? "New Entry" : "Open…") { replace(with: request) }
                 Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Use Save As first to keep it.")
+            } message: { _ in
+                Text("Save first to keep it.")
             }
             .alert(fileProblem?.title ?? "", isPresented: showsFileProblem, presenting: fileProblem) { _ in
                 Button("OK", role: .cancel) {}
             } message: { problem in
                 Text(problem.message)
             }
-            // The File menu's Open… and Save As… ask this window through `fileRequest`.
+            // The File menu's commands ask this window through `fileRequest`.
             .focusedSceneValue(\.fileRequest, $fileRequest)
             .focusedSceneValue(\.canSaveFile, model.hasText)
             .onChange(of: fileRequest) {
                 switch fileRequest {
+                case .newEntry: newEntry()
                 case .open: openFile()
                 case .save: saveFile()
+                case .saveAs: saveFileAs()
                 case nil: return
                 }
                 fileRequest = nil
@@ -96,7 +104,7 @@ struct EditorScreen: View {
                 .tint(.brand)
             }
             .sheet(isPresented: $showsProgress) {
-                ProgressSheet(stats: model.stats.stats)
+                ProgressSheet(store: model.stats)
                     .tint(.brand)
             }
             // A side panel on the Mac and iPad; on iPhone a half-height sheet the editor stays usable under.
@@ -109,43 +117,93 @@ struct EditorScreen: View {
             }
     }
 
-    // MARK: - Open and Save As
+    // MARK: - New Entry, Open and Save
 
-    /// A failed Open or Save As, shown as an alert.
+    /// A failed Open or Save, shown as an alert.
     private struct FileProblem {
         let title: String
         let message: String
     }
 
+    /// Starts a new entry, first asking whether to replace text that's in the editor.
+    private func newEntry() {
+        if model.hasText {
+            pendingReplace = .newEntry
+        } else {
+            replace(with: .newEntry)
+        }
+    }
+
     /// Starts Open…, first asking whether to replace text that's in the editor.
     private func openFile() {
         if model.hasText {
-            confirmsReplace = true
+            pendingReplace = .open
         } else {
+            replace(with: .open)
+        }
+    }
+
+    /// Carries out New Entry or Open… once the editor's text may be replaced.
+    private func replace(with request: FileRequest) {
+        switch request {
+        case .newEntry:
+            // The last story's title doesn't name a new one, even as a suggested file name.
+            storyTitle = nil
+            model.newEntry()
+            editorIsFocused = true
+        case .open:
             showsImporter = true
+        case .save, .saveAs:
+            return
+        }
+    }
+
+    /// Writes back to the file the text came from or last went to, or starts Save As…
+    /// for new text. A file that can no longer be written also falls back to Save As….
+    private func saveFile() {
+        guard let url = model.fileURL else {
+            showsExporter = true
+            return
+        }
+        do {
+            try FrenchTextFile.write(model.plainText, to: url)
+        } catch {
+            showsExporter = true
         }
     }
 
     /// Starts Save As….
-    private func saveFile() {
+    private func saveFileAs() {
         showsExporter = true
     }
 
     /// Loads the file picked in Open…, or reports why it couldn't be read.
     private func openPicked(_ result: Result<URL, any Error>) {
         do {
-            model.open(try FrenchTextFile.text(at: result.get()))
+            let url = try result.get()
+            model.open(try FrenchTextFile.text(at: url), from: url)
+            storyTitle = nil
         } catch {
             fileProblem = FileProblem(title: "The file couldn't be opened", message: error.localizedDescription)
         }
     }
 
-    /// Reports a Save As that failed.
+    /// Remembers where Save As… wrote, or reports why it failed.
     private func savedPicked(_ result: Result<URL, any Error>) {
-        // Canceling the save panel isn't a problem to report.
-        if case .failure(let error) = result, (error as? CocoaError)?.code != .userCancelled {
-            fileProblem = FileProblem(title: "The file couldn't be saved", message: error.localizedDescription)
+        switch result {
+        case .success(let url):
+            model.didSave(to: url)
+        case .failure(let error):
+            // Canceling the save panel isn't a problem to report.
+            if (error as? CocoaError)?.code != .userCancelled {
+                fileProblem = FileProblem(title: "The file couldn't be saved", message: error.localizedDescription)
+            }
         }
+    }
+
+    /// Whether the replace question is showing; dismissing it clears the pending command.
+    private var confirmsReplace: Binding<Bool> {
+        Binding(get: { pendingReplace != nil }, set: { if !$0 { pendingReplace = nil } })
     }
 
     /// Whether the file alert is showing; dismissing it clears the problem.
@@ -245,7 +303,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, openFile: openFile, saveFile: saveFile)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, newEntry: newEntry, openFile: openFile, saveFile: saveFile, saveFileAs: saveFileAs)
 
                 if isWide {
                     HStack(spacing: 0) {
@@ -360,5 +418,5 @@ struct PaneHeader: View {
 }
 
 #Preview {
-    EditorScreen()
+    EditorScreen(stats: StatsStore(fileURL: nil))
 }

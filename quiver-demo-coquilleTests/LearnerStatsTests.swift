@@ -123,4 +123,46 @@ final class LearnerStatsTests: XCTestCase {
         XCTAssertEqual(stats.errorsFixed, 3)
         XCTAssertFalse(String(decoding: try JSONEncoder().encode(stats), as: UTF8.self).contains("nounMistakes"))
     }
+
+    // A fix lands in the corrections list with the sentence as it read before the fix.
+    func testFixIsLoggedWithItsSentence() throws {
+        var stats = LearnerStats()
+        let text = "Il pleut. Un une fromage. Bonsoir"
+        let issue = Issue(kind: .gender, severity: .error, offset: 13, length: 11, original: "une fromage", replacement: "un fromage", reason: "", hint: "", source: "")
+        stats.recordFix(byLearner: true, issue: issue, in: text, on: try day(27))
+        let correction = try XCTUnwrap(stats.corrections.first)
+        XCTAssertEqual(correction.original, "une fromage")
+        XCTAssertEqual(correction.corrected, "un fromage")
+        XCTAssertEqual(correction.sentence, "Un une fromage.")
+        XCTAssertEqual(correction.kind, IssueKind.gender.rawValue)
+        XCTAssertTrue(correction.byLearner)
+    }
+
+    // The corrections list keeps only the newest `correctionLimit` fixes.
+    func testCorrectionsAreCapped() throws {
+        var stats = LearnerStats()
+        for _ in 0..<(LearnerStats.correctionLimit + 5) {
+            stats.recordFix(byLearner: false, issue: genderIssue, in: "Un une fromage.")
+        }
+        XCTAssertEqual(stats.corrections.count, LearnerStats.correctionLimit)
+        XCTAssertEqual(stats.errorsFixed, LearnerStats.correctionLimit + 5)
+    }
+
+    // Stats saved before the corrections list existed still load, with an empty list.
+    func testDecodesStatsWithoutCorrections() throws {
+        let json = #"{"days":{},"issueCounts":{},"correctedWords":{},"errorsFixed":1,"fixedByLearner":1,"countedIssues":[]}"#
+        let stats = try JSONDecoder().decode(LearnerStats.self, from: Data(json.utf8))
+        XCTAssertEqual(stats.corrections, [])
+    }
+
+    // Reset starts the stats over, as on first launch.
+    @MainActor
+    func testResetClearsEverything() throws {
+        let store = StatsStore(fileURL: nil)
+        store.record(text: "Un une fromage.", issues: [genderIssue])
+        store.recordFix(byLearner: true, issue: genderIssue, in: "Un une fromage.")
+        XCTAssertNotEqual(store.stats, LearnerStats())
+        store.reset()
+        XCTAssertEqual(store.stats, LearnerStats())
+    }
 }

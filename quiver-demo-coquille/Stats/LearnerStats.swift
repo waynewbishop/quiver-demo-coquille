@@ -23,6 +23,22 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
         var clean: Set<String> = []
     }
 
+    /// One fixed error for the corrections list: what was written, what it became, and where.
+    struct Correction: Codable, Equatable, Sendable, Identifiable {
+        var id = UUID()
+        let date: Date
+        /// The issue kind's raw value, kept as text so a renamed kind never breaks old files.
+        let kind: String
+        /// The flagged text as the learner wrote it.
+        let original: String
+        /// The fix, or `nil` when the learner retyped a word the linter had no fix for.
+        let corrected: String?
+        /// The sentence the mistake sat in, as it read before the fix.
+        let sentence: String?
+        /// Whether the learner typed the fix rather than applying it.
+        let byLearner: Bool
+    }
+
     /// Day key ("2026-10-27") → that day's sentences.
     var days: [String: Day] = [:]
     /// Issue kind raw value → times flagged.
@@ -34,6 +50,11 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     var fixedByLearner = 0
     /// Sentence + issue pairs already counted, so relinting the same text never double-counts.
     var countedIssues: Set<String> = []
+    /// Fixed errors, oldest first, up to `correctionLimit`.
+    var corrections: [Correction] = []
+
+    /// The most corrections kept; older ones drop off the front.
+    static let correctionLimit = 500
 
     // MARK: - Recording
 
@@ -70,13 +91,28 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
     /// Words are counted here rather than when an issue is flagged: a flag can come from a
     /// half-typed word, and its suggested fix is only a guess, but a fix that now stands
     /// in the text is a word the learner really meant.
-    mutating func recordFix(byLearner: Bool, issue: Issue? = nil) {
+    ///
+    /// With an issue, the fix is also added to the corrections list, along with its
+    /// sentence from `text`, the French as it read before the fix.
+    mutating func recordFix(byLearner: Bool, issue: Issue? = nil, in text: String? = nil, on date: Date = .now) {
         errorsFixed += 1
         if byLearner {
             fixedByLearner += 1
         }
-        if let issue, let word = Self.missedWord(in: issue) {
+        guard let issue else { return }
+        if let word = Self.missedWord(in: issue) {
             correctedWords[word, default: 0] += 1
+        }
+        corrections.append(Correction(
+            date: date,
+            kind: issue.kind.rawValue,
+            original: issue.original,
+            corrected: issue.replacement,
+            sentence: text.flatMap { Self.sentence(around: issue.range, in: $0) },
+            byLearner: byLearner
+        ))
+        if corrections.count > Self.correctionLimit {
+            corrections.removeFirst(corrections.count - Self.correctionLimit)
         }
     }
 
@@ -161,6 +197,21 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
     }
 
+    /// Returns the trimmed sentence holding `range`, from the previous . ! ? or line break
+    /// to the next one, or `nil` when the range falls outside `text`.
+    static func sentence(around range: Range<Int>, in text: String) -> String? {
+        let characters = Array(text)
+        guard range.lowerBound >= 0, range.upperBound <= characters.count else { return nil }
+        let ends: Set<Character> = [".", "!", "?", "\n"]
+        var start = range.lowerBound
+        while start > 0, !ends.contains(characters[start - 1]) { start -= 1 }
+        var end = range.upperBound
+        while end < characters.count, !ends.contains(characters[end]) { end += 1 }
+        if end < characters.count, characters[end] != "\n" { end += 1 }
+        let sentence = String(characters[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return sentence.isEmpty ? nil : sentence
+    }
+
     /// Returns each sentence ending in . ! or ?, trimmed, with its character range.
     static func completedSentences(in text: String) -> [(text: String, range: Range<Int>)] {
         var sentences: [(text: String, range: Range<Int>)] = []
@@ -184,10 +235,11 @@ nonisolated extension LearnerStats {
     /// Older files' "nounMistakes" counted every flagged word, half-typed ones and
     /// guesses included, so it is left behind rather than decoded.
     private enum CodingKeys: String, CodingKey {
-        case days, issueCounts, correctedWords, errorsFixed, fixedByLearner, countedIssues
+        case days, issueCounts, correctedWords, errorsFixed, fixedByLearner, countedIssues, corrections
     }
 
-    /// Decodes saved stats, including files written before `fixedByLearner` or `correctedWords` existed.
+    /// Decodes saved stats, including files written before `fixedByLearner`, `correctedWords`
+    /// or `corrections` existed.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         days = try container.decode([String: Day].self, forKey: .days)
@@ -196,5 +248,6 @@ nonisolated extension LearnerStats {
         errorsFixed = try container.decode(Int.self, forKey: .errorsFixed)
         fixedByLearner = try container.decodeIfPresent(Int.self, forKey: .fixedByLearner) ?? 0
         countedIssues = try container.decode(Set<String>.self, forKey: .countedIssues)
+        corrections = try container.decodeIfPresent([Correction].self, forKey: .corrections) ?? []
     }
 }
