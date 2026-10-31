@@ -1,0 +1,1321 @@
+text,group,kind,pastTense,planWithAller,negation,question
+"Ah, voilà enfin le bus !","gc62bbc7276607449","clean",0,0,0,0
+"Ah, voila enfin le bus !","gc62bbc7276607449","droppedAccent",0,0,0,0
+"Ajoute un peu de sel.","g8ff6d8eec02e17f5","clean",0,0,0,0
+"Allez tout droit.","gb734855819c1f6b7","clean",0,0,0,0
+"Allez vers la gare, puis tournez à droite.","g1a6b09ff62af4753","clean",0,0,0,0
+"Allez vers la gare, puis tournez a droite.","g1a6b09ff62af4753","droppedAccent",0,0,0,0
+"Après la pluie, l'air est frais.","g4197ee68ff734ff2","clean",0,0,0,0
+"Apres la pluie, l'air est frais.","g4197ee68ff734ff2","droppedAccent",0,0,0,0
+"Après le dîner, je lis un livre.","g56075f75b7cd2b21","clean",0,0,0,0
+"Apres le dîner, je lis un livre.","g56075f75b7cd2b21","droppedAccent",0,0,0,0
+"Attendez, je n'ai pas encore choisi.","g6222472340335a77","clean",1,0,1,0
+"Attendez, je n'ai pas encore choisir.","g6222472340335a77","infinitiveForParticiple",1,0,1,0
+"Attendez, j'ai pas encore choisi.","g6222472340335a77","missingNe",1,0,1,0
+"Attends une seconde !","g374791b472658fdc","clean",0,0,0,0
+"Attention, le train arrive !","g8aff0852439fed40","clean",0,0,0,0
+"Au début, c'était difficile, mais maintenant ça va.","g9f5305d8d5120e42","clean",0,0,0,0
+"Au debut, c'était difficile, mais maintenant ça va.","g9f5305d8d5120e42","droppedAccent",0,0,0,0
+"Au petit-déjeuner, je prends du pain et de la confiture.","g1500f737cb41370d","clean",0,0,0,0
+"Au petit-dejeuner, je prends du pain et de la confiture.","g1500f737cb41370d","droppedAccent",0,0,0,0
+"Au printemps, il fait doux.","g1d3865d8cfb54b58","clean",0,0,0,0
+"Au revoir, bonne journée !","gc60305bdae4fc3c0","clean",0,0,0,0
+"Au revoir, bonne journee !","gc60305bdae4fc3c0","droppedAccent",0,0,0,0
+"Aujourd'hui, je suis allé à la gare.","gad9e6810e7ca1d1f","clean",1,0,0,0
+"Aujourd'hui, j'ai allé à la gare.","gad9e6810e7ca1d1f","wrongAuxiliary",1,0,0,0
+"Aujourd'hui, je suis aller à la gare.","gad9e6810e7ca1d1f","infinitiveForParticiple",1,0,0,0
+"Aujourd'hui, je allé à la gare.","gad9e6810e7ca1d1f","missingEtreAfterAller",1,0,0,0
+"Aujourd'hui, je suis alle à la gare.","gad9e6810e7ca1d1f","droppedAccent",1,0,0,0
+"Aujourd'hui, nous sommes mardi.","g52f81fc10525fa90","clean",0,0,0,0
+"Avec du beurre, c'est meilleur.","gd716e6f9dcb2a855","clean",0,0,0,0
+"Avec plaisir !","g6b49a18b512f6a4d","clean",0,0,0,0
+"Avec plaisir.","g87394b9663a4d9ac","clean",0,0,0,0
+"Bien sûr.","ga1d0de5175fc07f0","clean",0,0,0,0
+"Bien sur.","ga1d0de5175fc07f0","droppedAccent",0,0,0,0
+"Bon voyage !","g467f20fd5d98266a","clean",0,0,0,0
+"Bonjour !","g00b8452a7f9f1e93","clean",0,0,0,0
+"Bonjour, madame. Bonjour, monsieur.","ga6b647dda6756604","clean",0,0,0,0
+"Bonne chance pour ton examen !","gf27e13bc5a7e9d0d","clean",0,0,0,0
+"Bonne nuit, dors bien.","g3807550469430de5","clean",0,0,0,0
+"Bonne soirée !","gf05cc2dd87e4dc5a","clean",0,0,0,0
+"Bonne soiree !","gf05cc2dd87e4dc5a","droppedAccent",0,0,0,0
+"Bonsoir !","ge4e03502bdf8d40e","clean",0,0,0,0
+"C'est absolument génial !","g16a826731401f0cb","clean",0,0,0,0
+"C'est absolument genial !","g16a826731401f0cb","droppedAccent",0,0,0,0
+"C'est au milieu de la ville.","g8d1cbec7113be27c","clean",0,0,0,0
+"C'est bon, mais un peu froid.","g5a08abbc83adbde9","clean",0,0,0,0
+"C'est combien ?","gcc830766de86f353","clean",0,0,0,1
+"C'est dangereux de traverser ici.","g48eb13f0fa000d64","clean",0,0,0,0
+"C'est délicieux !","gcaaf9a6301d7205f","clean",0,0,0,0
+"C'est delicieux !","gcaaf9a6301d7205f","droppedAccent",0,0,0,0
+"C'est fini.","g6021e912a69a1323","clean",0,0,0,0
+"C'est la première fois que je viens ici.","g0129f866ace71d0c","clean",0,0,0,0
+"C'est la premiere fois que je viens ici.","g0129f866ace71d0c","droppedAccent",0,0,0,0
+"C'est le contraire.","gfcbd492908d68681","clean",0,0,0,0
+"C'est loin ?","g7e3f16d0b21a9c94","clean",0,0,0,1
+"C'est là-bas, au coin de la rue.","g5f2bbc2938607964","clean",0,0,0,0
+"C'est la-bas, au coin de la rue.","g5f2bbc2938607964","droppedAccent",0,0,0,0
+"C'est pour offrir.","gb8ae0d850acecec5","clean",0,0,0,0
+"C'est trop cher.","g0aa9f44078987328","clean",0,0,0,0
+"C'est un cadeau pour ma mère.","g35fa042ec6dc5776","clean",0,0,0,0
+"C'est un cadeau pour ma mere.","g35fa042ec6dc5776","droppedAccent",0,0,0,0
+"C'est un secret entre nous.","g7505d5a4a1cd7023","clean",0,0,0,0
+"C'est vrai ?","gbab379065bdbdd3c","clean",0,0,0,1
+"C'est vraiment bizarre.","g67b5f9ca4fad0d78","clean",0,0,0,0
+"C'est à côté de l'hôpital.","g0c72a1b5b5110d5b","clean",0,0,0,0
+"C'est a côté de l'hôpital.","g0c72a1b5b5110d5b","droppedAccent",0,0,0,0
+"C'est à côté de l'hôtel.","g41cc75e5153ef3e4","clean",0,0,0,0
+"C'est a côté de l'hôtel.","g41cc75e5153ef3e4","droppedAccent",0,0,0,0
+"C'est à dix minutes à pied.","g17010e88d2251a1f","clean",0,0,0,0
+"C'est a dix minutes à pied.","g17010e88d2251a1f","droppedAccent",0,0,0,0
+"C'était la plus belle journée de l'année.","ga11e16299e121b9b","clean",0,0,0,0
+"C'etait la plus belle journée de l'année.","ga11e16299e121b9b","droppedAccent",0,0,0,0
+"C'était super !","g751007681a3180a5","clean",0,0,0,0
+"C'etait super !","g751007681a3180a5","droppedAccent",0,0,0,0
+"C'était une époque heureuse.","g0d442c8ca246a071","clean",0,0,0,0
+"C'etait une époque heureuse.","g0d442c8ca246a071","droppedAccent",0,0,0,0
+"Ce fromage a un goût différent.","g04df817a7895429e","clean",0,0,0,0
+"Ce fromage a un gout différent.","g04df817a7895429e","droppedAccent",0,0,0,0
+"Ce garçon est le frère de mon ami.","g8bf9afc7b1b146ad","clean",0,0,0,0
+"Ce garcon est le frère de mon ami.","g8bf9afc7b1b146ad","droppedAccent",0,0,0,0
+"Ce jour-là, j'ai compris quelque chose.","g7a8f7a01ec8ff58b","clean",1,0,0,0
+"Ce jour-là, j'ai comprendre quelque chose.","g7a8f7a01ec8ff58b","infinitiveForParticiple",1,0,0,0
+"Ce jour-la, j'ai compris quelque chose.","g7a8f7a01ec8ff58b","droppedAccent",1,0,0,0
+"Ce matin, j'ai bu un thé.","g6cefb76bdc6ff58f","clean",1,0,0,0
+"Ce matin, j'ai boire un thé.","g6cefb76bdc6ff58f","infinitiveForParticiple",1,0,0,0
+"Ce matin, j'ai bu un the.","g6cefb76bdc6ff58f","droppedAccent",1,0,0,0
+"Ce matin, je me suis réveillé tard.","g67d7e5a54f95585a","clean",1,0,0,0
+"Ce matin, je me suis réveiller tard.","g67d7e5a54f95585a","infinitiveForParticiple",1,0,0,0
+"Ce matin, je me suis reveillé tard.","g67d7e5a54f95585a","droppedAccent",1,0,0,0
+"Ce mois-ci, je suis très occupé.","g9551fcbd5829e071","clean",0,0,0,0
+"Ce mois-ci, je suis tres occupé.","g9551fcbd5829e071","droppedAccent",0,0,0,0
+"Ce n'est pas cher, c'est une bonne occasion.","g1276a9005ad8bd25","clean",0,0,1,0
+"C'est pas cher, c'est une bonne occasion.","g1276a9005ad8bd25","missingNe",0,0,1,0
+"Ce n'est pas grave.","g1dca7d61057ba969","clean",0,0,1,0
+"C'est pas grave.","g1dca7d61057ba969","missingNe",0,0,1,0
+"Ce n'est pas juste !","g8e7fe5b4a3974fca","clean",0,0,1,0
+"C'est pas juste !","g8e7fe5b4a3974fca","missingNe",0,0,1,0
+"Ce n'est pas la peine.","g6e450cf9b2f5f51a","clean",0,0,1,0
+"C'est pas la peine.","g6e450cf9b2f5f51a","missingNe",0,0,1,0
+"Ce n'est pas normal.","g573209cd207e3cc3","clean",0,0,1,0
+"C'est pas normal.","g573209cd207e3cc3","missingNe",0,0,1,0
+"Ce n'est pas possible !","g1556511023feba08","clean",0,0,1,0
+"C'est pas possible !","g1556511023feba08","missingNe",0,0,1,0
+"Ce n'est pas votre faute.","g05fc31d62bd2b123","clean",0,0,1,0
+"C'est pas votre faute.","g05fc31d62bd2b123","missingNe",0,0,1,0
+"Ce pantalon est trop long.","g00a321cfd2866b7b","clean",0,0,0,0
+"Ce pays est très beau.","g462ffa510ac9c5bd","clean",0,0,0,0
+"Ce pays est tres beau.","g462ffa510ac9c5bd","droppedAccent",0,0,0,0
+"Ce sac est léger.","g54e007c29b9d4d08","clean",0,0,0,0
+"Ce sac est leger.","g54e007c29b9d4d08","droppedAccent",0,0,0,0
+"Ce soir, je vais être disponible.","gf02b9eda7ce4767b","clean",0,1,0,0
+"Ce soir, je vais disponible.","gf02b9eda7ce4767b","missingPlanEtre",0,1,0,0
+"Ce soir, je vais etre disponible.","gf02b9eda7ce4767b","droppedAccent",0,1,0,0
+"Ce soir, nous allons au cinéma avec des amis.","ga27e2281bc6e6035","clean",0,0,0,0
+"Ce soir, nous allons au cinema avec des amis.","ga27e2281bc6e6035","droppedAccent",0,0,0,0
+"Ce week-end, je vais faire du sport.","g8b24e31d15636d5b","clean",0,1,0,0
+"Cela me semble difficile.","gf0eb908ae75927bd","clean",0,0,0,0
+"Certains jours, je suis très fatigué.","g5d2dc8d98e381ba8","clean",0,0,0,0
+"Certains jours, je suis tres fatigué.","g5d2dc8d98e381ba8","droppedAccent",0,0,0,0
+"Ces chaussettes sont trop petites.","g237045a640fedf49","clean",0,0,0,0
+"Cet homme a les yeux verts.","g1ab7885401d35bd5","clean",0,0,0,0
+"Cet été, je vais apprendre à conduire.","g3383e37633f80696","clean",0,1,0,0
+"Cet eté, je vais apprendre à conduire.","g3383e37633f80696","droppedAccent",0,1,0,0
+"Cette boutique vend des vêtements.","g61a3b5254cb6c18c","clean",0,0,0,0
+"Cette boutique vend des vetements.","g61a3b5254cb6c18c","droppedAccent",0,0,0,0
+"Cette chemise blanche est sale.","g17886731a0a173a2","clean",0,0,0,0
+"Cette dame a une belle voix.","ge55ac159c1d8a878","clean",0,0,0,0
+"Cette jupe est un peu courte.","g4014a67b1bcaf447","clean",0,0,0,0
+"Cette odeur de café me réveille.","g7212fdd1d1b197b9","clean",0,0,0,0
+"Cette odeur de cafe me réveille.","g7212fdd1d1b197b9","droppedAccent",0,0,0,0
+"Chacun a sa place à table.","g0c2e1ae6d51e3b52","clean",0,0,0,0
+"Chacun a sa place a table.","g0c2e1ae6d51e3b52","droppedAccent",0,0,0,0
+"Chaque jour, j'écris trois phrases en français.","g68e5289d434365ca","clean",0,0,0,0
+"Chaque jour, j'ecris trois phrases en français.","g68e5289d434365ca","droppedAccent",0,0,0,0
+"Combien coûte ce livre ?","g39d14bff4d6738da","clean",0,0,0,1
+"Combien coute ce livre ?","g39d14bff4d6738da","droppedAccent",0,0,0,1
+"Comme il pleuvait, je suis resté à la maison.","g07c0f0bb0799c927","clean",1,0,0,0
+"Comme il pleuvait, j'ai resté à la maison.","g07c0f0bb0799c927","wrongAuxiliary",1,0,0,0
+"Comme il pleuvait, je suis rester à la maison.","g07c0f0bb0799c927","infinitiveForParticiple",1,0,0,0
+"Comme il pleuvait, je suis reste à la maison.","g07c0f0bb0799c927","droppedAccent",1,0,0,0
+"Comment allez-vous ?","g5d0a3a4c43d1be73","clean",0,0,0,1
+"Comment vas-tu ?","g352d9e0828af6425","clean",0,0,0,1
+"Comment vous appelez-vous ?","ge2c43ab96e8972ad","clean",0,0,0,1
+"Continuez tout droit jusqu'au pont.","g52d5aefcaffcbca4","clean",0,0,0,0
+"Coupe le pain en morceaux.","g6ca608dad75c065d","clean",0,0,0,0
+"D'abord, j'ai mangé un croissant.","gd1306e7b66c85c33","clean",1,0,0,0
+"D'abord, j'ai manger un croissant.","gd1306e7b66c85c33","infinitiveForParticiple",1,0,0,0
+"D'abord, j'ai mange un croissant.","gd1306e7b66c85c33","droppedAccent",1,0,0,0
+"D'autres amis sont arrivés plus tard.","g782a633770edb4c0","clean",1,0,0,0
+"D'autres amis sont arriver plus tard.","g782a633770edb4c0","infinitiveForParticiple",1,0,0,0
+"D'autres amis sont arrives plus tard.","g782a633770edb4c0","droppedAccent",1,0,0,0
+"De l'eau, s'il vous plaît.","g38ccde1dc0b25c76","clean",0,0,0,0
+"De l'eau, s'il vous plait.","g38ccde1dc0b25c76","droppedAccent",0,0,0,0
+"De rien.","gf433a42a4c2b70da","clean",0,0,1,0
+"Demain, je ne vais pas travailler.","gaa39aacd971fdde2","clean",0,1,1,0
+"Demain, je vais pas travailler.","gaa39aacd971fdde2","missingNe",0,1,1,0
+"Demain, je vais travailler.","gd0fbd5fc59c90371","clean",0,1,0,0
+"Demain, je vais être bénévole.","g258a1d51e9aa5d3b","clean",0,1,0,0
+"Demain, je vais bénévole.","g258a1d51e9aa5d3b","missingPlanEtre",0,1,0,0
+"Demain, je vais etre bénévole.","g258a1d51e9aa5d3b","droppedAccent",0,1,0,0
+"Demain, tu vas être libre.","g3d76351d96ff47ac","clean",0,1,0,0
+"Demain, tu vas libre.","g3d76351d96ff47ac","missingPlanEtre",0,1,0,0
+"Demain, tu vas etre libre.","g3d76351d96ff47ac","droppedAccent",0,1,0,0
+"Donnez-moi deux kilos de pommes.","g108c762b5c80ea15","clean",0,0,0,0
+"Du balcon, on voit la mer.","gf7e445c9b0a4d797","clean",0,0,0,0
+"Elle a fini.","g429af9eeebc8632a","clean",1,0,0,0
+"Elle a finir.","g429af9eeebc8632a","infinitiveForParticiple",1,0,0,0
+"Elle a mal au genou et à l'épaule.","gf6f023c77f3fa69a","clean",0,0,0,0
+"Elle a mal au genou et a l'épaule.","gf6f023c77f3fa69a","droppedAccent",0,0,0,0
+"Elle a souri quand elle m'a vu.","ga30f1245020daec9","clean",1,0,0,0
+"Elle a sourire quand elle m'a vu.","ga30f1245020daec9","infinitiveForParticiple",1,0,0,0
+"Elle a un joli visage.","g13eb7e612a7eb058","clean",0,0,0,0
+"Elle a une robe rouge et des chaussures noires.","g5d34689fc0bcd8c3","clean",0,0,0,0
+"Elle a vue sur la mer.","g46a51ae9f5a75441","clean",0,0,0,0
+"Elle a épousé un homme gentil.","g2889be6873329b81","clean",1,0,0,0
+"Elle a épouser un homme gentil.","g2889be6873329b81","infinitiveForParticiple",1,0,0,0
+"Elle a epousé un homme gentil.","g2889be6873329b81","droppedAccent",1,0,0,0
+"Elle a été malade.","ge131ced3f6354630","clean",1,0,0,0
+"Elle a être malade.","ge131ced3f6354630","infinitiveForParticiple",1,0,0,0
+"Elle a eté malade.","ge131ced3f6354630","droppedAccent",1,0,0,0
+"Elle demande quel livre tu préfères.","gb06170bf0c069976","clean",0,0,0,0
+"Elle demande quel livre tu prefères.","gb06170bf0c069976","droppedAccent",0,0,0,0
+"Elle est jeune et très jolie.","g55df5c8144780804","clean",0,0,0,0
+"Elle est jeune et tres jolie.","g55df5c8144780804","droppedAccent",0,0,0,0
+"Elle est morte.","ge8d2c6e646874574","clean",1,0,0,0
+"Elle a morte.","ge8d2c6e646874574","wrongAuxiliary",1,0,0,0
+"Elle est mourir.","ge8d2c6e646874574","infinitiveForParticiple",1,0,0,0
+"Elle est partie sans dire au revoir.","g81dd98266dd4e3c4","clean",1,0,0,0
+"Elle a partie sans dire au revoir.","g81dd98266dd4e3c4","wrongAuxiliary",1,0,0,0
+"Elle est partir sans dire au revoir.","g81dd98266dd4e3c4","infinitiveForParticiple",1,0,0,0
+"Elle est tombée.","gbcc33ba897dbf974","clean",1,0,0,0
+"Elle a tombée.","gbcc33ba897dbf974","wrongAuxiliary",1,0,0,0
+"Elle est tomber.","gbcc33ba897dbf974","infinitiveForParticiple",1,0,0,0
+"Elle est tombee.","gbcc33ba897dbf974","droppedAccent",1,0,0,0
+"Elle est triste parce que son chat est malade.","g15c6ca7a446debf4","clean",0,0,0,0
+"Elle met une jupe et une veste noire.","g3659b6e86c2ce40e","clean",0,0,0,0
+"Elle n'est pas allée.","gf4bf91c8bcd7f432","clean",1,0,1,0
+"Elle n'est pas aller.","gf4bf91c8bcd7f432","infinitiveForParticiple",1,0,1,0
+"Elle est pas allée.","gf4bf91c8bcd7f432","missingNe",1,0,1,0
+"Elle n'est pas allee.","gf4bf91c8bcd7f432","droppedAccent",1,0,1,0
+"Elle prend des photos avec son téléphone.","g58a95ed4a2bc8e7e","clean",0,0,0,0
+"Elle prend des photos avec son teléphone.","g58a95ed4a2bc8e7e","droppedAccent",0,0,0,0
+"Elle va chez le médecin pour consulter.","g67ea2273bdc9e732","clean",0,0,0,0
+"Elle va chez le medecin pour consulter.","g67ea2273bdc9e732","droppedAccent",0,0,0,0
+"Elles sont allées.","g7a5629d72e383673","clean",1,0,0,0
+"Elles ont allées.","g7a5629d72e383673","wrongAuxiliary",1,0,0,0
+"Elles sont aller.","g7a5629d72e383673","infinitiveForParticiple",1,0,0,0
+"Elles allées.","g7a5629d72e383673","missingEtreAfterAller",1,0,0,0
+"Elles sont allees.","g7a5629d72e383673","droppedAccent",1,0,0,0
+"Elles sont parties tôt.","gf53928e7c9b9e135","clean",1,0,0,0
+"Elles ont parties tôt.","gf53928e7c9b9e135","wrongAuxiliary",1,0,0,0
+"Elles sont partir tôt.","gf53928e7c9b9e135","infinitiveForParticiple",1,0,0,0
+"Elles sont parties tot.","gf53928e7c9b9e135","droppedAccent",1,0,0,0
+"Embrasse tes parents pour moi.","g803fe494ee43ca2f","clean",0,0,0,0
+"En août, nous partons en vacances.","g4c0faa6e37cff609","clean",0,0,0,0
+"En aout, nous partons en vacances.","g4c0faa6e37cff609","droppedAccent",0,0,0,0
+"En automne, les feuilles tombent.","g23ff2616133259d1","clean",0,0,0,0
+"En décembre, nous fêtons la fin de l'année.","g815fbf890c1b7b5c","clean",0,0,0,0
+"En decembre, nous fêtons la fin de l'année.","g815fbf890c1b7b5c","droppedAccent",0,0,0,0
+"En hiver, je porte des bottes, des gants et une écharpe.","g30c9b3876ac419c1","clean",0,0,0,0
+"En hiver, je porte des bottes, des gants et une echarpe.","g30c9b3876ac419c1","droppedAccent",0,0,0,0
+"En hiver, la nuit tombe très tôt.","gc9b7e3be49758e69","clean",0,0,0,0
+"En hiver, la nuit tombe tres tôt.","gc9b7e3be49758e69","droppedAccent",0,0,0,0
+"En janvier, il fait très froid.","g7f59eaeaa56cf5d4","clean",0,0,0,0
+"En janvier, il fait tres froid.","g7f59eaeaa56cf5d4","droppedAccent",0,0,0,0
+"En juillet, il va faire beau.","g0963da925da7958d","clean",0,1,0,0
+"En juin, les jours sont plus longs.","g1a5f503ee124885c","clean",0,0,0,0
+"En mai, il y a beaucoup de fleurs.","g192c4484af30478e","clean",0,0,0,0
+"En octobre et en novembre, il pleut beaucoup.","gf276ec4a9ab8affd","clean",0,0,0,0
+"En été, je porte un short et un chapeau.","gf426172e883a9d41","clean",0,0,0,0
+"En eté, je porte un short et un chapeau.","gf426172e883a9d41","droppedAccent",0,0,0,0
+"En été, on va à la plage.","gac2910e273939dd5","clean",0,0,0,0
+"En eté, on va à la plage.","gac2910e273939dd5","droppedAccent",0,0,0,0
+"Enchanté de faire votre connaissance.","gc2a9aef76f7b298d","clean",0,0,0,0
+"Enchante de faire votre connaissance.","gc2a9aef76f7b298d","droppedAccent",0,0,0,0
+"Enchanté.","ge56e30db4885c710","clean",0,0,0,0
+"Enchante.","ge56e30db4885c710","droppedAccent",0,0,0,0
+"Enfin, j'ai regardé la télé.","g3895f7d0bba28c6e","clean",1,0,0,0
+"Enfin, j'ai regarder la télé.","g3895f7d0bba28c6e","infinitiveForParticiple",1,0,0,0
+"Enfin, j'ai regarde la télé.","g3895f7d0bba28c6e","droppedAccent",1,0,0,0
+"Enlève ton manteau, il fait chaud.","gb3388799041f70de","clean",0,0,0,0
+"Enleve ton manteau, il fait chaud.","gb3388799041f70de","droppedAccent",0,0,0,0
+"Ensuite, je suis allé à la maison.","g8d169bb1ce7ad7d7","clean",1,0,0,0
+"Ensuite, j'ai allé à la maison.","g8d169bb1ce7ad7d7","wrongAuxiliary",1,0,0,0
+"Ensuite, je suis aller à la maison.","g8d169bb1ce7ad7d7","infinitiveForParticiple",1,0,0,0
+"Ensuite, je allé à la maison.","g8d169bb1ce7ad7d7","missingEtreAfterAller",1,0,0,0
+"Ensuite, je suis alle à la maison.","g8d169bb1ce7ad7d7","droppedAccent",1,0,0,0
+"Entre, je t'en prie.","g696d5bab4b72e2fe","clean",0,0,0,0
+"Est-ce que tu as mangé ?","gdad5024c850c692a","clean",1,0,0,1
+"Est-ce que tu as manger ?","gdad5024c850c692a","infinitiveForParticiple",1,0,0,1
+"Est-ce que tu as mange ?","gdad5024c850c692a","droppedAccent",1,0,0,1
+"Et toi ?","g3846d32805fb3411","clean",0,0,0,1
+"Et vous ?","gacd35fc63f93926a","clean",0,0,0,1
+"Excusez-moi de vous déranger.","g37a492f22a319f07","clean",0,0,0,0
+"Excusez-moi de vous deranger.","g37a492f22a319f07","droppedAccent",0,0,0,0
+"Excusez-moi, où est la gare ?","g37e2ad8d150bd13c","clean",0,0,0,1
+"Excusez-moi, ou est la gare ?","g37e2ad8d150bd13c","droppedAccent",0,0,0,1
+"Excusez-moi.","g3cf63993864b9482","clean",0,0,0,0
+"Fais attention à ton dos.","g4d3a7be1dc06ad48","clean",0,0,0,0
+"Fais attention a ton dos.","g4d3a7be1dc06ad48","droppedAccent",0,0,0,0
+"Faites l'exercice à la maison.","ge255b704fe30bb99","clean",0,0,0,0
+"Faites l'exercice a la maison.","ge255b704fe30bb99","droppedAccent",0,0,0,0
+"Ferme la porte, s'il te plaît.","g3d795c0c51ef3e55","clean",0,0,0,0
+"Ferme la porte, s'il te plait.","g3d795c0c51ef3e55","droppedAccent",0,0,0,0
+"Garde-moi la moitié du gâteau.","g9c07503762416d33","clean",0,0,0,0
+"Garde-moi la moitie du gâteau.","g9c07503762416d33","droppedAccent",0,0,0,0
+"Grâce à mon ami, j'ai trouvé un appartement.","gc97726af3a2cb588","clean",1,0,0,0
+"Grâce à mon ami, j'ai trouver un appartement.","gc97726af3a2cb588","infinitiveForParticiple",1,0,0,0
+"Grace à mon ami, j'ai trouvé un appartement.","gc97726af3a2cb588","droppedAccent",1,0,0,0
+"Hier soir, j'ai rencontré un ami au café.","g018131aa3c7d6cd4","clean",1,0,0,0
+"Hier soir, j'ai rencontrer un ami au café.","g018131aa3c7d6cd4","infinitiveForParticiple",1,0,0,0
+"Hier soir, j'ai rencontre un ami au café.","g018131aa3c7d6cd4","droppedAccent",1,0,0,0
+"Hier, il faisait froid.","g54dfcb64d7bc9fa9","clean",0,0,0,0
+"Hier, j'ai fait du vélo.","g7d35cee305a5c3d6","clean",1,0,0,0
+"Hier, j'ai faire du vélo.","g7d35cee305a5c3d6","infinitiveForParticiple",1,0,0,0
+"Hier, j'ai fait du velo.","g7d35cee305a5c3d6","droppedAccent",1,0,0,0
+"Hier, je n'ai pas mangé.","g1b80f62af2701348","clean",1,0,1,0
+"Hier, je n'ai pas manger.","g1b80f62af2701348","infinitiveForParticiple",1,0,1,0
+"Hier, j'ai pas mangé.","g1b80f62af2701348","missingNe",1,0,1,0
+"Hier, je n'ai pas mange.","g1b80f62af2701348","droppedAccent",1,0,1,0
+"Ici, les prix sont bas.","gf92bfb87a915d10f","clean",0,0,0,0
+"Il a cessé de pleuvoir vers midi.","gba774019d3b32673","clean",1,0,0,0
+"Il a cesser de pleuvoir vers midi.","gba774019d3b32673","infinitiveForParticiple",1,0,0,0
+"Il a cesse de pleuvoir vers midi.","gba774019d3b32673","droppedAccent",1,0,0,0
+"Il a commencé à pleuvoir, alors je suis rentré.","g1d69635c5ea4fd09","clean",1,0,0,0
+"Il a commencer à pleuvoir, alors je suis rentré.","g1d69635c5ea4fd09","infinitiveForParticiple",1,0,0,0
+"Il a commence à pleuvoir, alors je suis rentré.","g1d69635c5ea4fd09","droppedAccent",1,0,0,0
+"Il a de grands bras et de longs doigts.","g69fc3888a0e4082a","clean",0,0,0,0
+"Il a eu froid.","gaf48c2bfcb9db0b7","clean",1,0,0,0
+"Il a avoir froid.","gaf48c2bfcb9db0b7","infinitiveForParticiple",1,0,0,0
+"Il a la peau très claire.","ga2855546d3e98c17","clean",0,0,0,0
+"Il a la peau tres claire.","ga2855546d3e98c17","droppedAccent",0,0,0,0
+"Il a mal aux jambes après le sport.","g094c5171534150cb","clean",0,0,0,0
+"Il a mal aux jambes apres le sport.","g094c5171534150cb","droppedAccent",0,0,0,0
+"Il a mangé.","gf97f9d0565013786","clean",1,0,0,0
+"Il a manger.","gf97f9d0565013786","infinitiveForParticiple",1,0,0,0
+"Il a mange.","gf97f9d0565013786","droppedAccent",1,0,0,0
+"Il a monté les valises.","g8d6146b81b87e5ea","clean",1,0,0,0
+"Il a monter les valises.","g8d6146b81b87e5ea","infinitiveForParticiple",1,0,0,0
+"Il a monte les valises.","g8d6146b81b87e5ea","droppedAccent",1,0,0,0
+"Il a raison.","g273142ec32fa0725","clean",0,0,0,0
+"Il a refusé de répondre.","g0a715b3e2845bb1d","clean",1,0,0,0
+"Il a refuser de répondre.","g0a715b3e2845bb1d","infinitiveForParticiple",1,0,0,0
+"Il a refuse de répondre.","g0a715b3e2845bb1d","droppedAccent",1,0,0,0
+"Il a touché le mur avec la main.","gb73b8201bfd59ca4","clean",1,0,0,0
+"Il a toucher le mur avec la main.","gb73b8201bfd59ca4","infinitiveForParticiple",1,0,0,0
+"Il a touche le mur avec la main.","gb73b8201bfd59ca4","droppedAccent",1,0,0,0
+"Il a un gros pull pour l'hiver.","gb1462e4a3b348991","clean",0,0,0,0
+"Il a un petit nez et une grande bouche.","g923cef8c2a3cdc49","clean",0,0,0,0
+"Il cava un trou.","gaac7adfab4fb61ac","clean",0,0,0,0
+"Il dort plus que moi.","g14c5682a383b5a8f","clean",0,0,0,0
+"Il dort plus tard.","g881ae1955bba35d8","clean",0,0,0,0
+"Il est apparu à la porte.","ga6757a81ad802c83","clean",1,0,0,0
+"Il a apparu à la porte.","ga6757a81ad802c83","wrongAuxiliary",1,0,0,0
+"Il est apparaître à la porte.","ga6757a81ad802c83","infinitiveForParticiple",1,0,0,0
+"Il est apparu a la porte.","ga6757a81ad802c83","droppedAccent",1,0,0,0
+"Il est capable de tout faire.","gbfc00ae44404015e","clean",0,0,0,0
+"Il est devenu médecin.","g066f4fe3118b08ab","clean",1,0,0,0
+"Il a devenu médecin.","g066f4fe3118b08ab","wrongAuxiliary",1,0,0,0
+"Il est devenir médecin.","g066f4fe3118b08ab","infinitiveForParticiple",1,0,0,0
+"Il est devenu medecin.","g066f4fe3118b08ab","droppedAccent",1,0,0,0
+"Il est en colère contre son frère.","g484af82762092a64","clean",0,0,0,0
+"Il est en colere contre son frère.","g484af82762092a64","droppedAccent",0,0,0,0
+"Il est huit heures du matin.","g5e37f93521b2386a","clean",0,0,0,0
+"Il est interdit d'entrer.","g42d17117c2cecabc","clean",0,0,0,0
+"Il est interdit de fumer.","g053d57bdf03c4945","clean",0,0,0,0
+"Il est presque midi.","g6ceda85f29a7c0a6","clean",0,0,0,0
+"Il est resté à la maison.","g4b317df37986f383","clean",1,0,0,0
+"Il a resté à la maison.","g4b317df37986f383","wrongAuxiliary",1,0,0,0
+"Il est rester à la maison.","g4b317df37986f383","infinitiveForParticiple",1,0,0,0
+"Il est reste à la maison.","g4b317df37986f383","droppedAccent",1,0,0,0
+"Il est triste, mais il cache ses sentiments.","gb6ffb472c8f61ad7","clean",0,0,0,0
+"Il est venu à pied.","gc573fe9d5a209367","clean",1,0,0,0
+"Il a venu à pied.","gc573fe9d5a209367","wrongAuxiliary",1,0,0,0
+"Il est venir à pied.","gc573fe9d5a209367","infinitiveForParticiple",1,0,0,0
+"Il est venu a pied.","gc573fe9d5a209367","droppedAccent",1,0,0,0
+"Il explique comment il prépare le repas.","gb7d91c8acc0ceb99","clean",0,0,0,0
+"Il explique comment il prepare le repas.","gb7d91c8acc0ceb99","droppedAccent",0,0,0,0
+"Il faisait beau, donc nous sommes allés à la plage.","gbeca4c35cefc65aa","clean",1,0,0,0
+"Il faisait beau, donc nous avons allés à la plage.","gbeca4c35cefc65aa","wrongAuxiliary",1,0,0,0
+"Il faisait beau, donc nous sommes aller à la plage.","gbeca4c35cefc65aa","infinitiveForParticiple",1,0,0,0
+"Il faisait beau, donc nous allés à la plage.","gbeca4c35cefc65aa","missingEtreAfterAller",1,0,0,0
+"Il faisait beau, donc nous sommes alles à la plage.","gbeca4c35cefc65aa","droppedAccent",1,0,0,0
+"Il faisait froid, mais c'était bien.","gef210581cf27b3c5","clean",0,0,0,0
+"Il faisait froid, mais c'etait bien.","gef210581cf27b3c5","droppedAccent",0,0,0,0
+"Il fait beau aujourd'hui.","g2fed82145a176bd2","clean",0,0,0,0
+"Il fait froid, je mets mon manteau.","ge6fb73beb189aad7","clean",0,0,0,0
+"Il fait froid.","g06d2f7ee21bc4dce","clean",0,0,0,0
+"Il fait sombre, allume la lumière.","gb9bf7e3cf300ef10","clean",0,0,0,0
+"Il fait sombre, allume la lumiere.","gb9bf7e3cf300ef10","droppedAccent",0,0,0,0
+"Il fait tellement chaud !","ge772f860e7159e96","clean",0,0,0,0
+"Il fait trente degrés, il fait très chaud.","g616a92b7f7e69dc9","clean",0,0,0,0
+"Il fait trente degres, il fait très chaud.","g616a92b7f7e69dc9","droppedAccent",0,0,0,0
+"Il fait un grand effort.","gc361c882082d4ae5","clean",0,0,0,0
+"Il faut toujours garder espoir.","gaa3ee9c8d237e606","clean",0,0,0,0
+"Il faut traverser le pont.","g9c1488edd814d42c","clean",0,0,0,0
+"Il joue au football avec ses amis.","gaff4da8bea39d958","clean",0,0,0,0
+"Il lance la balle à son chien.","g8935ce954a0af26a","clean",0,0,0,0
+"Il lance la balle a son chien.","g8935ce954a0af26a","droppedAccent",0,0,0,0
+"Il lit plus souvent le soir.","g6463bbc2c453e919","clean",0,0,0,0
+"Il m'a donné un bon conseil.","gbb181c6e8515d851","clean",1,0,0,0
+"Il m'a donner un bon conseil.","gbb181c6e8515d851","infinitiveForParticiple",1,0,0,0
+"Il m'a donne un bon conseil.","gbb181c6e8515d851","droppedAccent",1,0,0,0
+"Il manque un euro.","g18bcc1f392772189","clean",0,0,0,0
+"Il me faut un sac.","g09ab1a5419544182","clean",0,0,0,0
+"Il n'a jamais pris une décision.","gdc0218f1b3b5a3f0","clean",1,0,1,0
+"Il n'a jamais prendre une décision.","gdc0218f1b3b5a3f0","infinitiveForParticiple",1,0,1,0
+"Il a jamais pris une décision.","gdc0218f1b3b5a3f0","missingNe",1,0,1,0
+"Il n'a jamais pris une decision.","gdc0218f1b3b5a3f0","droppedAccent",1,0,1,0
+"Il n'y a pas un bruit, c'est le silence.","g2f1c61b7cccf1426","clean",0,0,1,0
+"Il y a pas un bruit, c'est le silence.","g2f1c61b7cccf1426","missingNe",0,0,1,0
+"Il n'y a plus de lait.","gd8dfcf1ef91a113e","clean",0,0,1,0
+"Il y a plus de lait.","gd8dfcf1ef91a113e","missingNe",0,0,1,0
+"Il ne dort plus.","g290a93b7bf4c6af6","clean",0,0,1,0
+"Il dort plus.","g290a93b7bf4c6af6","missingNe",0,0,1,0
+"Il ne faut pas jeter le pain.","g5224806ad665ce04","clean",0,0,1,0
+"Il faut pas jeter le pain.","g5224806ad665ce04","missingNe",0,0,1,0
+"Il ne pleut pas, c'est sec.","g24200f4f3bedebb4","clean",0,0,1,0
+"Il pleut pas, c'est sec.","g24200f4f3bedebb4","missingNe",0,0,1,0
+"Il neige depuis ce matin.","g8c5c79d2e9d3829d","clean",0,0,0,0
+"Il parle trois langues.","ga6259eae531b5b82","clean",0,0,0,0
+"Il pleut et il va neiger.","g0d4905264488f8ad","clean",0,1,0,0
+"Il pleut.","g538aa4e912a27fec","clean",0,0,0,0
+"Il porte un costume et une cravate pour le travail.","g6da4356518e0a91a","clean",0,0,0,0
+"Il ressemble à son père.","gbec2c3ec4e7031a3","clean",0,0,0,0
+"Il ressemble a son père.","gbec2c3ec4e7031a3","droppedAccent",0,0,0,0
+"Il s'est levé.","g678b2e05347f1fbd","clean",1,0,0,0
+"Il s'est lever.","g678b2e05347f1fbd","infinitiveForParticiple",1,0,0,0
+"Il s'est leve.","g678b2e05347f1fbd","droppedAccent",1,0,0,0
+"Il saute dans l'eau.","gccf8a7ea06193c1c","clean",0,0,0,0
+"Il va faire beau.","g170a0589dc69e70f","clean",0,1,0,0
+"Il va neiger cette nuit.","gc62bc9172fdea5b0","clean",0,1,0,0
+"Il va pleuvoir demain.","gf21e53d7445ac055","clean",0,1,0,0
+"Il va pleuvoir.","g6cce5bfd04078111","clean",0,1,0,0
+"Il vend des fruits au marché.","ga50c7f0a8205acdf","clean",0,0,0,0
+"Il vend des fruits au marche.","ga50c7f0a8205acdf","droppedAccent",0,0,0,0
+"Il y a beaucoup de monde ici.","g1e18b630d870adb1","clean",0,0,0,0
+"Il y a beaucoup de voitures sur la route.","ge5ed22d48fadca16","clean",0,0,0,0
+"Il y a de l'herbe sur la colline.","g120df024622184bf","clean",0,0,0,0
+"Il y a des fleurs dans le jardin.","gd6cda8ecbef822aa","clean",0,0,0,0
+"Il y a des nuages.","g393b89cd25b5e721","clean",0,0,0,0
+"Il y a des photos sur le mur.","gb60b5583c020b128","clean",0,0,0,0
+"Il y a deux chambres et une grande cuisine.","g2020a7b2f8e329b5","clean",0,0,0,0
+"Il y a douze mois dans une année.","ge9b19a79db4b592f","clean",0,0,0,0
+"Il y a douze mois dans une annee.","ge9b19a79db4b592f","droppedAccent",0,0,0,0
+"Il y a du brouillard sur la route.","gcc52e3be28cc326f","clean",0,0,0,0
+"Il y a du lait dans le frigo.","g884468596e3c2645","clean",0,0,0,0
+"Il y a du soleil.","gab434c7f3b9ce0e9","clean",0,0,0,0
+"Il y a eu un accident sur la route.","g296ac50619a5adc0","clean",1,0,0,0
+"Il y a avoir un accident sur la route.","g296ac50619a5adc0","infinitiveForParticiple",1,0,0,0
+"Il y a mille élèves dans ce lycée.","g5346abde6332e273","clean",0,0,0,0
+"Il y a mille elèves dans ce lycée.","g5346abde6332e273","droppedAccent",0,0,0,0
+"Il y a quatre chaises autour de la table.","g280f58cecd8ef5ac","clean",0,0,0,0
+"Il y a un arbre devant la maison.","g8ca20e208a16ae11","clean",0,0,0,0
+"Il y a un problème ?","g92887a84bd18212a","clean",0,0,0,1
+"Il y a un probleme ?","g92887a84bd18212a","droppedAccent",0,0,0,1
+"Il y a un trou dans le mur.","g1df30787f0569e0e","clean",0,0,0,0
+"Il y a une erreur dans ma réponse.","gb46ba2ea80758e9e","clean",0,0,0,0
+"Il y a une erreur dans ma reponse.","gb46ba2ea80758e9e","droppedAccent",0,0,0,0
+"Il y a une ligne sous chaque mot.","g2a920d97e2ca085c","clean",0,0,0,0
+"Il y a une pièce de plus au fond du couloir.","g67c39481b7cd806e","clean",0,0,0,0
+"Il y a une piece de plus au fond du couloir.","g67c39481b7cd806e","droppedAccent",0,0,0,0
+"Il y a une table libre ?","g868740b6d079fe4d","clean",0,0,0,1
+"Il y a une épicerie dans ma rue.","g621c2e414b769425","clean",0,0,0,0
+"Il y a une epicerie dans ma rue.","g621c2e414b769425","droppedAccent",0,0,0,0
+"Il y a vingt élèves dans la classe.","g0c457f3a41fc1225","clean",0,0,0,0
+"Il y a vingt elèves dans la classe.","g0c457f3a41fc1225","droppedAccent",0,0,0,0
+"Il y avait quelques nuages, mais pas de pluie.","g4e71c15185716d80","clean",0,0,1,0
+"Ils sont mariés depuis dix ans.","gcb39d3ef862517e6","clean",0,0,0,0
+"Ils sont maries depuis dix ans.","gcb39d3ef862517e6","droppedAccent",0,0,0,0
+"Ils sont venus.","g06550349e4a2b808","clean",1,0,0,0
+"Ils ont venus.","g06550349e4a2b808","wrongAuxiliary",1,0,0,0
+"Ils sont venir.","g06550349e4a2b808","infinitiveForParticiple",1,0,0,0
+"Ils vont être présents demain.","g65c55a95d920c41d","clean",0,1,0,0
+"Ils vont présents demain.","g65c55a95d920c41d","missingPlanEtre",0,1,0,0
+"Ils vont etre présents demain.","g65c55a95d920c41d","droppedAccent",0,1,0,0
+"J'achète de la viande à la boucherie.","g757986826de584c7","clean",0,0,0,0
+"J'achete de la viande à la boucherie.","g757986826de584c7","droppedAccent",0,0,0,0
+"J'adore les fraises et les bananes.","g8d2170d3c7cc11cd","clean",0,0,0,0
+"J'ai appris beaucoup de choses aujourd'hui.","gc9d465fe6a30615c","clean",1,0,0,0
+"J'ai apprendre beaucoup de choses aujourd'hui.","gc9d465fe6a30615c","infinitiveForParticiple",1,0,0,0
+"J'ai attendu le bus pendant vingt minutes.","g5a599d666391a9f9","clean",1,0,0,0
+"J'ai attendre le bus pendant vingt minutes.","g5a599d666391a9f9","infinitiveForParticiple",1,0,0,0
+"J'ai beaucoup ri avec mes amis.","g8254ccbcf27a701b","clean",1,0,0,0
+"J'ai beaucoup rire avec mes amis.","g8254ccbcf27a701b","infinitiveForParticiple",1,0,0,0
+"J'ai besoin d'aide.","g700708549deee276","clean",0,0,0,0
+"J'ai brûlé le gâteau !","gf1918270be4b8997","clean",1,0,0,0
+"J'ai brûler le gâteau !","gf1918270be4b8997","infinitiveForParticiple",1,0,0,0
+"J'ai brulé le gâteau !","gf1918270be4b8997","droppedAccent",1,0,0,0
+"J'ai cassé mon téléphone.","g9f252993d8720d3e","clean",1,0,0,0
+"J'ai casser mon téléphone.","g9f252993d8720d3e","infinitiveForParticiple",1,0,0,0
+"J'ai casse mon téléphone.","g9f252993d8720d3e","droppedAccent",1,0,0,0
+"J'ai choisi la robe de mes rêves.","gdd1bde676752a76b","clean",1,0,0,0
+"J'ai choisir la robe de mes rêves.","gdd1bde676752a76b","infinitiveForParticiple",1,0,0,0
+"J'ai choisi la robe de mes reves.","gdd1bde676752a76b","droppedAccent",1,0,0,0
+"J'ai confiance en toi.","ge5de087e84fd513d","clean",0,0,0,0
+"J'ai couvert le bébé avec une couverture.","g271c493040e374c6","clean",1,0,0,0
+"J'ai couvrir le bébé avec une couverture.","g271c493040e374c6","infinitiveForParticiple",1,0,0,0
+"J'ai couvert le bebé avec une couverture.","g271c493040e374c6","droppedAccent",1,0,0,0
+"J'ai crié de surprise.","g2b24dfa2da02e63c","clean",1,0,0,0
+"J'ai crier de surprise.","g2b24dfa2da02e63c","infinitiveForParticiple",1,0,0,0
+"J'ai crie de surprise.","g2b24dfa2da02e63c","droppedAccent",1,0,0,0
+"J'ai de la fièvre, je vais chez le médecin.","g861dbe2971ac4acc","clean",0,0,0,0
+"J'ai de la fievre, je vais chez le médecin.","g861dbe2971ac4acc","droppedAccent",0,0,0,0
+"J'ai décidé de changer de travail.","g0d744414bfdd1af9","clean",1,0,0,0
+"J'ai décider de changer de travail.","g0d744414bfdd1af9","infinitiveForParticiple",1,0,0,0
+"J'ai decidé de changer de travail.","g0d744414bfdd1af9","droppedAccent",1,0,0,0
+"J'ai découvert une petite île.","g8d75af024808e947","clean",1,0,0,0
+"J'ai découvrir une petite île.","g8d75af024808e947","infinitiveForParticiple",1,0,0,0
+"J'ai decouvert une petite île.","g8d75af024808e947","droppedAccent",1,0,0,0
+"J'ai envie de partir en voyage.","g4ae4b755eb952a88","clean",0,0,0,0
+"J'ai eu de la chance.","g78108f444ddfe21a","clean",1,0,0,0
+"J'ai avoir de la chance.","g78108f444ddfe21a","infinitiveForParticiple",1,0,0,0
+"J'ai faim.","gaff2791c0e8efacf","clean",0,0,0,0
+"J'ai fait du vélo.","g26f1b89010138ce2","clean",1,0,0,0
+"J'ai faire du vélo.","g26f1b89010138ce2","infinitiveForParticiple",1,0,0,0
+"J'ai fait du velo.","g26f1b89010138ce2","droppedAccent",1,0,0,0
+"J'ai fait un rêve étrange.","gbdc4310c9e527064","clean",1,0,0,0
+"J'ai faire un rêve étrange.","gbdc4310c9e527064","infinitiveForParticiple",1,0,0,0
+"J'ai fait un reve étrange.","gbdc4310c9e527064","droppedAccent",1,0,0,0
+"J'ai froid aux oreilles et au cou.","ga49b25bb6168cbfd","clean",0,0,0,0
+"J'ai honte de mon erreur.","g5d06da0b5bd70e5e","clean",0,0,0,0
+"J'ai hésité, puis j'ai dit oui.","g153e0e198d03e0fc","clean",1,0,0,0
+"J'ai hésiter, puis j'ai dit oui.","g153e0e198d03e0fc","infinitiveForParticiple",1,0,0,0
+"J'ai hesité, puis j'ai dit oui.","g153e0e198d03e0fc","droppedAccent",1,0,0,0
+"J'ai installé une lampe au-dessus du lit.","g4a8f78ded379e620","clean",1,0,0,0
+"J'ai installer une lampe au-dessus du lit.","g4a8f78ded379e620","infinitiveForParticiple",1,0,0,0
+"J'ai installe une lampe au-dessus du lit.","g4a8f78ded379e620","droppedAccent",1,0,0,0
+"J'ai l'habitude de marcher le matin.","g710ebc35cbfcfb3e","clean",0,0,0,0
+"J'ai l'impression que tu es fatigué.","g18de8ed70cf13fd8","clean",0,0,0,0
+"J'ai l'impression que tu es fatigue.","g18de8ed70cf13fd8","droppedAccent",0,0,0,0
+"J'ai mal à la tête et au ventre.","gc43af18d1afa6877","clean",0,0,0,0
+"J'ai mal a la tête et au ventre.","gc43af18d1afa6877","droppedAccent",0,0,0,0
+"J'ai mis mes papiers dans le tiroir.","g368863f4fb3e45d4","clean",1,0,0,0
+"J'ai mettre mes papiers dans le tiroir.","g368863f4fb3e45d4","infinitiveForParticiple",1,0,0,0
+"J'ai oublié mon stylo, tu as un crayon ?","ge1dc38e70e789e77","clean",1,0,0,1
+"J'ai oublier mon stylo, tu as un crayon ?","ge1dc38e70e789e77","infinitiveForParticiple",1,0,0,1
+"J'ai oublie mon stylo, tu as un crayon ?","ge1dc38e70e789e77","droppedAccent",1,0,0,1
+"J'ai passé toute la journée dehors.","gc22eb291a78aa94b","clean",1,0,0,0
+"J'ai passer toute la journée dehors.","gc22eb291a78aa94b","infinitiveForParticiple",1,0,0,0
+"J'ai passe toute la journée dehors.","gc22eb291a78aa94b","droppedAccent",1,0,0,0
+"J'ai passé un bon moment.","g516aa35d241cd485","clean",1,0,0,0
+"J'ai passer un bon moment.","g516aa35d241cd485","infinitiveForParticiple",1,0,0,0
+"J'ai passe un bon moment.","g516aa35d241cd485","droppedAccent",1,0,0,0
+"J'ai perdu mon chemin, puis j'ai retrouvé la rue.","g1db36af80efe8074","clean",1,0,0,0
+"J'ai perdre mon chemin, puis j'ai retrouvé la rue.","g1db36af80efe8074","infinitiveForParticiple",1,0,0,0
+"J'ai perdu mon chemin, puis j'ai retrouve la rue.","g1db36af80efe8074","droppedAccent",1,0,0,0
+"J'ai perdu mon passeport.","g59d294bc8c621d15","clean",1,0,0,0
+"J'ai perdre mon passeport.","g59d294bc8c621d15","infinitiveForParticiple",1,0,0,0
+"J'ai pris l'avion pour la première fois.","g4315fc67ee3bc235","clean",1,0,0,0
+"J'ai prendre l'avion pour la première fois.","g4315fc67ee3bc235","infinitiveForParticiple",1,0,0,0
+"J'ai pris l'avion pour la premiere fois.","g4315fc67ee3bc235","droppedAccent",1,0,0,0
+"J'ai pris une belle image de la côte.","g72b40e342219b610","clean",1,0,0,0
+"J'ai prendre une belle image de la côte.","g72b40e342219b610","infinitiveForParticiple",1,0,0,0
+"J'ai pris une belle image de la cote.","g72b40e342219b610","droppedAccent",1,0,0,0
+"J'ai pris une décision.","gb55594f9c7b7309d","clean",1,0,0,0
+"J'ai prendre une décision.","gb55594f9c7b7309d","infinitiveForParticiple",1,0,0,0
+"J'ai pris une decision.","gb55594f9c7b7309d","droppedAccent",1,0,0,0
+"J'ai recommencé à courir.","g2eed091bfdc81536","clean",1,0,0,0
+"J'ai recommencer à courir.","g2eed091bfdc81536","infinitiveForParticiple",1,0,0,0
+"J'ai recommence à courir.","g2eed091bfdc81536","droppedAccent",1,0,0,0
+"J'ai reconnu sa voix au téléphone.","g110100286836de68","clean",1,0,0,0
+"J'ai reconnaître sa voix au téléphone.","g110100286836de68","infinitiveForParticiple",1,0,0,0
+"J'ai reconnu sa voix au teléphone.","g110100286836de68","droppedAccent",1,0,0,0
+"J'ai regardé un match de basket.","gf50f0e7551a48172","clean",1,0,0,0
+"J'ai regarder un match de basket.","gf50f0e7551a48172","infinitiveForParticiple",1,0,0,0
+"J'ai regarde un match de basket.","gf50f0e7551a48172","droppedAccent",1,0,0,0
+"J'ai rendez-vous chez le docteur à dix heures.","gc6d5212695278157","clean",0,0,0,0
+"J'ai rendez-vous chez le docteur a dix heures.","gc6d5212695278157","droppedAccent",0,0,0,0
+"J'ai reçu un message de ma sœur.","gcb6fe01c696b857f","clean",1,0,0,0
+"J'ai recevoir un message de ma sœur.","gcb6fe01c696b857f","infinitiveForParticiple",1,0,0,0
+"J'ai recu un message de ma sœur.","gcb6fe01c696b857f","droppedAccent",1,0,0,0
+"J'ai reçu une lettre de ma mère.","g7ced1e32b0d0cbda","clean",1,0,0,0
+"J'ai recevoir une lettre de ma mère.","g7ced1e32b0d0cbda","infinitiveForParticiple",1,0,0,0
+"J'ai recu une lettre de ma mère.","g7ced1e32b0d0cbda","droppedAccent",1,0,0,0
+"J'ai réussi mon examen !","g574770ddc864dc6b","clean",1,0,0,0
+"J'ai réussir mon examen !","g574770ddc864dc6b","infinitiveForParticiple",1,0,0,0
+"J'ai reussi mon examen !","g574770ddc864dc6b","droppedAccent",1,0,0,0
+"J'ai soif.","gdbf12026a55ca3a5","clean",0,0,0,0
+"J'ai sommeil, je vais dormir.","gdf0cb79327bb79e3","clean",0,1,0,0
+"J'ai sorti la poubelle.","gcb8e57904798e58c","clean",1,0,0,0
+"J'ai sortir la poubelle.","gcb8e57904798e58c","infinitiveForParticiple",1,0,0,0
+"J'ai sûrement oublié quelque chose.","g6f4afb44de184fb7","clean",1,0,0,0
+"J'ai sûrement oublier quelque chose.","g6f4afb44de184fb7","infinitiveForParticiple",1,0,0,0
+"J'ai surement oublié quelque chose.","g6f4afb44de184fb7","droppedAccent",1,0,0,0
+"J'ai trouvé un nouveau boulot.","g4efad7ef6c6cfb23","clean",1,0,0,0
+"J'ai trouver un nouveau boulot.","g4efad7ef6c6cfb23","infinitiveForParticiple",1,0,0,0
+"J'ai trouve un nouveau boulot.","g4efad7ef6c6cfb23","droppedAccent",1,0,0,0
+"J'ai un chat et deux oiseaux.","g6975afed4cf039ae","clean",0,0,0,0
+"J'ai un examen de français vendredi.","gafd25c2a5a3a59e1","clean",0,0,0,0
+"J'ai un examen de francais vendredi.","gafd25c2a5a3a59e1","droppedAccent",0,0,0,0
+"J'ai un problème avec mon ordinateur.","gf95fc7088607c65b","clean",0,0,0,0
+"J'ai un probleme avec mon ordinateur.","gf95fc7088607c65b","droppedAccent",0,0,0,0
+"J'ai un rhume et mal à la gorge.","g8472abeb7eea420d","clean",0,0,0,0
+"J'ai un rhume et mal a la gorge.","g8472abeb7eea420d","droppedAccent",0,0,0,0
+"J'ai une douleur dans le dos.","ge1c639075af29c9f","clean",0,0,0,0
+"J'ai une place près de la fenêtre.","g857c411bed62ee0c","clean",0,0,0,0
+"J'ai une place pres de la fenêtre.","g857c411bed62ee0c","droppedAccent",0,0,0,0
+"J'ai une réservation pour deux nuits.","g9f3ba29a5fc850f2","clean",0,0,0,0
+"J'ai une reservation pour deux nuits.","g9f3ba29a5fc850f2","droppedAccent",0,0,0,0
+"J'aime ce genre de chaussures.","g2e6d5288c2c578e2","clean",0,0,0,0
+"J'aime chanter et danser.","g94258ecf13b1b9ad","clean",0,0,0,0
+"J'aime cuisiner le dimanche.","g82e8bbe182af9230","clean",0,0,0,0
+"J'aime faire du vélo.","g704f4135cd856c99","clean",0,0,0,0
+"J'aime faire du velo.","g704f4135cd856c99","droppedAccent",0,0,0,0
+"J'aime les animaux et la nature.","gf54deed77d92f5fc","clean",0,0,0,0
+"J'aime lire et écouter de la musique.","g2ea5de712913b450","clean",0,0,0,0
+"J'aime lire et ecouter de la musique.","g2ea5de712913b450","droppedAccent",0,0,0,0
+"J'aime surtout les fruits rouges.","g39f86193519384f4","clean",0,0,0,0
+"J'allume la lumière.","gb34c79177f24fa86","clean",0,0,0,0
+"J'allume la lumiere.","gb34c79177f24fa86","droppedAccent",0,0,0,0
+"J'apprends le français.","g26f8992413cb72f8","clean",0,0,0,0
+"J'apprends le francais.","g26f8992413cb72f8","droppedAccent",0,0,0,0
+"J'apprends à nager.","g61f2a63d128c6b17","clean",0,0,0,0
+"J'apprends a nager.","g61f2a63d128c6b17","droppedAccent",0,0,0,0
+"J'espère que tu vas bien.","g9fbd67ad26579436","clean",0,0,0,0
+"J'espere que tu vas bien.","g9fbd67ad26579436","droppedAccent",0,0,0,0
+"J'habite dans un petit appartement.","gef4e8de2d106dd5b","clean",0,0,0,0
+"J'habite ici depuis trois ans.","gcdf58dd32e76d843","clean",0,0,0,0
+"J'écoute une chanson à la radio.","geb6b94403fb51977","clean",0,0,0,0
+"J'ecoute une chanson à la radio.","geb6b94403fb51977","droppedAccent",0,0,0,0
+"J'étudie à la bibliothèque le soir.","g8300c816e5ff5e9c","clean",0,0,0,0
+"J'etudie à la bibliothèque le soir.","g8300c816e5ff5e9c","droppedAccent",0,0,0,0
+"Je bois un verre d'eau.","g77c6e5f5972ce952","clean",0,0,0,0
+"Je cherche du travail.","g8ba53b44613744fa","clean",0,0,0,0
+"Je cherche la place du marché.","g4b2865847c2ea7b4","clean",0,0,0,0
+"Je cherche la place du marche.","g4b2865847c2ea7b4","droppedAccent",0,0,0,0
+"Je cherche un livre à la librairie.","g24425204308ff800","clean",0,0,0,0
+"Je cherche un livre a la librairie.","g24425204308ff800","droppedAccent",0,0,0,0
+"Je cherche un pull.","gea7939081d6e1d62","clean",0,0,0,0
+"Je cherche une sorte de sac de sport.","gab115ed5b8d5bada","clean",0,0,0,0
+"Je comprends ce que tu veux.","g8414199b86c3bac3","clean",0,0,0,0
+"Je compte jusqu'à cent.","g4eccbaca6a0a2656","clean",0,0,0,0
+"Je compte jusqu'a cent.","g4eccbaca6a0a2656","droppedAccent",0,0,0,0
+"Je conduis ma voiture tous les jours.","gb0fda26194bf9499","clean",0,0,0,0
+"Je crois que oui.","gc8fb83d30526b3ee","clean",0,0,0,0
+"Je crois que tu mens.","gfa18cf13e8084217","clean",0,0,0,0
+"Je cuisine souvent pour mes amis.","g9e42e9c7f89fcbc5","clean",0,0,0,0
+"Je discute avec mes collègues.","ga886d1428a6a9880","clean",0,0,0,0
+"Je discute avec mes collegues.","ga886d1428a6a9880","droppedAccent",0,0,0,0
+"Je dois quitter l'hôtel avant midi.","gcf3171e46c17f209","clean",0,0,0,0
+"Je dois quitter l'hotel avant midi.","gcf3171e46c17f209","droppedAccent",0,0,0,0
+"Je dois terminer ce travail avant midi.","g0ee892486cfa8d53","clean",0,0,0,0
+"Je déjeune avec mes collègues à midi.","g32a119e64b28e23a","clean",0,0,0,0
+"Je dejeune avec mes collègues à midi.","g32a119e64b28e23a","droppedAccent",0,0,0,0
+"Je déteste attendre.","g0bb6dd716995ce2e","clean",0,0,0,0
+"Je deteste attendre.","g0bb6dd716995ce2e","droppedAccent",0,0,0,0
+"Je fais de la natation deux fois par semaine.","gaa818b31e47dca0b","clean",0,0,0,0
+"Je fais du sport le matin.","gec178eee9c7bf2c6","clean",0,0,0,0
+"Je fais du sport.","g21983753f264f08c","clean",0,0,0,0
+"Je fais du vélo, parfois de la course.","gb7bc5caf6720a852","clean",0,0,0,0
+"Je fais du velo, parfois de la course.","gb7bc5caf6720a852","droppedAccent",0,0,0,0
+"Je fais les courses au supermarché.","gc8863ec61ff7934f","clean",0,0,0,0
+"Je fais les courses au supermarche.","gc8863ec61ff7934f","droppedAccent",0,0,0,0
+"Je fais une promenade avec mon chien.","gfc4112f3b3075a0a","clean",0,0,0,0
+"Je fais une salade de tomates.","g3892f5659a086fe9","clean",0,0,0,0
+"Je fais une soupe avec des carottes et des pommes de terre.","g18e3430f57a383ca","clean",0,0,0,0
+"Je joue seulement le week-end.","gf41849db370e0df6","clean",0,0,0,0
+"Je joue à un jeu sur mon ordinateur.","g3253817996acf500","clean",0,0,0,0
+"Je joue a un jeu sur mon ordinateur.","g3253817996acf500","droppedAccent",0,0,0,0
+"Je l'ai rappelé le soir.","g0aa866fd7490ddf1","clean",1,0,0,0
+"Je l'ai rappeler le soir.","g0aa866fd7490ddf1","infinitiveForParticiple",1,0,0,0
+"Je l'ai rappele le soir.","g0aa866fd7490ddf1","droppedAccent",1,0,0,0
+"Je lave les assiettes et les tasses.","g47619a1785ae7353","clean",0,0,0,0
+"Je le prends.","g539d29e85e510cb5","clean",0,0,0,0
+"Je lis le journal le matin.","gc30609c732f82c5c","clean",0,0,0,0
+"Je lui ai dit la vérité.","g0d80f4fd77c18efd","clean",1,0,0,0
+"Je lui ai dire la vérité.","g0d80f4fd77c18efd","infinitiveForParticiple",1,0,0,0
+"Je lui ai dit la verité.","g0d80f4fd77c18efd","droppedAccent",1,0,0,0
+"Je m'habille vite le matin.","g550b4a938865a1e5","clean",0,0,0,0
+"Je mange un yaourt aux fruits.","g6eacd4b9232536ec","clean",0,0,0,0
+"Je mange une pomme tous les jours.","gb76b7d8e68197d8e","clean",0,0,0,0
+"Je me cache derrière l'arbre.","g8e84142a727c1659","clean",0,0,0,0
+"Je me cache derriere l'arbre.","g8e84142a727c1659","droppedAccent",0,0,0,0
+"Je me couche avant minuit.","gdbef40e3fe33d4e7","clean",0,0,0,0
+"Je me demande pourquoi il est parti.","g49783af204686ed9","clean",1,0,0,0
+"Je me demande pourquoi il a parti.","g49783af204686ed9","wrongAuxiliary",1,0,0,0
+"Je me demande pourquoi il est partir.","g49783af204686ed9","infinitiveForParticiple",1,0,0,0
+"Je me demande s'il viendra.","g6cd898e6c1d1603a","clean",0,0,0,0
+"Je me lave les dents et les mains.","g2ed631370d9a1715","clean",0,0,0,0
+"Je me sens libre.","g32ac1859921a0bf7","clean",0,0,0,0
+"Je me sens mieux aujourd'hui.","g53d15e7c2f9bc61c","clean",0,0,0,0
+"Je me souviens de mon premier jour à l'école.","gfba171b588de98fe","clean",0,0,0,0
+"Je me souviens de mon premier jour a l'école.","gfba171b588de98fe","droppedAccent",0,0,0,0
+"Je me suis levé tôt pour voir le soleil.","ge385062649d2a959","clean",1,0,0,0
+"Je me suis lever tôt pour voir le soleil.","ge385062649d2a959","infinitiveForParticiple",1,0,0,0
+"Je me suis leve tôt pour voir le soleil.","ge385062649d2a959","droppedAccent",1,0,0,0
+"Je me suis trompé de train.","g645fa4cac83b8891","clean",1,0,0,0
+"Je me suis tromper de train.","g645fa4cac83b8891","infinitiveForParticiple",1,0,0,0
+"Je me suis trompe de train.","g645fa4cac83b8891","droppedAccent",1,0,0,0
+"Je monte l'escalier jusqu'au troisième étage.","gab3e9d8bee4eb03b","clean",0,0,0,0
+"Je monte l'escalier jusqu'au troisieme étage.","gab3e9d8bee4eb03b","droppedAccent",0,0,0,0
+"Je n'ai aucune idée.","gde4eae604ab503ee","clean",0,0,1,0
+"J'ai aucune idée.","gde4eae604ab503ee","missingNe",0,0,1,0
+"Je n'ai aucune idee.","gde4eae604ab503ee","droppedAccent",0,0,1,0
+"Je n'ai jamais vu la mer.","g6e1aef4d5fb2f586","clean",1,0,1,0
+"Je n'ai jamais voir la mer.","g6e1aef4d5fb2f586","infinitiveForParticiple",1,0,1,0
+"J'ai jamais vu la mer.","g6e1aef4d5fb2f586","missingNe",1,0,1,0
+"Je n'ai pas assez d'argent.","gbc912a6004c6123d","clean",0,0,1,0
+"J'ai pas assez d'argent.","gbc912a6004c6123d","missingNe",0,0,1,0
+"Je n'ai pas de stylo, ni de crayon.","g323b6df982417111","clean",0,0,1,0
+"J'ai pas de stylo, ni de crayon.","g323b6df982417111","missingNe",0,0,1,0
+"Je n'ai pas encore fini mes devoirs.","g8fc0b64b440b4b28","clean",1,0,1,0
+"Je n'ai pas encore finir mes devoirs.","g8fc0b64b440b4b28","infinitiveForParticiple",1,0,1,0
+"J'ai pas encore fini mes devoirs.","g8fc0b64b440b4b28","missingNe",1,0,1,0
+"Je n'ai pas le choix.","g52302cefff38e089","clean",0,0,1,0
+"J'ai pas le choix.","g52302cefff38e089","missingNe",0,0,1,0
+"Je n'ai pas mangé.","g183bbfc80685c6e4","clean",1,0,1,0
+"Je n'ai pas manger.","g183bbfc80685c6e4","infinitiveForParticiple",1,0,1,0
+"J'ai pas mangé.","g183bbfc80685c6e4","missingNe",1,0,1,0
+"Je n'ai pas mange.","g183bbfc80685c6e4","droppedAccent",1,0,1,0
+"Je n'ai plus faim.","g12811a7816131a54","clean",0,0,1,0
+"J'ai plus faim.","g12811a7816131a54","missingNe",0,0,1,0
+"Je n'aime pas autant le thé que le café.","gb70e59d79b26a277","clean",0,0,1,0
+"J'aime pas autant le thé que le café.","gb70e59d79b26a277","missingNe",0,0,1,0
+"Je n'aime pas autant le the que le café.","gb70e59d79b26a277","droppedAccent",0,0,1,0
+"Je n'aime pas la pluie.","gcd233c5ae392922b","clean",0,0,1,0
+"J'aime pas la pluie.","gcd233c5ae392922b","missingNe",0,0,1,0
+"Je n'aime pas le poisson, je préfère la viande.","g84f60e19656a7a0c","clean",0,0,1,0
+"J'aime pas le poisson, je préfère la viande.","g84f60e19656a7a0c","missingNe",0,0,1,0
+"Je n'aime pas le poisson, je prefère la viande.","g84f60e19656a7a0c","droppedAccent",0,0,1,0
+"Je n'ose pas lui parler.","g45f2a6c646502f66","clean",0,0,1,0
+"J'ose pas lui parler.","g45f2a6c646502f66","missingNe",0,0,1,0
+"Je n'oublierai jamais ce moment.","g18fecefb96f798ba","clean",0,0,1,0
+"J'oublierai jamais ce moment.","g18fecefb96f798ba","missingNe",0,0,1,0
+"Je ne bouge pas, je reste ici.","g6143ddcf9e7becf6","clean",0,0,1,0
+"Je bouge pas, je reste ici.","g6143ddcf9e7becf6","missingNe",0,0,1,0
+"Je ne comprends pas ce mot.","ga090219c02f4301e","clean",0,0,1,0
+"Je comprends pas ce mot.","ga090219c02f4301e","missingNe",0,0,1,0
+"Je ne comprends pas.","gb534499a1c209276","clean",0,0,1,0
+"Je comprends pas.","gb534499a1c209276","missingNe",0,0,1,0
+"Je ne connais personne ici.","gc8f4203d947e15d3","clean",0,0,1,0
+"Je connais personne ici.","gc8f4203d947e15d3","missingNe",0,0,1,0
+"Je ne mange pas de viande.","ga7856b027cc14f5d","clean",0,0,1,0
+"Je mange pas de viande.","ga7856b027cc14f5d","missingNe",0,0,1,0
+"Je ne me sens pas bien.","geb04327ddb0f71cc","clean",0,0,1,0
+"Je me sens pas bien.","geb04327ddb0f71cc","missingNe",0,0,1,0
+"Je ne peux pas imaginer ma vie sans toi.","g0e66fbe325af4a6e","clean",0,0,1,0
+"Je peux pas imaginer ma vie sans toi.","g0e66fbe325af4a6e","missingNe",0,0,1,0
+"Je ne peux pas rester debout longtemps.","gbf08ba4552db8470","clean",0,0,1,0
+"Je peux pas rester debout longtemps.","gbf08ba4552db8470","missingNe",0,0,1,0
+"Je ne sais pas si tu viendras.","gf10cddd6a4e9bab6","clean",0,0,1,0
+"Je sais pas si tu viendras.","gf10cddd6a4e9bab6","missingNe",0,0,1,0
+"Je ne sais pas, je vais deviner.","g82e67537fd840ae2","clean",0,1,1,0
+"Je sais pas, je vais deviner.","g82e67537fd840ae2","missingNe",0,1,1,0
+"Je ne trouve pas mes clés.","gdac8ae51d4a8d757","clean",0,0,1,0
+"Je trouve pas mes clés.","gdac8ae51d4a8d757","missingNe",0,0,1,0
+"Je ne trouve pas mes cles.","gdac8ae51d4a8d757","droppedAccent",0,0,1,0
+"Je paie par carte.","g5581a304ebd7441b","clean",0,0,0,0
+"Je parle un peu français.","g4eee45eccec42895","clean",0,0,0,0
+"Je parle un peu francais.","g4eee45eccec42895","droppedAccent",0,0,0,0
+"Je pars demain matin.","g7da096e358bba687","clean",0,0,0,0
+"Je pars en vacances.","g621693a7a204a783","clean",0,0,0,0
+"Je pense souvent à ma famille.","g324d2325d2955272","clean",0,0,0,0
+"Je pense souvent a ma famille.","g324d2325d2955272","droppedAccent",0,0,0,0
+"Je peux essayer cette robe ?","gecaf2d3461ef41c0","clean",0,0,0,1
+"Je peux l'essayer ?","ge94d8670d2a0b29c","clean",0,0,0,1
+"Je peux payer par carte ?","gc9d4c49cd1915d44","clean",0,0,0,1
+"Je peux vous aider à porter ça ?","gafd5ec4db72e0265","clean",0,0,0,1
+"Je peux vous aider a porter ça ?","gafd5ec4db72e0265","droppedAccent",0,0,0,1
+"Je porte un pull bleu et un jean.","g9a39eb6a29672c4c","clean",0,0,0,0
+"Je pose une question au professeur.","gafa92360dc55692b","clean",0,0,0,0
+"Je pousse la porte et j'entre.","geb0c37f5c711aaf0","clean",0,0,0,0
+"Je prends la même chose que lui.","g28c5d2a6233452ee","clean",0,0,0,0
+"Je prends la meme chose que lui.","g28c5d2a6233452ee","droppedAccent",0,0,0,0
+"Je prends le métro pour aller au travail.","g93893f59ae0198d4","clean",0,0,0,0
+"Je prends le metro pour aller au travail.","g93893f59ae0198d4","droppedAccent",0,0,0,0
+"Je prends le tram pour aller en ville.","g06f76bbb058a8152","clean",0,0,0,0
+"Je prends un cours de danse.","g1eb822d0068712bb","clean",0,0,0,0
+"Je prends un sandwich au jambon.","g1366993d54c40349","clean",0,0,0,0
+"Je prends une douche tous les matins.","g39f5de67f0d749b1","clean",0,0,0,0
+"Je profite du soleil.","g440380e3d68bf4fe","clean",0,0,0,0
+"Je préfère plutôt le thé.","g8ea2198252469991","clean",0,0,0,0
+"Je prefère plutôt le thé.","g8ea2198252469991","droppedAccent",0,0,0,0
+"Je prépare des pommes de terre pour le dîner.","gc876cf9035d7f485","clean",0,0,0,0
+"Je prepare des pommes de terre pour le dîner.","gc876cf9035d7f485","droppedAccent",0,0,0,0
+"Je regarde les oiseaux dans le parc.","g3ff80e28907d9329","clean",0,0,0,0
+"Je regarde, merci.","g4fe774ae81c8222c","clean",0,0,0,0
+"Je regrette, ce n'est pas possible.","g2e1b6c65476cd7f8","clean",0,0,1,0
+"Je regrette, c'est pas possible.","g2e1b6c65476cd7f8","missingNe",0,0,1,0
+"Je reprends le travail lundi.","gcf4aa126f5c3e855","clean",0,0,0,0
+"Je ressens une grande joie.","g3876223d58126f59","clean",0,0,0,0
+"Je reste trois jours.","ga3fa109ad8c01397","clean",0,0,0,0
+"Je reste à la maison, car il pleut.","g59b1026a6fcc0c5f","clean",0,0,0,0
+"Je reste a la maison, car il pleut.","g59b1026a6fcc0c5f","droppedAccent",0,0,0,0
+"Je retourne dans mon pays en été.","g6b0425ddbcae89f8","clean",0,0,0,0
+"Je retourne dans mon pays en eté.","g6b0425ddbcae89f8","droppedAccent",0,0,0,0
+"Je reviens dans une semaine.","g4c22dd111b92ca2c","clean",0,0,0,0
+"Je réponds aux questions du professeur.","gbb03c57cc1a3ac5a","clean",0,0,0,0
+"Je reponds aux questions du professeur.","gbb03c57cc1a3ac5a","droppedAccent",0,0,0,0
+"Je rêve de voyager.","ga8104751fb175ada","clean",0,0,0,0
+"Je reve de voyager.","ga8104751fb175ada","droppedAccent",0,0,0,0
+"Je sais où il habite.","g7b387a3a1314316b","clean",0,0,0,0
+"Je sais ou il habite.","g7b387a3a1314316b","droppedAccent",0,0,0,0
+"Je sais quand il arrive.","g65c46a8d5814a8ef","clean",0,0,0,0
+"Je souffre du dos depuis lundi.","g1f50652f9c2a4c4b","clean",0,0,0,0
+"Je suis allé à la gare.","g50e3c12da112c7c8","clean",1,0,0,0
+"J'ai allé à la gare.","g50e3c12da112c7c8","wrongAuxiliary",1,0,0,0
+"Je suis aller à la gare.","g50e3c12da112c7c8","infinitiveForParticiple",1,0,0,0
+"Je allé à la gare.","g50e3c12da112c7c8","missingEtreAfterAller",1,0,0,0
+"Je suis alle à la gare.","g50e3c12da112c7c8","droppedAccent",1,0,0,0
+"Je suis allé.","gf18b9e9201d511f3","clean",1,0,0,0
+"J'ai allé.","gf18b9e9201d511f3","wrongAuxiliary",1,0,0,0
+"Je suis aller.","gf18b9e9201d511f3","infinitiveForParticiple",1,0,0,0
+"Je allé.","gf18b9e9201d511f3","missingEtreAfterAller",1,0,0,0
+"Je suis alle.","gf18b9e9201d511f3","droppedAccent",1,0,0,0
+"Je suis amoureux d'elle.","gfed3b71d4ddff4d1","clean",0,0,0,0
+"Je suis américain.","g38120868fb29652a","clean",0,0,0,0
+"Je suis americain.","g38120868fb29652a","droppedAccent",0,0,0,0
+"Je suis arrivé à l'hôtel.","gc189e11b6046bf0e","clean",1,0,0,0
+"J'ai arrivé à l'hôtel.","gc189e11b6046bf0e","wrongAuxiliary",1,0,0,0
+"Je suis arriver à l'hôtel.","gc189e11b6046bf0e","infinitiveForParticiple",1,0,0,0
+"Je suis arrive à l'hôtel.","gc189e11b6046bf0e","droppedAccent",1,0,0,0
+"Je suis cherché par la police.","g7c2131f9864270f7","clean",0,0,0,0
+"Je suis cherche par la police.","g7c2131f9864270f7","droppedAccent",0,0,0,0
+"Je suis d'accord avec toi.","gde34f5c6f1a04bde","clean",0,0,0,0
+"Je suis désolé.","g4c245264eec968a0","clean",0,0,0,0
+"Je suis desolé.","g4c245264eec968a0","droppedAccent",0,0,0,0
+"Je suis en train de travailler.","g4b207e5701f3b33e","clean",0,0,0,0
+"Je suis fatigué parce que j'ai travaillé.","g825f07495a0b83ea","clean",0,0,0,0
+"Je suis fatigue parce que j'ai travaillé.","g825f07495a0b83ea","droppedAccent",0,0,0,0
+"Je suis heureux de vous voir.","g704560fabfe1791e","clean",0,0,0,0
+"Je suis inquiet pour mon fils.","g4c84449eb14eb0a9","clean",0,0,0,0
+"Je suis marié et j'ai deux fils.","g70353895cc10afcb","clean",0,0,0,0
+"Je suis marie et j'ai deux fils.","g70353895cc10afcb","droppedAccent",0,0,0,0
+"Je suis nerveux avant un examen.","g83355ea7899b2a2e","clean",0,0,0,0
+"Je suis né en septembre.","g74508bd35f90b386","clean",1,0,0,0
+"J'ai né en septembre.","g74508bd35f90b386","wrongAuxiliary",1,0,0,0
+"Je suis naître en septembre.","g74508bd35f90b386","infinitiveForParticiple",1,0,0,0
+"Je suis ne en septembre.","g74508bd35f90b386","droppedAccent",1,0,0,0
+"Je suis perdu, pouvez-vous m'aider ?","g76e8ee5943d0fd87","clean",0,0,0,1
+"Je suis perdu.","gec5f6474b712bf3a","clean",0,0,0,0
+"Je suis sorti avec mes amis samedi soir.","g637d46f6451b2727","clean",1,0,0,0
+"J'ai sorti avec mes amis samedi soir.","g637d46f6451b2727","wrongAuxiliary",1,0,0,0
+"Je suis sortir avec mes amis samedi soir.","g637d46f6451b2727","infinitiveForParticiple",1,0,0,0
+"Je suis souvent fatigué le soir.","g048f0821f863932a","clean",0,0,0,0
+"Je suis souvent fatigue le soir.","g048f0821f863932a","droppedAccent",0,0,0,0
+"Je suis très content aujourd'hui.","g7b183394c45a2cce","clean",0,0,0,0
+"Je suis tres content aujourd'hui.","g7b183394c45a2cce","droppedAccent",0,0,0,0
+"Je suis vivant, c'est le plus important.","g4cba7a23423114e7","clean",0,0,0,0
+"Je suis végétarien.","gfde398e22fd0a034","clean",0,0,0,0
+"Je suis vegétarien.","gfde398e22fd0a034","droppedAccent",0,0,0,0
+"Je suis étudiant à l'université.","g5765e43ff1f7eed4","clean",0,0,0,0
+"Je suis etudiant à l'université.","g5765e43ff1f7eed4","droppedAccent",0,0,0,0
+"Je t'ai pardonné.","g5663ff06f853b1ad","clean",1,0,0,0
+"Je t'ai pardonner.","g5663ff06f853b1ad","infinitiveForParticiple",1,0,0,0
+"Je t'ai pardonne.","g5663ff06f853b1ad","droppedAccent",1,0,0,0
+"Je t'invite au cinéma.","gfcf1c75374c94074","clean",0,0,0,0
+"Je t'invite au cinema.","gfcf1c75374c94074","droppedAccent",0,0,0,0
+"Je te présente ma femme.","g815365f29791f906","clean",0,0,0,0
+"Je te presente ma femme.","g815365f29791f906","droppedAccent",0,0,0,0
+"Je travaille dans une banque.","gad84e9357c13e380","clean",0,0,0,0
+"Je travaille dans une grande entreprise.","g828b1b8e2ce91748","clean",0,0,0,0
+"Je travaille du lundi au vendredi.","g598f752a2f942a0c","clean",0,0,0,0
+"Je vais acheter du pain à la boulangerie.","g1aa5907cce3e802f","clean",0,1,0,0
+"Je vais acheter du pain a la boulangerie.","g1aa5907cce3e802f","droppedAccent",0,1,0,0
+"Je vais au marché pour acheter du pain.","g4a37d400a02e4f2b","clean",0,0,0,0
+"Je vais au marche pour acheter du pain.","g4a37d400a02e4f2b","droppedAccent",0,0,0,0
+"Je vais au théâtre une fois par mois.","g5886a83c6f4a4c29","clean",0,0,0,0
+"Je vais au theâtre une fois par mois.","g5886a83c6f4a4c29","droppedAccent",0,0,0,0
+"Je vais chez le dentiste.","ge50c90754adc91c6","clean",0,0,0,0
+"Je vais du côté de la gare.","g9058da1cd8807055","clean",0,0,0,0
+"Je vais du coté de la gare.","g9058da1cd8807055","droppedAccent",0,0,0,0
+"Je vais en parler avec mon groupe.","g2c4a6617ece042ef","clean",0,1,0,0
+"Je vais laver mes vêtements.","gd5c17a3cf8e1ec1b","clean",0,1,0,0
+"Je vais laver mes vetements.","gd5c17a3cf8e1ec1b","droppedAccent",0,1,0,0
+"Je vais réfléchir.","g0c3ccd28c5e7a109","clean",0,1,0,0
+"Je vais refléchir.","g0c3ccd28c5e7a109","droppedAccent",0,1,0,0
+"Je vais vous accompagner jusqu'à l'arrêt.","g6a8208f9108c7019","clean",0,1,0,0
+"Je vais vous accompagner jusqu'a l'arrêt.","g6a8208f9108c7019","droppedAccent",0,1,0,0
+"Je vais vérifier mes réponses.","g4521ab0a61df2287","clean",0,1,0,0
+"Je vais verifier mes réponses.","g4521ab0a61df2287","droppedAccent",0,1,0,0
+"Je vais à Paris pour voir mes parents.","g7965af78a7381dc3","clean",0,0,0,0
+"Je vais a Paris pour voir mes parents.","g7965af78a7381dc3","droppedAccent",0,0,0,0
+"Je vais à Paris.","gc343e6b608725f6b","clean",0,0,0,0
+"Je vais a Paris.","gc343e6b608725f6b","droppedAccent",0,0,0,0
+"Je vais à la montagne.","g8486dcf59653e434","clean",0,0,0,0
+"Je vais a la montagne.","g8486dcf59653e434","droppedAccent",0,0,0,0
+"Je vais à la poste pour envoyer une lettre.","g288838a5d40d9e76","clean",0,0,0,0
+"Je vais a la poste pour envoyer une lettre.","g288838a5d40d9e76","droppedAccent",0,0,0,0
+"Je voudrais aller à la montagne.","g493c43ff7af7ebb2","clean",0,0,0,0
+"Je voudrais aller a la montagne.","g493c43ff7af7ebb2","droppedAccent",0,0,0,0
+"Je voudrais deux baguettes.","gfcc02af6fb19886b","clean",0,0,0,0
+"Je voudrais la même chose.","gcb38acb2aec0bfb8","clean",0,0,0,0
+"Je voudrais la meme chose.","gcb38acb2aec0bfb8","droppedAccent",0,0,0,0
+"Je voudrais rendre ce pull.","g10a9125a3e5500fe","clean",0,0,0,0
+"Je voudrais un croissant, s'il vous plaît.","ga6a4c44e7f116294","clean",0,0,0,0
+"Je voudrais un croissant, s'il vous plait.","ga6a4c44e7f116294","droppedAccent",0,0,0,0
+"Je voudrais un thé, s'il vous plaît.","gec7430b8cf34ea98","clean",0,0,0,0
+"Je voudrais un the, s'il vous plaît.","gec7430b8cf34ea98","droppedAccent",0,0,0,0
+"Je voudrais une boîte de chocolats.","g269f6c121301c2c5","clean",0,0,0,0
+"Je voudrais une boite de chocolats.","g269f6c121301c2c5","droppedAccent",0,0,0,0
+"Je voudrais vivre à la campagne.","g993ca43dac0d9eff","clean",0,0,0,0
+"Je voudrais vivre a la campagne.","g993ca43dac0d9eff","droppedAccent",0,0,0,0
+"Je vous propose de venir dîner samedi.","g4b7f54367b98234d","clean",0,0,0,0
+"Je vous propose de venir diner samedi.","g4b7f54367b98234d","droppedAccent",0,0,0,0
+"Je vous remercie pour votre aide.","gea8d049a8dfc8a52","clean",0,0,0,0
+"Je vous souhaite une bonne journée.","gb8c29ec95f5dad96","clean",0,0,0,0
+"Je vous souhaite une bonne journee.","gb8c29ec95f5dad96","droppedAccent",0,0,0,0
+"Jeudi prochain, je vais voir mes parents.","g2ff7e4ce01df9d8e","clean",0,1,0,0
+"L'addition, s'il vous plaît.","g89394fa8b36079d6","clean",0,0,0,0
+"L'addition, s'il vous plait.","g89394fa8b36079d6","droppedAccent",0,0,0,0
+"L'avion part à midi.","gcaf471dc9d84b2a6","clean",0,0,0,0
+"L'avion part a midi.","gcaf471dc9d84b2a6","droppedAccent",0,0,0,0
+"L'entrée est derrière l'église.","gf20c5c8f3bc51359","clean",0,0,0,0
+"L'entree est derrière l'église.","gf20c5c8f3bc51359","droppedAccent",0,0,0,0
+"L'été est ma saison préférée.","g15a8beae3d0df0dc","clean",0,0,0,0
+"L'eté est ma saison préférée.","g15a8beae3d0df0dc","droppedAccent",0,0,0,0
+"La chaleur est terrible cet été.","g9816c135a220c7ff","clean",0,0,0,0
+"La chaleur est terrible cet eté.","g9816c135a220c7ff","droppedAccent",0,0,0,0
+"La chambre est au premier étage.","g8cf8d3fd7bd7094f","clean",0,0,0,0
+"La chambre est au premier etage.","g8cf8d3fd7bd7094f","droppedAccent",0,0,0,0
+"La cuisine est l'endroit que je préfère.","gbb61003c064eb812","clean",0,0,0,0
+"La cuisine est l'endroit que je prefère.","gbb61003c064eb812","droppedAccent",0,0,0,0
+"La leçon est facile aujourd'hui.","gc00356930c03b5d7","clean",0,0,0,0
+"La lecon est facile aujourd'hui.","gc00356930c03b5d7","droppedAccent",0,0,0,0
+"La machine à laver est en panne.","g8b442951c12dd02f","clean",0,0,0,0
+"La machine a laver est en panne.","g8b442951c12dd02f","droppedAccent",0,0,0,0
+"La maison est vide pendant les vacances.","gdb95ef70e49a4b3f","clean",0,0,0,0
+"La météo annonce un orage pour ce soir.","g2b091fb7648b0332","clean",0,0,0,0
+"La metéo annonce un orage pour ce soir.","g2b091fb7648b0332","droppedAccent",0,0,0,0
+"La pharmacie est ouverte jusqu'à vingt heures.","g43272d18238db4aa","clean",0,0,0,0
+"La pharmacie est ouverte jusqu'a vingt heures.","g43272d18238db4aa","droppedAccent",0,0,0,0
+"La police vérifie les passeports.","gbf173ed3330c4247","clean",0,0,0,0
+"La police verifie les passeports.","gbf173ed3330c4247","droppedAccent",0,0,0,0
+"La réservation est à mon nom.","gc15204b6a8fa899e","clean",0,0,0,0
+"La reservation est à mon nom.","gc15204b6a8fa899e","droppedAccent",0,0,0,0
+"La salle de bain est à côté de la cuisine.","gc835f0da10dc5c45","clean",0,0,0,0
+"La salle de bain est a côté de la cuisine.","gc835f0da10dc5c45","droppedAccent",0,0,0,0
+"La santé, c'est important.","g657b1dc476d9567e","clean",0,0,0,0
+"La sante, c'est important.","g657b1dc476d9567e","droppedAccent",0,0,0,0
+"La semaine dernière, je suis resté à la maison.","g3d6884695d6a7ec0","clean",1,0,0,0
+"La semaine dernière, j'ai resté à la maison.","g3d6884695d6a7ec0","wrongAuxiliary",1,0,0,0
+"La semaine dernière, je suis rester à la maison.","g3d6884695d6a7ec0","infinitiveForParticiple",1,0,0,0
+"La semaine derniere, je suis resté à la maison.","g3d6884695d6a7ec0","droppedAccent",1,0,0,0
+"La semaine prochaine, il va être en retard.","gf3271622e8ae6eb0","clean",0,1,0,0
+"La semaine prochaine, il va en retard.","gf3271622e8ae6eb0","missingPlanEtre",0,1,0,0
+"La semaine prochaine, il va etre en retard.","gf3271622e8ae6eb0","droppedAccent",0,1,0,0
+"La station de métro est au bout de la rue.","g91ae573e77bc4f7f","clean",0,0,0,0
+"La station de metro est au bout de la rue.","g91ae573e77bc4f7f","droppedAccent",0,0,0,0
+"La voiture est dans le garage.","ge770b70d0b87af00","clean",0,0,0,0
+"Le bonheur, c'est simple.","ga53c4601cfff7c7d","clean",0,0,0,0
+"Le bureau est au premier étage.","g27d0f6690fcb98f1","clean",0,0,0,0
+"Le bureau est au premier etage.","g27d0f6690fcb98f1","droppedAccent",0,0,0,0
+"Le bus s'arrête devant la poste.","g03f4ae08516379f1","clean",0,0,0,0
+"Le bus s'arrete devant la poste.","g03f4ae08516379f1","droppedAccent",0,0,0,0
+"Le bébé ressemble à sa maman.","gb745a5cbf73ff117","clean",0,0,0,0
+"Le bebé ressemble à sa maman.","gb745a5cbf73ff117","droppedAccent",0,0,0,0
+"Le café est trop chaud, je vais attendre.","gfe5e9b0c39b6fca9","clean",0,1,0,0
+"Le cafe est trop chaud, je vais attendre.","gfe5e9b0c39b6fca9","droppedAccent",0,1,0,0
+"Le chat a attrapé un oiseau.","g148db6260cda21ca","clean",1,0,0,0
+"Le chat a attraper un oiseau.","g148db6260cda21ca","infinitiveForParticiple",1,0,0,0
+"Le chat a attrape un oiseau.","g148db6260cda21ca","droppedAccent",1,0,0,0
+"Le cheval est dans le champ.","g801b130327666dcf","clean",0,0,0,0
+"Le ciel est gris aujourd'hui.","gb7c2f887e964ddc3","clean",0,0,0,0
+"Le cours commence à huit heures.","g116707cf3898e6ba","clean",0,0,0,0
+"Le cours commence a huit heures.","g116707cf3898e6ba","droppedAccent",0,0,0,0
+"Le couteau est à droite et la fourchette à gauche.","g5fb2588d9502fa5d","clean",0,0,0,0
+"Le couteau est a droite et la fourchette à gauche.","g5fb2588d9502fa5d","droppedAccent",0,0,0,0
+"Le dimanche après-midi, je me repose.","g2d15b9124441084f","clean",0,0,0,0
+"Le dimanche apres-midi, je me repose.","g2d15b9124441084f","droppedAccent",0,0,0,0
+"Le dimanche, les magasins sont fermés.","gab4d2426c668de47","clean",0,0,0,0
+"Le dimanche, les magasins sont fermes.","gab4d2426c668de47","droppedAccent",0,0,0,0
+"Le dimanche, nous nous promenons dans la forêt.","ge0d0ec2c04ff8e69","clean",0,0,0,0
+"Le dimanche, nous nous promenons dans la foret.","ge0d0ec2c04ff8e69","droppedAccent",0,0,0,0
+"Le feu est allumé, il fait bon.","ge204eacbcad29fe1","clean",0,0,0,0
+"Le feu est allume, il fait bon.","ge204eacbcad29fe1","droppedAccent",0,0,0,0
+"Le film raconte l'histoire d'un pauvre garçon.","gd33e493a946a77a8","clean",0,0,0,0
+"Le film raconte l'histoire d'un pauvre garcon.","gd33e493a946a77a8","droppedAccent",0,0,0,0
+"Le frigo est vide.","gd2165e8e854c7243","clean",0,0,0,0
+"Le gâteau est dans le four.","gb3ce732ad3fe9086","clean",0,0,0,0
+"Le gateau est dans le four.","gb3ce732ad3fe9086","droppedAccent",0,0,0,0
+"Le lendemain, il faisait beau.","gf4ad8cfe8841e864","clean",0,0,0,0
+"Le loyer est cher dans ce quartier.","g8b17636156ebf2ee","clean",0,0,0,0
+"Le magasin ferme à dix-neuf heures.","g7b9129e198c6f9d4","clean",0,0,0,0
+"Le magasin ferme a dix-neuf heures.","g7b9129e198c6f9d4","droppedAccent",0,0,0,0
+"Le mariage de ma sœur est en juin.","g8fc6f6f810a61b04","clean",0,0,0,0
+"Le matin, je bois un jus d'orange.","g581fe6186a11f3a1","clean",0,0,0,0
+"Le mercredi, je vais à la piscine.","g090c7ed59c73ec38","clean",0,0,0,0
+"Le mercredi, je vais a la piscine.","g090c7ed59c73ec38","droppedAccent",0,0,0,0
+"Le musée est en face de la gare.","g77a74697e8e4ed0b","clean",0,0,0,0
+"Le musee est en face de la gare.","g77a74697e8e4ed0b","droppedAccent",0,0,0,0
+"Le parc est à cinq cents mètres.","ge48d7938ea56e1cb","clean",0,0,0,0
+"Le parc est a cinq cents mètres.","ge48d7938ea56e1cb","droppedAccent",0,0,0,0
+"Le pire, c'est d'attendre.","g4ba8f1981f8167dc","clean",0,0,0,0
+"Le poulet avec des frites, c'est mon plat préféré.","g22bade09db8736c2","clean",0,0,0,0
+"Le poulet avec des frites, c'est mon plat preféré.","g22bade09db8736c2","droppedAccent",0,0,0,0
+"Le printemps commence en mars.","g8e26834510ca9381","clean",0,0,0,0
+"Le professeur écrit une phrase au tableau.","ge704ba96a6d9f6f3","clean",0,0,0,0
+"Le professeur ecrit une phrase au tableau.","ge704ba96a6d9f6f3","droppedAccent",0,0,0,0
+"Le repas est prêt !","g4ebc4703ec4b476f","clean",0,0,0,0
+"Le repas est pret !","g4ebc4703ec4b476f","droppedAccent",0,0,0,0
+"Le retour est prévu pour dimanche.","g15a1407ddf00d803","clean",0,0,0,0
+"Le retour est prevu pour dimanche.","g15a1407ddf00d803","droppedAccent",0,0,0,0
+"Le salon a un grand canapé et une lampe.","g80eccfc17346d982","clean",0,0,0,0
+"Le salon a un grand canape et une lampe.","g80eccfc17346d982","droppedAccent",0,0,0,0
+"Le samedi, je dors jusqu'à midi.","g507c8a33d5b5e777","clean",0,0,0,0
+"Le samedi, je dors jusqu'a midi.","g507c8a33d5b5e777","droppedAccent",0,0,0,0
+"Le serveur apporte le menu.","g0a3d21967f4f4885","clean",0,0,0,0
+"Le serveur sert les clients.","g92d7749943ad34e6","clean",0,0,0,0
+"Le service est compris ?","gc30aa342c7e01e4b","clean",0,0,0,1
+"Le soir, je lis dans mon lit.","g3f97cd7c5e6bc059","clean",0,0,0,0
+"Le soir, je mange avec ma famille.","g54fbe7dc832b2053","clean",0,0,0,0
+"Le soleil est déjà haut dans le ciel.","g3e8da53749527155","clean",0,0,0,0
+"Le soleil est dejà haut dans le ciel.","g3e8da53749527155","droppedAccent",0,0,0,0
+"Le sport est bon pour le corps.","g71ae7ef724ed4e77","clean",0,0,0,0
+"Le sujet de la leçon est l'art.","gc83d1f6590a030eb","clean",0,0,0,0
+"Le sujet de la lecon est l'art.","gc83d1f6590a030eb","droppedAccent",0,0,0,0
+"Le train a du retard.","g4bb97308bc3fae84","clean",0,0,0,0
+"Le train arrive plus tard.","g30b4b99b1f436bf4","clean",0,0,0,0
+"Le train part de quel quai ?","gb212c5752f25e164","clean",0,0,0,1
+"Le train part à quelle heure ?","gdeb28098bb8bac02","clean",0,0,0,1
+"Le train part a quelle heure ?","gdeb28098bb8bac02","droppedAccent",0,0,0,1
+"Le trajet dure une heure.","g69bdb2c8fa549a25","clean",0,0,0,0
+"Le travail est fini, je rentre.","g46d4bdda7907f058","clean",0,0,0,0
+"Le téléphone sonne !","g674078d758b0407c","clean",0,0,0,0
+"Le teléphone sonne !","g674078d758b0407c","droppedAccent",0,0,0,0
+"Le vendeur est très gentil avec les clients.","g75e9d14c274835fb","clean",0,0,0,0
+"Le vendeur est tres gentil avec les clients.","g75e9d14c274835fb","droppedAccent",0,0,0,0
+"Le vent est très fort aujourd'hui.","g5130d59602dd43bf","clean",0,0,0,0
+"Le vent est tres fort aujourd'hui.","g5130d59602dd43bf","droppedAccent",0,0,0,0
+"Le verre est plein.","g9c1a015c71e2f3f8","clean",0,0,0,0
+"Le village est de l'autre côté de la rivière.","g8b4f2e5feca61e73","clean",0,0,0,0
+"Le village est de l'autre coté de la rivière.","g8b4f2e5feca61e73","droppedAccent",0,0,0,0
+"Le week-end, je joue au tennis.","g423753fa2da7f105","clean",0,0,0,0
+"Les autres sont partis avant moi.","g0d7334f116527e0f","clean",1,0,0,0
+"Les autres sont partir avant moi.","g0d7334f116527e0f","infinitiveForParticiple",1,0,0,0
+"Les clés sont dessus.","g39dcf978366a1cf8","clean",0,0,0,0
+"Les cles sont dessus.","g39dcf978366a1cf8","droppedAccent",0,0,0,0
+"Les enfants courent partout.","g031ba25e6867642b","clean",0,0,0,0
+"Les enfants jouent entre eux.","gc6ae11e13b3d80ff","clean",0,0,0,0
+"Les gens sont très sympathiques dans ce village.","gd807b541367c1c71","clean",0,0,0,0
+"Les gens sont tres sympathiques dans ce village.","gd807b541367c1c71","droppedAccent",0,0,0,0
+"Leur fille est très gentille.","ge0a06336b8fb8599","clean",0,0,0,0
+"Leur fille est tres gentille.","ge0a06336b8fb8599","droppedAccent",0,0,0,0
+"Leurs enfants vont à l'école du village.","g763d0442f5e5483a","clean",0,0,0,0
+"Leurs enfants vont a l'école du village.","g763d0442f5e5483a","droppedAccent",0,0,0,0
+"Lorsque je suis arrivé, tout le monde dormait.","g922f6a7f79a221ad","clean",1,0,0,0
+"Lorsque j'ai arrivé, tout le monde dormait.","g922f6a7f79a221ad","wrongAuxiliary",1,0,0,0
+"Lorsque je suis arriver, tout le monde dormait.","g922f6a7f79a221ad","infinitiveForParticiple",1,0,0,0
+"Lorsque je suis arrive, tout le monde dormait.","g922f6a7f79a221ad","droppedAccent",1,0,0,0
+"Lui, il est grand ; elle, elle est petite.","g03fe124386d42296","clean",0,0,0,0
+"Lundi, je commence le travail à neuf heures.","g97ce97b39bdd15d8","clean",0,0,0,0
+"Lundi, je commence le travail a neuf heures.","g97ce97b39bdd15d8","droppedAccent",0,0,0,0
+"Lève la main pour répondre.","gb949612acb1f1ded","clean",0,0,0,0
+"Leve la main pour répondre.","gb949612acb1f1ded","droppedAccent",0,0,0,0
+"Ma chambre est petite mais propre.","ge3a6fbb7ed4c300e","clean",0,0,0,0
+"Ma cousine est célibataire.","g078d12113ad606d7","clean",0,0,0,0
+"Ma cousine est celibataire.","g078d12113ad606d7","droppedAccent",0,0,0,0
+"Ma fille apprend à lire à l'école.","ged3328a3d2a8ff71","clean",0,0,0,0
+"Ma fille apprend a lire à l'école.","ged3328a3d2a8ff71","droppedAccent",0,0,0,0
+"Ma grand-mère raconte toujours des histoires.","g2defe79948035cfa","clean",0,0,0,0
+"Ma grand-mere raconte toujours des histoires.","g2defe79948035cfa","droppedAccent",0,0,0,0
+"Ma grand-mère vit seule.","g3df2ad4593f43878","clean",0,0,0,0
+"Ma grand-mere vit seule.","g3df2ad4593f43878","droppedAccent",0,0,0,0
+"Ma mère cuisine des légumes avec du riz.","ge4ed5c5b5ce78052","clean",0,0,0,0
+"Ma mere cuisine des légumes avec du riz.","ge4ed5c5b5ce78052","droppedAccent",0,0,0,0
+"Ma nièce est un bébé de six mois.","g3b76f01eace9eb7f","clean",0,0,0,0
+"Ma niece est un bébé de six mois.","g3b76f01eace9eb7f","droppedAccent",0,0,0,0
+"Ma sœur a les cheveux longs.","g75a5df48455504f3","clean",0,0,0,0
+"Ma tante est blonde et mince.","g5a49486aace3ba9c","clean",0,0,0,0
+"Ma valise est trop lourde.","g96ca88d5a744f335","clean",0,0,0,0
+"Maintenant, je comprends mieux.","g1cccc3237288ccce","clean",0,0,0,0
+"Merci beaucoup pour le cadeau.","g991f1106b4f00b21","clean",0,0,0,0
+"Merci beaucoup.","gc6c98c6a2b493755","clean",0,0,0,0
+"Mes amis sont toujours là pour moi.","g9a9233e57529a1b9","clean",0,0,0,0
+"Mes amis sont toujours la pour moi.","g9a9233e57529a1b9","droppedAccent",0,0,0,0
+"Mes grands-parents habitent à la campagne.","ga1c1812395e3ced6","clean",0,0,0,0
+"Mes grands-parents habitent a la campagne.","ga1c1812395e3ced6","droppedAccent",0,0,0,0
+"Mes parents me manquent.","g61b8927a663ea88a","clean",0,0,0,0
+"Mes voisins sont très gentils.","g6feef9bee31e706d","clean",0,0,0,0
+"Mes voisins sont tres gentils.","g6feef9bee31e706d","droppedAccent",0,0,0,0
+"Mes vêtements sont dans l'armoire.","g80a08623dc5a8cf1","clean",0,0,0,0
+"Mes vetements sont dans l'armoire.","g80a08623dc5a8cf1","droppedAccent",0,0,0,0
+"Moi aussi.","g9370c9b08b9bb79b","clean",0,0,0,0
+"Mon ami m'a dit quelque chose d'important.","g0b101f9a49cfbfa7","clean",1,0,0,0
+"Mon ami m'a dire quelque chose d'important.","g0b101f9a49cfbfa7","infinitiveForParticiple",1,0,0,0
+"Mon ami m'a promis de venir.","gfb84085798b10836","clean",1,0,0,0
+"Mon ami m'a promettre de venir.","gfb84085798b10836","infinitiveForParticiple",1,0,0,0
+"Mon anniversaire est en février.","gd402ca44bf2c2f33","clean",0,0,0,0
+"Mon anniversaire est en fevrier.","gd402ca44bf2c2f33","droppedAccent",0,0,0,0
+"Mon anniversaire est le dix avril.","g6f3329dc18747f16","clean",0,0,0,0
+"Mon chat a disparu hier.","ge2282d033f79e752","clean",1,0,0,0
+"Mon chat a disparaître hier.","ge2282d033f79e752","infinitiveForParticiple",1,0,0,0
+"Mon chef est très exigeant.","ge44443ac9e32fc08","clean",0,0,0,0
+"Mon chef est tres exigeant.","ge44443ac9e32fc08","droppedAccent",0,0,0,0
+"Mon copain est très sérieux.","g4e54482221d994e7","clean",0,0,0,0
+"Mon copain est tres sérieux.","g4e54482221d994e7","droppedAccent",0,0,0,0
+"Mon fils va au collège et ma fille va au lycée.","gee11b901a70155ec","clean",0,0,0,0
+"Mon fils va au college et ma fille va au lycée.","gee11b901a70155ec","droppedAccent",0,0,0,0
+"Mon frère a peur des chiens.","g17525ae03dd5ed26","clean",0,0,0,0
+"Mon frere a peur des chiens.","g17525ae03dd5ed26","droppedAccent",0,0,0,0
+"Mon frère a vingt ans.","gd6fa2ba06ce94862","clean",0,0,0,0
+"Mon frere a vingt ans.","gd6fa2ba06ce94862","droppedAccent",0,0,0,0
+"Mon frère va au travail à moto.","g957172777bb251b1","clean",0,0,0,0
+"Mon frere va au travail à moto.","g957172777bb251b1","droppedAccent",0,0,0,0
+"Mon grand-père est vieux, mais il court encore.","g45153f8c313f47b5","clean",0,0,0,0
+"Mon grand-pere est vieux, mais il court encore.","g45153f8c313f47b5","droppedAccent",0,0,0,0
+"Mon mari est plus grand que moi.","gf19f0d9b9a76f5da","clean",0,0,0,0
+"Mon meilleur ami est petit et très drôle.","g539ba7654f234f40","clean",0,0,0,0
+"Mon meilleur ami est petit et tres drôle.","g539ba7654f234f40","droppedAccent",0,0,0,0
+"Mon neveu a les cheveux bruns.","ga52d99d32dc44a9f","clean",0,0,0,0
+"Mon oncle habite dans une petite ville.","g38c78114c174557e","clean",0,0,0,0
+"Mon passeport est dans ma poche.","g3cd12b7bc7035905","clean",0,0,0,0
+"Mon patron est en réunion.","g7fe49d8c199a348b","clean",0,0,0,0
+"Mon patron est en reunion.","g7fe49d8c199a348b","droppedAccent",0,0,0,0
+"Mon père est grand et il a les yeux bleus.","g98d69ada4e6f9958","clean",0,0,0,0
+"Mon pere est grand et il a les yeux bleus.","g98d69ada4e6f9958","droppedAccent",0,0,0,0
+"Mon père porte toujours une casquette.","gad8c2d0e1d71c8f5","clean",0,0,0,0
+"Mon pere porte toujours une casquette.","gad8c2d0e1d71c8f5","droppedAccent",0,0,0,0
+"Mon voisin m'a aidé à porter mes valises.","g8a7b11243d08ad5f","clean",1,0,0,0
+"Mon voisin m'a aider à porter mes valises.","g8a7b11243d08ad5f","infinitiveForParticiple",1,0,0,0
+"Mon voisin m'a aide à porter mes valises.","g8a7b11243d08ad5f","droppedAccent",1,0,0,0
+"Montez la rue, puis descendez l'escalier.","g2058af36ccd9388c","clean",0,0,0,0
+"Ne laisse pas la porte ouverte.","ge315d51fefd49a8c","clean",0,0,1,0
+"laisse pas la porte ouverte.","ge315d51fefd49a8c","missingNe",0,0,1,0
+"Ne roule pas trop vite !","g7903371522fe2fa3","clean",0,0,1,0
+"roule pas trop vite !","g7903371522fe2fa3","missingNe",0,0,1,0
+"Ne t'inquiète pas.","ga8e5b1e792e19eab","clean",0,0,1,0
+"t'inquiète pas.","ga8e5b1e792e19eab","missingNe",0,0,1,0
+"Ne t'inquiete pas.","ga8e5b1e792e19eab","droppedAccent",0,0,1,0
+"Non, je ne fume pas de cigarettes.","g2778f8f4c2be8f89","clean",0,0,1,0
+"Non, je fume pas de cigarettes.","g2778f8f4c2be8f89","missingNe",0,0,1,0
+"Non, merci, ça va.","gc200c1aabe98075c","clean",0,0,0,0
+"Non, merci, ca va.","gc200c1aabe98075c","droppedAccent",0,0,0,0
+"Nos voisins ont un cheval.","gf1ea8d63a4087c79","clean",0,0,0,0
+"Notre maison est ancienne.","g9c1f1a585da0520b","clean",0,0,0,0
+"Notre équipe a gagné le match.","g1b1478a39a3a70e7","clean",1,0,0,0
+"Notre équipe a gagner le match.","g1b1478a39a3a70e7","infinitiveForParticiple",1,0,0,0
+"Notre equipe a gagné le match.","g1b1478a39a3a70e7","droppedAccent",1,0,0,0
+"Nous aimons voyager en été.","g204d5c57b9dd36c5","clean",0,0,0,0
+"Nous aimons voyager en eté.","g204d5c57b9dd36c5","droppedAccent",0,0,0,0
+"Nous allons au cinéma, tu veux nous accompagner ?","gb7e3afcf984572cc","clean",0,0,0,1
+"Nous allons au cinema, tu veux nous accompagner ?","gb7e3afcf984572cc","droppedAccent",0,0,0,1
+"Nous allons voir un concert ce soir.","g77c7fb7c07167081","clean",0,1,0,0
+"Nous allons à l'aéroport en taxi.","ge4d3e7853814b485","clean",0,0,0,0
+"Nous allons a l'aéroport en taxi.","ge4d3e7853814b485","droppedAccent",0,0,0,0
+"Nous allons être bénévoles demain.","g2df8b8a9be48abde","clean",0,1,0,0
+"Nous allons bénévoles demain.","g2df8b8a9be48abde","missingPlanEtre",0,1,0,0
+"Nous allons etre bénévoles demain.","g2df8b8a9be48abde","droppedAccent",0,1,0,0
+"Nous avons fait un gâteau.","gb661447aae0e2abf","clean",1,0,0,0
+"Nous avons faire un gâteau.","gb661447aae0e2abf","infinitiveForParticiple",1,0,0,0
+"Nous avons fait un gateau.","gb661447aae0e2abf","droppedAccent",1,0,0,0
+"Nous avons les mêmes goûts.","g3ef0386d832dd173","clean",0,0,0,0
+"Nous avons les memes goûts.","g3ef0386d832dd173","droppedAccent",0,0,0,0
+"Nous avons passé la soirée ensemble.","g91e7a0fd07998246","clean",1,0,0,0
+"Nous avons passer la soirée ensemble.","g91e7a0fd07998246","infinitiveForParticiple",1,0,0,0
+"Nous avons passe la soirée ensemble.","g91e7a0fd07998246","droppedAccent",1,0,0,0
+"Nous avons un jardin derrière la maison.","g5a1228c9cf8f0c74","clean",0,0,0,0
+"Nous avons un jardin derriere la maison.","g5a1228c9cf8f0c74","droppedAccent",0,0,0,0
+"Nous dînons à vingt heures.","gd52c2850a7c46966","clean",0,0,0,0
+"Nous dinons à vingt heures.","gd52c2850a7c46966","droppedAccent",0,0,0,0
+"Nous faisons du camping au bord d'un lac.","g9f08da90659ea406","clean",0,0,0,0
+"Nous louons un appartement près du centre.","g6148297cd455601e","clean",0,0,0,0
+"Nous louons un appartement pres du centre.","g6148297cd455601e","droppedAccent",0,0,0,0
+"Nous mangeons dans la salle à manger.","g41600beaef6c905f","clean",0,0,0,0
+"Nous mangeons dans la salle a manger.","g41600beaef6c905f","droppedAccent",0,0,0,0
+"Nous mangeons des pâtes avec du fromage.","gb08e03168e8d06d8","clean",0,0,0,0
+"Nous mangeons des pates avec du fromage.","gb08e03168e8d06d8","droppedAccent",0,0,0,0
+"Nous sommes fatigués après le voyage.","g6136dc783cbcb5ee","clean",0,0,0,0
+"Nous sommes fatigues après le voyage.","g6136dc783cbcb5ee","droppedAccent",0,0,0,0
+"Nous sommes une famille de cinq personnes.","gbf7dde735f57fed3","clean",0,0,0,0
+"Nous traversons la mer en bateau.","gb2aa2f38c40601e1","clean",0,0,0,0
+"Oh, quelle surprise !","gf58b80e58f289272","clean",0,0,0,0
+"On mange au restaurant ce soir ?","g66edacb8f12818a5","clean",0,0,0,1
+"On paie à la caisse ?","g8e9d7c70c5de0d1c","clean",0,0,0,1
+"On paie a la caisse ?","g8e9d7c70c5de0d1c","droppedAccent",0,0,0,1
+"On peut s'asseoir ici ?","g2bbb542229dd80c4","clean",0,0,0,1
+"On regarde un film à la télévision ?","gb2f7adc6af0cdca4","clean",0,0,0,1
+"On regarde un film a la télévision ?","gb2f7adc6af0cdca4","droppedAccent",0,0,0,1
+"On s'amuse bien ici !","g4447696248eb6baf","clean",0,0,0,0
+"On se retrouve devant le cinéma ?","g4a52e741944c1b88","clean",0,0,0,1
+"On se retrouve devant le cinema ?","g4a52e741944c1b88","droppedAccent",0,0,0,1
+"Ouvre la bouteille d'eau, s'il te plaît.","gffde6698980a4498","clean",0,0,0,0
+"Ouvre la bouteille d'eau, s'il te plait.","gffde6698980a4498","droppedAccent",0,0,0,0
+"Ouvre la fenêtre, il fait chaud.","gcde47d829f70c032","clean",0,0,0,0
+"Ouvre la fenetre, il fait chaud.","gcde47d829f70c032","droppedAccent",0,0,0,0
+"Ouvrez votre cahier à la page dix.","gfb4281d60732c5f0","clean",0,0,0,0
+"Ouvrez votre cahier a la page dix.","gfb4281d60732c5f0","droppedAccent",0,0,0,0
+"Où est l'arrêt de bus ?","ga0b3b16f5eb97dff","clean",0,0,0,1
+"Ou est l'arrêt de bus ?","ga0b3b16f5eb97dff","droppedAccent",0,0,0,1
+"Où est-ce que je peux acheter un billet ?","ga0805d0be2bc0e07","clean",0,0,0,1
+"Ou est-ce que je peux acheter un billet ?","ga0805d0be2bc0e07","droppedAccent",0,0,0,1
+"Où sont les toilettes ?","g7a020c3e45215fec","clean",0,0,0,1
+"Ou sont les toilettes ?","g7a020c3e45215fec","droppedAccent",0,0,0,1
+"Où sont mes lunettes ?","g06db12dbab27ca20","clean",0,0,0,1
+"Ou sont mes lunettes ?","g06db12dbab27ca20","droppedAccent",0,0,0,1
+"Papa, tu peux m'aider ?","gc443b97b6b772c38","clean",0,0,0,1
+"Par exemple ?","gd5eacbf399f959fb","clean",0,0,0,1
+"Par hasard, j'ai rencontré mon ancien professeur.","g017714cef36d613b","clean",1,0,0,0
+"Par hasard, j'ai rencontrer mon ancien professeur.","g017714cef36d613b","infinitiveForParticiple",1,0,0,0
+"Par hasard, j'ai rencontre mon ancien professeur.","g017714cef36d613b","droppedAccent",1,0,0,0
+"Pardon.","gf33a36a3c6f52b79","clean",0,0,0,0
+"Pardonnez-moi, je ne voulais pas vous déranger.","g61f7f25c7b1aebff","clean",0,0,1,0
+"Pardonnez-moi, je voulais pas vous déranger.","g61f7f25c7b1aebff","missingNe",0,0,1,0
+"Pardonnez-moi, je ne voulais pas vous deranger.","g61f7f25c7b1aebff","droppedAccent",0,0,1,0
+"Passe-moi le sel et le poivre, s'il te plaît.","g12a480067f9f9b5f","clean",0,0,0,0
+"Passe-moi le sel et le poivre, s'il te plait.","g12a480067f9f9b5f","droppedAccent",0,0,0,0
+"Pendant deux heures, j'ai marché.","g197967413dc3d9c9","clean",1,0,0,0
+"Pendant deux heures, j'ai marcher.","g197967413dc3d9c9","infinitiveForParticiple",1,0,0,0
+"Pendant deux heures, j'ai marche.","g197967413dc3d9c9","droppedAccent",1,0,0,0
+"Pendant les vacances, nous visitons des musées.","g6113894f065967b8","clean",0,0,0,0
+"Pendant les vacances, nous visitons des musees.","g6113894f065967b8","droppedAccent",0,0,0,0
+"Peut-être demain.","g6bf7fee8b5131808","clean",0,0,0,0
+"Peut-etre demain.","g6bf7fee8b5131808","droppedAccent",0,0,0,0
+"Pierre cava un trou.","gc50ac2c51db81894","clean",0,0,0,0
+"Plus lentement, s'il vous plaît.","gc6e1f9c4a0ba854d","clean",0,0,0,0
+"Plus lentement, s'il vous plait.","gc6e1f9c4a0ba854d","droppedAccent",0,0,0,0
+"Plusieurs amis sont venus à ma fête.","g9e85c585e8d58419","clean",1,0,0,0
+"Plusieurs amis sont venir à ma fête.","g9e85c585e8d58419","infinitiveForParticiple",1,0,0,0
+"Plusieurs amis sont venus a ma fête.","g9e85c585e8d58419","droppedAccent",1,0,0,0
+"Pose ton sac dans le coin.","geaae3a2b6b5ad232","clean",0,0,0,0
+"Pour le dessert, il y a un gâteau au chocolat.","g9d4a6b76212ccb72","clean",0,0,0,0
+"Pour le dessert, il y a un gateau au chocolat.","g9d4a6b76212ccb72","droppedAccent",0,0,0,0
+"Pourquoi ne vas-tu pas travailler ?","g40cb16d406646145","clean",0,1,1,1
+"Pourquoi vas-tu pas travailler ?","g40cb16d406646145","missingNe",0,1,1,1
+"Pourquoi pas ?","gb204092e31c5c560","clean",0,0,1,1
+"Pourtant, c'était difficile.","g03d2c45b52627ad3","clean",0,0,0,0
+"Pourtant, c'etait difficile.","g03d2c45b52627ad3","droppedAccent",0,0,0,0
+"Pouvez-vous expliquer cet exercice ?","g82de94355b80a02c","clean",0,0,0,1
+"Prenez ce médicament trois fois par jour.","g60c3563e911c4d70","clean",0,0,0,0
+"Prenez ce medicament trois fois par jour.","g60c3563e911c4d70","droppedAccent",0,0,0,0
+"Qu'est-ce que tu en penses ?","gc74646929b65916d","clean",0,0,0,1
+"Qu'est-ce que tu fais ce week-end ?","gc94a1f4ac95e5a43","clean",0,0,0,1
+"Qu'est-ce que tu fais dans la vie ?","gbbb835cfb54324f4","clean",0,0,0,1
+"Qu'est-ce que vous me conseillez ?","g927157737d54b0a2","clean",0,0,0,1
+"Qu'est-ce que vous recommandez ?","gc7b2cc15bc3b7735","clean",0,0,0,1
+"Quand il fait beau, je marche dans le parc.","gad55ecc476c07d9e","clean",0,0,0,0
+"Quel est ton avis ?","g497b4f786419ddbf","clean",0,0,0,1
+"Quel est ton métier ?","g892a633936820d6d","clean",0,0,0,1
+"Quel est ton metier ?","g892a633936820d6d","droppedAccent",0,0,0,1
+"Quel temps fait-il ?","g25374595007ea276","clean",0,0,0,1
+"Quel âge as-tu ?","g6d470ff9ff0a1212","clean",0,0,0,1
+"Quel age as-tu ?","g6d470ff9ff0a1212","droppedAccent",0,0,0,1
+"Quelle couleur préférez-vous ?","g3121a33d3f1c49e2","clean",0,0,0,1
+"Quelle couleur preférez-vous ?","g3121a33d3f1c49e2","droppedAccent",0,0,0,1
+"Quelle direction pour le centre-ville ?","g1010c0618fabc450","clean",0,0,0,1
+"Quelle est la date aujourd'hui ?","ge9e5b3098ff80ece","clean",0,0,0,1
+"Quelle est la température dehors ?","g8c8bd7f3695d93a7","clean",0,0,0,1
+"Quelle est la temperature dehors ?","g8c8bd7f3695d93a7","droppedAccent",0,0,0,1
+"Quelqu'un a appelé pour toi.","gcce0959e64d8810b","clean",1,0,0,0
+"Quelqu'un a appeler pour toi.","gcce0959e64d8810b","infinitiveForParticiple",1,0,0,0
+"Quelqu'un a appele pour toi.","gcce0959e64d8810b","droppedAccent",1,0,0,0
+"Range ta chambre, s'il te plaît.","g83bc5868f537b349","clean",0,0,0,0
+"Range ta chambre, s'il te plait.","g83bc5868f537b349","droppedAccent",0,0,0,0
+"Respire doucement.","gb56fd7a8a7a50dcb","clean",0,0,0,0
+"Reste tranquille, tout va bien.","g14edd9d7d7713108","clean",0,0,0,0
+"Restez calme, ce n'est pas grave.","g66c1eb58b8c98788","clean",0,0,1,0
+"Restez calme, c'est pas grave.","g66c1eb58b8c98788","missingNe",0,0,1,0
+"S'il te plaît.","g7cdab5c4112f90ed","clean",0,0,0,0
+"S'il te plait.","g7cdab5c4112f90ed","droppedAccent",0,0,0,0
+"S'il vous plaît.","g0513fda202436145","clean",0,0,0,0
+"S'il vous plait.","g0513fda202436145","droppedAccent",0,0,0,0
+"Sa femme est médecin à l'hôpital.","gb4eed7c6813188e4","clean",0,0,0,0
+"Sa femme est medecin à l'hôpital.","gb4eed7c6813188e4","droppedAccent",0,0,0,0
+"Salut !","g3d3a6706af84dc91","clean",0,0,0,0
+"Salut, ça fait longtemps !","g00a53750621495c3","clean",0,0,0,0
+"Salut, ca fait longtemps !","g00a53750621495c3","droppedAccent",0,0,0,0
+"Samedi, il y a une fête chez mon ami.","g48f4675840601d1c","clean",0,0,0,0
+"Samedi, il y a une fete chez mon ami.","g48f4675840601d1c","droppedAccent",0,0,0,0
+"Soudain, j'ai entendu un bruit.","ge95e5482f6c1e793","clean",1,0,0,0
+"Soudain, j'ai entendre un bruit.","ge95e5482f6c1e793","infinitiveForParticiple",1,0,0,0
+"Ta réponse est fausse.","g96070930eec352a0","clean",0,0,0,0
+"Ta reponse est fausse.","g96070930eec352a0","droppedAccent",0,0,0,0
+"Tes amis sont toujours les bienvenus.","g4f48a8961c5b92bd","clean",0,0,0,0
+"Tournez à droite.","g89f74f55748e1f5e","clean",0,0,0,0
+"Tournez a droite.","g89f74f55748e1f5e","droppedAccent",0,0,0,0
+"Tournez à gauche.","g7cdbb82a340480c4","clean",0,0,0,0
+"Tournez a gauche.","g7cdbb82a340480c4","droppedAccent",0,0,0,0
+"Tous les magasins sont fermés sauf la pharmacie.","ga66ab0f7a5e96942","clean",0,0,0,0
+"Tous les magasins sont fermes sauf la pharmacie.","ga66ab0f7a5e96942","droppedAccent",0,0,0,0
+"Tout est simple pour lui.","ga4e0b42942a33683","clean",0,0,0,0
+"Tu as des enfants ?","g399f4a5888d3485e","clean",0,0,0,1
+"Tu as l'air triste, qu'est-ce qui se passe ?","g2e016e650d698ed4","clean",0,0,0,1
+"Tu as un animal ?","gd21f06845832306a","clean",0,0,0,1
+"Tu as une idée ?","g8262209dbf7f8849","clean",0,0,0,1
+"Tu as une idee ?","g8262209dbf7f8849","droppedAccent",0,0,0,1
+"Tu connais mon ami ?","gd0c7e806c42d9051","clean",0,0,0,1
+"Tu es complètement fou !","gce3f0847ccdafe3e","clean",0,0,0,0
+"Tu es completement fou !","gce3f0847ccdafe3e","droppedAccent",0,0,0,0
+"Tu fumes ?","g6257eca68bc084df","clean",0,0,0,1
+"Tu peux me prêter ta gomme ?","ga2016140969a44dd","clean",0,0,0,1
+"Tu peux me preter ta gomme ?","ga2016140969a44dd","droppedAccent",0,0,0,1
+"Tu sais où il habite ?","g00cb6689728b5964","clean",0,0,0,1
+"Tu sais ou il habite ?","g00cb6689728b5964","droppedAccent",0,0,0,1
+"Tu veux du sucre dans ton café ?","g6ecb698cfa30c789","clean",0,0,0,1
+"Tu veux du sucre dans ton cafe ?","g6ecb698cfa30c789","droppedAccent",0,0,0,1
+"Tu veux partager un dessert ?","g2e0bee26818254bc","clean",0,0,0,1
+"Tu viens d'où exactement ?","g4886c0550e7086be","clean",0,0,0,1
+"Tu viens d'ou exactement ?","g4886c0550e7086be","droppedAccent",0,0,0,1
+"Un aller-retour, s'il vous plaît.","gb2a9465632ac9a34","clean",0,0,0,0
+"Un aller-retour, s'il vous plait.","gb2a9465632ac9a34","droppedAccent",0,0,0,0
+"Un café, s'il vous plaît.","ga8596ab49273a196","clean",0,0,0,0
+"Un cafe, s'il vous plaît.","ga8596ab49273a196","droppedAccent",0,0,0,0
+"Un ticket de métro, s'il vous plaît.","g1062ca01d28297cd","clean",0,0,0,0
+"Un ticket de metro, s'il vous plaît.","g1062ca01d28297cd","droppedAccent",0,0,0,0
+"Un verre de vin ou une bière ?","g893c3bd376a9a0d0","clean",0,0,0,1
+"Un verre de vin ou une biere ?","g893c3bd376a9a0d0","droppedAccent",0,0,0,1
+"Un œuf et du pain, ça suffit.","g44cf0ea92ee5d2e1","clean",0,0,0,0
+"Un œuf et du pain, ca suffit.","g44cf0ea92ee5d2e1","droppedAccent",0,0,0,0
+"Une cuillère de sucre, c'est assez.","ge00fa7028c571d5d","clean",0,0,0,0
+"Une cuillere de sucre, c'est assez.","ge00fa7028c571d5d","droppedAccent",0,0,0,0
+"Une glace à la fraise, s'il vous plaît.","g062cdac0ed75e521","clean",0,0,0,0
+"Une glace a la fraise, s'il vous plaît.","g062cdac0ed75e521","droppedAccent",0,0,0,0
+"Une table pour deux, s'il vous plaît.","gd0ca3c96028a72d5","clean",0,0,0,0
+"Une table pour deux, s'il vous plait.","gd0ca3c96028a72d5","droppedAccent",0,0,0,0
+"Utilisez un crayon, pas un stylo.","gb034b669ad4e7be1","clean",0,0,1,0
+"Voici mon numéro de téléphone.","g4fce496b4dbafe17","clean",0,0,0,0
+"Voici mon numero de téléphone.","g4fce496b4dbafe17","droppedAccent",0,0,0,0
+"Voilà mon frère !","g0aa7e10577cbf027","clean",0,0,0,0
+"Voila mon frère !","g0aa7e10577cbf027","droppedAccent",0,0,0,0
+"Vos enfants sont adorables.","gbdda52bf9b89f5bf","clean",0,0,0,0
+"Vous acceptez les cartes ?","g8f95c8f2e58a02d4","clean",0,0,0,1
+"Vous allez être disponibles ce soir.","gaf446bf690d84bb3","clean",0,1,0,0
+"Vous allez disponibles ce soir.","gaf446bf690d84bb3","missingPlanEtre",0,1,0,0
+"Vous allez etre disponibles ce soir.","gaf446bf690d84bb3","droppedAccent",0,1,0,0
+"Vous avez un plan de la ville ?","g325de9a13a822013","clean",0,0,0,1
+"Vous avez une autre taille ?","gd25204de165727a5","clean",0,0,0,1
+"Vous ne pouvez pas vous tromper.","ge5405e8c2d544e74","clean",0,0,1,0
+"Vous pouvez pas vous tromper.","ge5405e8c2d544e74","missingNe",0,0,1,0
+"Vous parlez anglais ?","g4119e58f286c8f76","clean",0,0,0,1
+"Vous pouvez garder la monnaie.","ge315d5abfbc26328","clean",0,0,0,0
+"Vous pouvez m'apporter de l'eau ?","g5eaf7fe9472a88ac","clean",0,0,0,1
+"Vous pouvez me montrer ce sac ?","g96d87898800a1b4c","clean",0,0,0,1
+"Vous pouvez répéter, s'il vous plaît ?","g6fb1f25c39a8d2cb","clean",0,0,0,1
+"Vous pouvez repéter, s'il vous plaît ?","g6fb1f25c39a8d2cb","droppedAccent",0,0,0,1
+"Vous venez d'où ?","g7438119171f3b36f","clean",0,0,0,1
+"Vous venez d'ou ?","g7438119171f3b36f","droppedAccent",0,0,0,1
+"Vous vivez ici depuis longtemps ?","g0bf00fa11f636e31","clean",0,0,0,1
+"À bientôt !","g4f4e21b6055331c6","clean",0,0,0,0
+"A bientôt !","g4f4e21b6055331c6","droppedAccent",0,0,0,0
+"À demain !","gc3ea0dea5c713c0b","clean",0,0,0,0
+"A demain !","gc3ea0dea5c713c0b","droppedAccent",0,0,0,0
+"À la fin du film, j'ai pleuré.","gf0fec990c8894128","clean",1,0,0,0
+"À la fin du film, j'ai pleurer.","gf0fec990c8894128","infinitiveForParticiple",1,0,0,0
+"A la fin du film, j'ai pleuré.","gf0fec990c8894128","droppedAccent",1,0,0,0
+"À mon avis, c'est une bonne idée.","gb126ec202b59b7cb","clean",0,0,0,0
+"A mon avis, c'est une bonne idée.","gb126ec202b59b7cb","droppedAccent",0,0,0,0
+"À quelle heure est le départ ?","g8571320eaa615eb8","clean",0,0,0,1
+"A quelle heure est le départ ?","g8571320eaa615eb8","droppedAccent",0,0,0,1
+"À quelle heure est le petit-déjeuner ?","g465f6be0ad9952b5","clean",0,0,0,1
+"A quelle heure est le petit-déjeuner ?","g465f6be0ad9952b5","droppedAccent",0,0,0,1
+"À tout à l'heure !","gac3a636ea1f9fe56","clean",0,0,0,0
+"A tout à l'heure !","gac3a636ea1f9fe56","droppedAccent",0,0,0,0
+"Ça coûte dix euros.","ga21e52865e113844","clean",0,0,0,0
+"Ca coûte dix euros.","ga21e52865e113844","droppedAccent",0,0,0,0
+"Ça m'intéresse beaucoup.","gae6185aad02b9c65","clean",0,0,0,0
+"Ca m'intéresse beaucoup.","gae6185aad02b9c65","droppedAccent",0,0,0,0
+"Ça ne m'arrive pas souvent.","g019bd86522ea472a","clean",0,0,1,0
+"Ça m'arrive pas souvent.","g019bd86522ea472a","missingNe",0,0,1,0
+"Ca ne m'arrive pas souvent.","g019bd86522ea472a","droppedAccent",0,0,1,0
+"Ça sent bon dans la cuisine !","gf8e5fd7f9748398d","clean",0,0,0,0
+"Ca sent bon dans la cuisine !","gf8e5fd7f9748398d","droppedAccent",0,0,0,0
+"Ça va ?","g0753f3e68078443a","clean",0,0,0,1
+"Ca va ?","g0753f3e68078443a","droppedAccent",0,0,0,1
+"Ça va bien, merci.","g55693ca097271591","clean",0,0,0,0
+"Ca va bien, merci.","g55693ca097271591","droppedAccent",0,0,0,0
+"Ça vaut le prix.","g89779806ed8895e2","clean",0,0,0,0
+"Ca vaut le prix.","g89779806ed8895e2","droppedAccent",0,0,0,0
+"Écrivez votre nom sur la feuille.","gd4a195e62ff627f1","clean",0,0,0,0
+"Ecrivez votre nom sur la feuille.","gd4a195e62ff627f1","droppedAccent",0,0,0,0

@@ -13,13 +13,15 @@
 
 import SwiftUI
 
-/// The status chip, the phrasebook and progress buttons, the Clear button, and the theme toggle.
+/// The status chip, the file menu, the phrasebook and progress buttons, the Clear button, and the theme toggle.
 struct TopBar: View {
 
     let model: EditorModel
     @Binding var showsIssueList: Bool
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
+    let openFile: () -> Void
+    let saveFile: () -> Void
 
     var body: some View {
         HStack(spacing: 4) {
@@ -32,6 +34,21 @@ struct TopBar: View {
             .accessibilityHint("Shows every issue")
 
             Spacer()
+
+            Menu {
+                Button("Open…", systemImage: "folder", action: openFile)
+                Button("Save As…", systemImage: "square.and.arrow.down", action: saveFile)
+                    .disabled(!model.hasText)
+                ShareLink(item: model.plainText)
+                    .disabled(!model.hasText)
+            } label: {
+                Label("File", systemImage: "folder")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
 
             Button("Phrasebook", systemImage: "book") {
                 showsPhrasebook.toggle()

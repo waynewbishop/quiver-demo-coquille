@@ -326,4 +326,16 @@ final class EditorModelTests: XCTestCase {
         XCTAssertTrue(model.warnings.isEmpty)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
     }
+
+    // Opening a file that holds an error's fix doesn't count the fix as the learner's.
+    func testOpeningAFileIsNotAFix() throws {
+        let model = try makeModel()
+        type("Nous avons acheté une fromage.", into: model)
+        model.lintNow()
+        XCTAssertFalse(model.blockingIssues.isEmpty)
+        model.open("Nous avons acheté un fromage.")
+        XCTAssertEqual(model.plainText, "Nous avons acheté un fromage.")
+        XCTAssertTrue(model.blockingIssues.isEmpty)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+    }
 }

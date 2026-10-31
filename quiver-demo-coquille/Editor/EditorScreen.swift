@@ -12,13 +12,21 @@
 // permissions and limitations under the License.
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The whole app: one French text editor with live linting, a play button, and an
 /// English toggle. On wide windows the English sits beside the French.
 struct EditorScreen: View {
 
-    @State private var model = EditorModel()
+    @State private var model = EditorModel(draftURL: EditorModel.defaultDraftURL())
     @State private var showsIssueList = false
+    @State private var showsImporter = false
+    @State private var showsExporter = false
+    /// Asks before Open… replaces text that's in the editor.
+    @State private var confirmsReplace = false
+    @State private var fileProblem: FileProblem?
+    /// Open… or Save As… chosen in the File menu, handled and cleared by this window.
+    @State private var fileRequest: FileRequest?
     @State private var showsProgress = false
     @State private var showsPhrasebook = false
     @FocusState private var editorIsFocused: Bool
@@ -37,6 +45,41 @@ struct EditorScreen: View {
     private static let splitWidth = 700.0
 
     var body: some View {
+        screen
+            .fileImporter(isPresented: $showsImporter, allowedContentTypes: [.plainText], onCompletion: openPicked)
+            .fileExporter(
+                isPresented: $showsExporter,
+                document: FrenchTextFile(text: model.plainText),
+                contentType: .plainText,
+                defaultFilename: FrenchTextFile.defaultFilename,
+                onCompletion: savedPicked
+            )
+            .confirmationDialog("Replace the text in the editor?", isPresented: $confirmsReplace, titleVisibility: .visible) {
+                Button("Open…") { showsImporter = true }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Use Save As first to keep it.")
+            }
+            .alert(fileProblem?.title ?? "", isPresented: showsFileProblem, presenting: fileProblem) { _ in
+                Button("OK", role: .cancel) {}
+            } message: { problem in
+                Text(problem.message)
+            }
+            // The File menu's Open… and Save As… ask this window through `fileRequest`.
+            .focusedSceneValue(\.fileRequest, $fileRequest)
+            .focusedSceneValue(\.canSaveFile, model.hasText)
+            .onChange(of: fileRequest) {
+                switch fileRequest {
+                case .open: openFile()
+                case .save: saveFile()
+                case nil: return
+                }
+                fileRequest = nil
+            }
+    }
+
+    /// The layout with its sheets, the phrasebook panel, and the model's setup.
+    private var screen: some View {
         layout
             .tint(.brand)
             .preferredColorScheme(Appearance.colorScheme(for: appearance))
@@ -64,6 +107,50 @@ struct EditorScreen: View {
                     .presentationDetents([.medium, .large])
                     .presentationBackgroundInteraction(.enabled(upThrough: .medium))
             }
+    }
+
+    // MARK: - Open and Save As
+
+    /// A failed Open or Save As, shown as an alert.
+    private struct FileProblem {
+        let title: String
+        let message: String
+    }
+
+    /// Starts Open…, first asking whether to replace text that's in the editor.
+    private func openFile() {
+        if model.hasText {
+            confirmsReplace = true
+        } else {
+            showsImporter = true
+        }
+    }
+
+    /// Starts Save As….
+    private func saveFile() {
+        showsExporter = true
+    }
+
+    /// Loads the file picked in Open…, or reports why it couldn't be read.
+    private func openPicked(_ result: Result<URL, any Error>) {
+        do {
+            model.open(try FrenchTextFile.text(at: result.get()))
+        } catch {
+            fileProblem = FileProblem(title: "The file couldn't be opened", message: error.localizedDescription)
+        }
+    }
+
+    /// Reports a Save As that failed.
+    private func savedPicked(_ result: Result<URL, any Error>) {
+        // Canceling the save panel isn't a problem to report.
+        if case .failure(let error) = result, (error as? CocoaError)?.code != .userCancelled {
+            fileProblem = FileProblem(title: "The file couldn't be saved", message: error.localizedDescription)
+        }
+    }
+
+    /// Whether the file alert is showing; dismissing it clears the problem.
+    private var showsFileProblem: Binding<Bool> {
+        Binding(get: { fileProblem != nil }, set: { if !$0 { fileProblem = nil } })
     }
 
     #if os(macOS)
@@ -158,7 +245,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, openFile: openFile, saveFile: saveFile)
 
                 if isWide {
                     HStack(spacing: 0) {

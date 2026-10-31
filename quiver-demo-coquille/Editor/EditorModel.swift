@@ -60,8 +60,12 @@ final class EditorModel {
     /// editor's text, and each one stops the other so two voices never overlap.
     let phraseNarrator: any Narrator
     let stats: StatsStore
+    /// Where the text is kept between launches, or `nil` to keep it only in memory.
+    let draftURL: URL?
 
     @ObservationIgnored private var linter: Linter?
+    /// The text last written to `draftURL`, so an unchanged draft isn't written again.
+    @ObservationIgnored private var savedDraft: String?
     @ObservationIgnored private var translator: (any Translator)?
     /// The exact text the current `issues` describe.
     @ObservationIgnored private var lintedText = ""
@@ -77,15 +81,18 @@ final class EditorModel {
     static let lintDelay = Duration.milliseconds(400)
 
     /// Creates a model. Without a `linter`, the French pack loads in `load()`; tests
-    /// pass their own linter, narrator and in-memory stats instead.
+    /// pass their own linter, narrator and in-memory stats instead. The app passes a
+    /// `draftURL` to keep the text between launches; tests leave it `nil`.
     init(
         stats: StatsStore = StatsStore(),
+        draftURL: URL? = nil,
         narrator: any Narrator = SpeechNarrator(language: "fr-FR"),
         phraseNarrator: any Narrator = SpeechNarrator(language: "fr-FR"),
         linter: Linter? = nil,
         translator: (any Translator)? = nil
     ) {
         self.stats = stats
+        self.draftURL = draftURL
         self.narrator = narrator
         self.phraseNarrator = phraseNarrator
         self.linter = linter
@@ -142,6 +149,7 @@ final class EditorModel {
     /// Loads the French pack off the main actor, then wires up the linter and translator.
     func load() async {
         guard linter == nil else { return }
+        restoreDraft()
         do {
             let pack = try await Task.detached { try LanguagePack.french() }.value
             linter = Linter(
@@ -214,6 +222,7 @@ final class EditorModel {
             }
             stats.record(text: plain, issues: visibleIssues, editingAt: caretOffset())
         }
+        saveDraft(plain)
         applyStyling()
         refreshEnglish()
     }
@@ -353,6 +362,24 @@ final class EditorModel {
         jumpToFirstError()
     }
 
+    /// Replaces the text with an opened file's, from a clean slate like the example.
+    ///
+    /// The old text's errors are dropped before the lint, so none of them count as
+    /// fixed by the learner just because the new text happens to hold their fix.
+    func open(_ contents: String) {
+        narrator.stop()
+        lintTask?.cancel()
+        translationTask?.cancel()
+        ignoredKeys = []
+        issues = []
+        selectedIssueID = nil
+        english = .idle
+        isRehearsal = false
+        text = AttributedString(contents)
+        selection = AttributedTextSelection()
+        lintNow()
+    }
+
     /// Empties the editor.
     func clear() {
         narrator.stop()
@@ -489,6 +516,35 @@ final class EditorModel {
         case .error: .red.opacity(0.14)
         case .warning: .orange.opacity(0.16)
         case .suggestion: .gray.opacity(0.16)
+        }
+    }
+
+    // MARK: - Draft
+
+    /// The draft file inside the app's Application Support folder.
+    static func defaultDraftURL() -> URL? {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appending(path: "Draft.txt")
+    }
+
+    /// Puts back the text from the last session, into an empty editor only.
+    /// A restored example is still the example, so its mistakes still aren't the learner's.
+    private func restoreDraft() {
+        guard let draftURL, !hasText,
+              let data = try? Data(contentsOf: draftURL),
+              let draft = String(data: data, encoding: .utf8), !draft.isEmpty else { return }
+        savedDraft = draft
+        observedText = draft
+        isRehearsal = draft.contains(Self.exampleOpening)
+        text = AttributedString(draft)
+    }
+
+    /// Writes the text to the draft file. A failed write loses only this update, which the next lint retries.
+    private func saveDraft(_ plain: String) {
+        guard let draftURL, plain != savedDraft else { return }
+        try? FileManager.default.createDirectory(at: draftURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        if (try? Data(plain.utf8).write(to: draftURL, options: .atomic)) != nil {
+            savedDraft = plain
         }
     }
 
