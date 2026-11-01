@@ -13,17 +13,16 @@
 
 import SwiftUI
 
-/// The status chip, the file menu, the phrasebook and progress buttons, the Clear button, and the theme toggle.
+/// The status chip, the file menu with the journal, New beside the phrasebook, the progress button, and the theme toggle.
 struct TopBar: View {
 
     let model: EditorModel
     @Binding var showsIssueList: Bool
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
-    let newEntry: () -> Void
-    let openFile: () -> Void
-    let saveFile: () -> Void
-    let saveFileAs: () -> Void
+    @Binding var showsEntries: Bool
+    /// Hands a File menu command to the editor, which asks about unsaved changes first.
+    let perform: (FileRequest) -> Void
 
     var body: some View {
         HStack(spacing: 4) {
@@ -38,11 +37,15 @@ struct TopBar: View {
             Spacer()
 
             Menu {
-                Button("New Entry", systemImage: "square.and.pencil", action: newEntry)
-                Button("Open…", systemImage: "folder", action: openFile)
-                Button("Save", systemImage: "square.and.arrow.down", action: saveFile)
-                    .disabled(!model.hasText)
-                Button("Save As…", systemImage: "square.and.arrow.down.on.square", action: saveFileAs)
+                Button("Journal", systemImage: "list.bullet") { showsEntries = true }
+                Divider()
+                Button("Save", systemImage: "square.and.arrow.down") { perform(.save) }
+                    .disabled(!model.canSave)
+                Button("Save as New Entry…", systemImage: "plus.square.on.square") { perform(.saveAsNewEntry) }
+                    .disabled(!model.canSave)
+                Divider()
+                Button("Import…", systemImage: "folder") { perform(.importFile) }
+                Button("Export a Copy…", systemImage: "square.and.arrow.up") { perform(.export) }
                     .disabled(!model.hasText)
                 ShareLink(item: model.plainText)
                     .disabled(!model.hasText)
@@ -54,6 +57,11 @@ struct TopBar: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
+
+            Button("New") { perform(.new) }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Start a blank page")
+                .disabled(!model.hasText && model.fileURL == nil)
 
             Button("Phrasebook", systemImage: "book") {
                 showsPhrasebook.toggle()
@@ -75,12 +83,6 @@ struct TopBar: View {
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
             .accessibilityLabel("Your progress: \(model.stats.stats.streak(asOf: .now)) day streak")
-
-            Button("Clear", action: model.clear)
-                .buttonStyle(.bordered)
-                .keyboardShortcut("k", modifiers: .command)
-                .accessibilityLabel("Clear text")
-                .disabled(!model.hasText)
 
             ThemeToggle()
                 .buttonStyle(.plain)

@@ -15,24 +15,40 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// The whole app: one French text editor with live linting, a play button, and an
-/// English toggle. On wide windows the English sits beside the French.
+/// English toggle, beside the journal's saved entries. On wide windows the English
+/// sits beside the French.
+///
+/// Saving is always the learner's choice, as in the Notebook and Xcode: writing is
+/// kept between launches but never becomes an entry unless saved, and leaving work
+/// that isn't saved asks Save, Don't Save or Cancel. Don't Save lets it go.
 struct EditorScreen: View {
 
+    let journal: Journal
     @State private var model: EditorModel
     @State private var showsIssueList = false
     @State private var showsImporter = false
-    @State private var showsExporter = false
-    /// New Entry or Open… waiting on the learner's answer before replacing text in the editor.
-    @State private var pendingReplace: FileRequest?
+    /// The text and name of a copy being exported, while the save panel is up.
+    @State private var exporting: ExportItem?
+    /// The entries list as a sheet, on iPhone and iPad.
+    @State private var showsEntries = false
     @State private var fileProblem: FileProblem?
     /// A command chosen in the File menu, handled and cleared by this window.
     @State private var fileRequest: FileRequest?
-    /// The story's title from the on-device model, or `nil` to show the app's name.
-    /// Only the Mac window titles stories, so on iPhone and iPad it stays `nil`.
+    /// Where the learner asked to go while there's work that isn't saved, awaiting Save or Don't Save.
+    @State private var pendingMove: Move?
+    /// The title sheet for saving new writing, and what to do once it's saved.
+    @State private var naming: Naming?
+    /// The entry waiting on the learner's confirmation before it's deleted.
+    @State private var pendingDelete: URL?
+    /// The entry whose name is being edited in the list.
+    @State private var renaming: URL?
+    /// The story's title from the on-device model, or `nil` until there is one. It
+    /// names unsaved writing in the window and fills in the title when it's saved.
     @State private var storyTitle: String?
     @State private var showsProgress = false
     @State private var showsPhrasebook = false
     @FocusState private var editorIsFocused: Bool
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Appearance.storageKey) private var appearance: String?
     /// The Show suggestions setting, kept between launches and mirrored into the model.
     @AppStorage("showsSuggestions") private var showsSuggestions = true
@@ -40,50 +56,111 @@ struct EditorScreen: View {
     #if os(macOS)
     /// The English pane's share of the window, kept between launches.
     @AppStorage("englishPaneFraction") private var englishFraction = SplitPanes<EmptyView, EmptyView>.defaultFraction
+    /// Whether the journal sidebar is showing.
+    @State private var columns = NavigationSplitViewVisibility.all
     #endif
 
     /// Window width at which English moves from below the French to beside it.
     private static let splitWidth = 700.0
 
-    /// Creates the editor around the app's one stats store, which the Corrections window reads too.
-    init(stats: StatsStore) {
-        _model = State(initialValue: EditorModel(stats: stats, draftURL: EditorModel.defaultDraftURL()))
+    /// Creates the editor around the app's one stats store, which the Corrections window
+    /// reads too, the journal of saved entries, and the workspace that keeps unsaved work.
+    init(stats: StatsStore, journal: Journal, workspace: Workspace?) {
+        self.journal = journal
+        _model = State(initialValue: EditorModel(stats: stats, journal: journal, workspace: workspace))
     }
 
     var body: some View {
-        screen
-            .fileImporter(isPresented: $showsImporter, allowedContentTypes: [.plainText], onCompletion: openPicked)
+        root
+            .fileImporter(isPresented: $showsImporter, allowedContentTypes: [.plainText], onCompletion: imported)
             .fileExporter(
-                isPresented: $showsExporter,
-                document: FrenchTextFile(text: model.plainText),
+                isPresented: showsExporter,
+                document: FrenchTextFile(text: exporting?.text ?? ""),
                 contentType: .plainText,
-                defaultFilename: FrenchTextFile.suggestedFilename(for: storyTitle),
-                onCompletion: savedPicked
+                defaultFilename: exporting?.name,
+                onCompletion: exported
             )
-            .confirmationDialog("Replace the text in the editor?", isPresented: confirmsReplace, titleVisibility: .visible, presenting: pendingReplace) { request in
-                Button(request == .newEntry ? "New Entry" : "Open…") { replace(with: request) }
+            .confirmationDialog(saveQuestion, isPresented: asksToSave, titleVisibility: .visible, presenting: pendingMove) { move in
+                Button("Save") { save(then: move) }
+                Button("Don't Save", role: .destructive) { carryOut(move) }
                 Button("Cancel", role: .cancel) {}
             } message: { _ in
-                Text("Save first to keep it.")
+                Text("Your changes will be lost if you don't save them.")
+            }
+            .alert(deleteQuestion, isPresented: confirmsDelete, presenting: pendingDelete) { url in
+                Button("Delete", role: .destructive) { delete(url) }
+                Button("Cancel", role: .cancel) {}
+            } message: { url in
+                Text(url == model.fileURL
+                     ? "Its text stays in the editor, unsaved, so you can save it again. This can't be undone."
+                     : "It will be removed from your journal. This can't be undone.")
             }
             .alert(fileProblem?.title ?? "", isPresented: showsFileProblem, presenting: fileProblem) { _ in
                 Button("OK", role: .cancel) {}
             } message: { problem in
                 Text(problem.message)
             }
+            .sheet(item: $naming) { naming in
+                SaveEntrySheet(
+                    suggestedTitle: storyTitle ?? "",
+                    proposedName: model.proposedName(title:),
+                    isNewEntry: naming.asNewEntry
+                ) { title in
+                    finishSaving(naming, title: title)
+                }
+                .tint(.brand)
+            }
             // The File menu's commands ask this window through `fileRequest`.
             .focusedSceneValue(\.fileRequest, $fileRequest)
-            .focusedSceneValue(\.canSaveFile, model.hasText)
+            .focusedSceneValue(\.fileMenuState, FileMenuState(
+                canSave: model.canSave,
+                canExport: model.hasText,
+                hasOpenEntry: model.fileURL != nil
+            ))
             .onChange(of: fileRequest) {
-                switch fileRequest {
-                case .newEntry: newEntry()
-                case .open: openFile()
-                case .save: saveFile()
-                case .saveAs: saveFileAs()
-                case nil: return
-                }
+                if let fileRequest { handle(fileRequest) }
                 fileRequest = nil
             }
+            // A title the model gave other writing doesn't name this writing.
+            .onChange(of: model.document) { storyTitle = nil }
+            // Writing that isn't saved is kept before the app can be quit.
+            .onChange(of: scenePhase) {
+                if scenePhase != .active { model.saveNow() }
+                if scenePhase == .active { journal.refresh() }
+            }
+    }
+
+    /// On the Mac, the journal sidebar beside the editor; elsewhere the editor alone,
+    /// with the journal in a sheet.
+    @ViewBuilder
+    private var root: some View {
+        #if os(macOS)
+        NavigationSplitView(columnVisibility: $columns) {
+            entriesList
+                .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 360)
+                .tint(.brand)
+        } detail: {
+            screen
+        }
+        #else
+        screen
+            .sheet(isPresented: $showsEntries) {
+                NavigationStack {
+                    entriesList
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showsEntries = false }
+                            }
+                        }
+                }
+                .tint(.brand)
+            }
+        #endif
+    }
+
+    /// The saved entries, whose every action goes through this window.
+    private var entriesList: some View {
+        EntriesList(journal: journal, model: model, renaming: $renaming, perform: perform)
     }
 
     /// The layout with its sheets, the phrasebook panel, and the model's setup.
@@ -117,93 +194,257 @@ struct EditorScreen: View {
             }
     }
 
-    // MARK: - New Entry, Open and Save
+    // MARK: - Saving and moving between writing
 
-    /// A failed Open or Save, shown as an alert.
+    /// A failed file action, shown as an alert.
     private struct FileProblem {
         let title: String
         let message: String
     }
 
-    /// Starts a new entry, first asking whether to replace text that's in the editor.
-    private func newEntry() {
-        if model.hasText {
-            pendingReplace = .newEntry
-        } else {
-            replace(with: .newEntry)
-        }
+    /// A copy to export: its text and suggested name.
+    private struct ExportItem {
+        let text: String
+        let name: String
     }
 
-    /// Starts Open…, first asking whether to replace text that's in the editor.
-    private func openFile() {
-        if model.hasText {
-            pendingReplace = .open
-        } else {
-            replace(with: .open)
-        }
+    /// Other writing the learner asked for, which replaces what's open.
+    private enum Move: Equatable {
+        case open(URL)
+        case new
+        case todaysEntry
+        case importFile
+        case example
     }
 
-    /// Carries out New Entry or Open… once the editor's text may be replaced.
-    private func replace(with request: FileRequest) {
+    /// A save that needs a title first, and where to go once it's done.
+    private struct Naming: Identifiable {
+        let id = UUID()
+        /// Whether this is Save as New Entry, which keeps any open entry as it was.
+        let asNewEntry: Bool
+        let then: Move?
+    }
+
+    /// Carries out a File menu command.
+    private func handle(_ request: FileRequest) {
         switch request {
-        case .newEntry:
-            // The last story's title doesn't name a new one, even as a suggested file name.
-            storyTitle = nil
-            model.newEntry()
-            editorIsFocused = true
-        case .open:
-            showsImporter = true
-        case .save, .saveAs:
-            return
+        case .new: move(.new)
+        case .importFile: move(.importFile)
+        case .save: save(then: nil)
+        case .saveAsNewEntry: naming = Naming(asNewEntry: true, then: nil)
+        case .renameEntry: startRenaming()
+        case .duplicateEntry: if let url = model.fileURL { duplicate(url) }
+        case .deleteEntry: pendingDelete = model.fileURL
+        case .export: export(model.plainText, named: exportName)
         }
     }
 
-    /// Writes back to the file the text came from or last went to, or starts Save As…
-    /// for new text. A file that can no longer be written also falls back to Save As….
-    private func saveFile() {
-        guard let url = model.fileURL else {
-            showsExporter = true
-            return
-        }
-        do {
-            try FrenchTextFile.write(model.plainText, to: url)
-        } catch {
-            showsExporter = true
-        }
-    }
-
-    /// Starts Save As….
-    private func saveFileAs() {
-        showsExporter = true
-    }
-
-    /// Loads the file picked in Open…, or reports why it couldn't be read.
-    private func openPicked(_ result: Result<URL, any Error>) {
-        do {
-            let url = try result.get()
-            model.open(try FrenchTextFile.text(at: url), from: url)
-            storyTitle = nil
-        } catch {
-            fileProblem = FileProblem(title: "The file couldn't be opened", message: error.localizedDescription)
-        }
-    }
-
-    /// Remembers where Save As… wrote, or reports why it failed.
-    private func savedPicked(_ result: Result<URL, any Error>) {
-        switch result {
-        case .success(let url):
-            model.didSave(to: url)
-        case .failure(let error):
-            // Canceling the save panel isn't a problem to report.
-            if (error as? CocoaError)?.code != .userCancelled {
-                fileProblem = FileProblem(title: "The file couldn't be saved", message: error.localizedDescription)
+    /// Carries out something asked for in the journal list.
+    private func perform(_ action: EntryAction) {
+        switch action {
+        case .open(let url): move(.open(url))
+        case .rename(let url, let title):
+            attempt("The entry couldn't be renamed") { try model.renameEntry(url, to: title) }
+        case .duplicate(let url): duplicate(url)
+        case .delete(let url): pendingDelete = url
+        case .export(let url):
+            attempt("The entry couldn't be read") {
+                export(try FrenchTextFile.text(at: url), named: url.deletingPathExtension().lastPathComponent)
             }
         }
     }
 
-    /// Whether the replace question is showing; dismissing it clears the pending command.
-    private var confirmsReplace: Binding<Bool> {
-        Binding(get: { pendingReplace != nil }, set: { if !$0 { pendingReplace = nil } })
+    /// Goes to other writing, first asking Save or Don't Save when there's work that isn't saved.
+    private func move(_ move: Move) {
+        if case .open(let url) = move, url == model.fileURL { return }
+        if model.needsSaveDecision {
+            pendingMove = move
+        } else {
+            carryOut(move)
+        }
+    }
+
+    /// Goes to other writing once the work that wasn't saved is saved or let go.
+    private func carryOut(_ move: Move) {
+        switch move {
+        case .open(let url):
+            attempt("The entry couldn't be opened") { try model.openEntry(url) }
+        case .new:
+            model.startNew()
+            showsEntries = false
+            editorIsFocused = true
+        case .todaysEntry:
+            model.newEntry()
+            editorIsFocused = true
+        case .importFile:
+            showsImporter = true
+        case .example:
+            model.loadExample()
+        }
+        if case .open = move { showsEntries = false }
+    }
+
+    /// Saves the writing, asking for a title first when it isn't an entry yet, then goes on to `move`.
+    private func save(then move: Move?) {
+        guard model.canSave else {
+            if let move { carryOut(move) }
+            return
+        }
+        if model.saveNeedsTitle {
+            naming = Naming(asNewEntry: false, then: move)
+            return
+        }
+        attempt("The entry couldn't be saved") {
+            try model.save()
+            if let move { carryOut(move) }
+        }
+    }
+
+    /// Saves with the title the learner chose in the sheet, then goes on.
+    private func finishSaving(_ naming: Naming, title: String) {
+        self.naming = nil
+        attempt("The entry couldn't be saved") {
+            if naming.asNewEntry {
+                try model.saveAsNewEntry(title: title)
+            } else {
+                try model.save(title: title)
+            }
+            if let move = naming.then { carryOut(move) }
+        }
+    }
+
+    /// Edits the open entry's name in the list, showing the list if it's hidden.
+    private func startRenaming() {
+        guard let url = model.fileURL else { return }
+        #if os(macOS)
+        columns = .all
+        #else
+        showsEntries = true
+        #endif
+        renaming = url
+    }
+
+    /// Copies an entry and puts the copy's name up for editing.
+    private func duplicate(_ url: URL) {
+        attempt("The entry couldn't be duplicated") {
+            if let copy = try model.duplicateEntry(url) { renaming = copy }
+        }
+    }
+
+    /// Deletes an entry the learner confirmed.
+    private func delete(_ url: URL) {
+        attempt("The entry couldn't be deleted") { try model.deleteEntry(url) }
+    }
+
+    /// Starts Export a Copy… for `text`.
+    private func export(_ text: String, named name: String) {
+        exporting = ExportItem(text: text, name: name)
+    }
+
+    /// The open writing's name for an exported copy: the entry's own, or the story's title.
+    private var exportName: String {
+        model.fileURL?.deletingPathExtension().lastPathComponent ?? FrenchTextFile.suggestedFilename(for: storyTitle)
+    }
+
+    /// Copies the file picked in Import… into the journal as a new entry and opens it,
+    /// or reports why it couldn't be read.
+    private func imported(_ result: Result<URL, any Error>) {
+        attempt("The file couldn't be imported") {
+            let url = try result.get()
+            let contents = try FrenchTextFile.text(at: url)
+            let entry = try journal.importEntry(text: contents, originalName: url.deletingPathExtension().lastPathComponent)
+            try model.openEntry(entry)
+        }
+    }
+
+    /// Reports an export that failed.
+    private func exported(_ result: Result<URL, any Error>) {
+        exporting = nil
+        // Canceling the save panel isn't a problem to report.
+        if case .failure(let error) = result, (error as? CocoaError)?.code != .userCancelled {
+            fileProblem = FileProblem(title: "The copy couldn't be saved", message: error.localizedDescription)
+        }
+    }
+
+    /// Runs a file action, showing an alert titled `title` if it fails.
+    private func attempt(_ title: String, _ action: () throws -> Void) {
+        do {
+            try action()
+        } catch {
+            fileProblem = FileProblem(title: title, message: error.localizedDescription)
+        }
+    }
+
+    /// The open writing's name, as the window and the save question show it.
+    private var documentName: String {
+        switch model.document {
+        case .unsaved: storyTitle ?? "Untitled"
+        case .entry(let url): Journal.title(of: url) ?? url.deletingPathExtension().lastPathComponent
+        }
+    }
+
+    /// The window's second line: whether the writing is saved, and where it lives.
+    private var documentStatus: String {
+        switch model.document {
+        case .unsaved: model.needsSaveDecision ? "Not saved" : ""
+        case .entry: model.isEdited ? "Edited" : ""
+        }
+    }
+
+    /// "Do you want to save the changes to “Une journée au marché”?"
+    private var saveQuestion: String {
+        "Do you want to save the changes to “\(documentName)”?"
+    }
+
+    /// "Delete “Une journée au marché”?"
+    private var deleteQuestion: String {
+        let name = pendingDelete.map { Journal.title(of: $0) ?? $0.deletingPathExtension().lastPathComponent } ?? ""
+        return "Delete “\(name)”?"
+    }
+
+    /// The Save, Save as New Entry and Export items, for the Français header's menus.
+    @ViewBuilder
+    private var saveMenuItems: some View {
+        Button("Save", systemImage: "square.and.arrow.down") { save(then: nil) }
+            .disabled(!model.canSave)
+        Button("Save as New Entry…", systemImage: "plus.square.on.square") { naming = Naming(asNewEntry: true, then: nil) }
+            .disabled(!model.canSave)
+        Divider()
+        Button("Export a Copy…", systemImage: "square.and.arrow.up") { export(model.plainText, named: exportName) }
+            .disabled(!model.hasText)
+    }
+
+    #if os(macOS)
+    /// The French text's right-click menu: Cut, Copy and Paste, then Save.
+    ///
+    /// The edit commands go to the text view itself, as the Edit menu's do, so they keep
+    /// undo and paste only Coquille's own styling.
+    @ViewBuilder
+    private var editorMenuItems: some View {
+        Button("Cut") { NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil) }
+            .disabled(!model.hasSelection)
+        Button("Copy") { NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil) }
+            .disabled(!model.hasSelection)
+        Button("Paste") { NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil) }
+        Divider()
+        Button("Save") { save(then: nil) }
+            .disabled(!model.canSave)
+    }
+    #endif
+
+    /// Whether the save question is showing; dismissing it clears the pending move.
+    private var asksToSave: Binding<Bool> {
+        Binding(get: { pendingMove != nil }, set: { if !$0 { pendingMove = nil } })
+    }
+
+    /// Whether the delete question is showing; dismissing it clears the pending entry.
+    private var confirmsDelete: Binding<Bool> {
+        Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })
+    }
+
+    /// Whether the save panel for a copy is showing.
+    private var showsExporter: Binding<Bool> {
+        Binding(get: { exporting != nil }, set: { if !$0 { exporting = nil } })
     }
 
     /// Whether the file alert is showing; dismissing it clears the problem.
@@ -213,8 +454,8 @@ struct EditorScreen: View {
 
     #if os(macOS)
     /// The Mac window: French and English side by side with a draggable divider, play
-    /// and stop grouped at the toolbar's leading edge as in Xcode, the streak and the
-    /// Clear and theme pair at its trailing edge, and status and English in the footer.
+    /// and stop grouped at the toolbar's leading edge as in Xcode, New beside the phrasebook,
+    /// the streak, and the theme toggle at its trailing edge, and status and English in the footer.
     /// Once the French is correct, the title names the story.
     private var layout: some View {
         VStack(spacing: 0) {
@@ -226,7 +467,8 @@ struct EditorScreen: View {
 
             MacBottomBar(model: model, showsIssueList: $showsIssueList)
         }
-        .navigationTitle(storyTitle ?? "Coquille")
+        .navigationTitle(documentName)
+        .navigationSubtitle(documentStatus)
         .task(id: titleSource) { await retitle() }
         .toolbar {
             ToolbarItemGroup(placement: .navigation) {
@@ -234,7 +476,11 @@ struct EditorScreen: View {
                 MacStopButton(model: model)
             }
 
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button("New") { move(.new) }
+                    .help("Start a blank page (⌘N)")
+                    .disabled(!model.hasText && model.fileURL == nil)
+
                 Button("Phrasebook", systemImage: "book") {
                     showsPhrasebook.toggle()
                 }
@@ -253,12 +499,7 @@ struct EditorScreen: View {
 
             ToolbarSpacer(.fixed, placement: .primaryAction)
 
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button("Clear", action: model.clear)
-                    .keyboardShortcut("k", modifiers: .command)
-                    .help("Clear text (⌘K)")
-                    .disabled(!model.hasText)
-
+            ToolbarItem(placement: .primaryAction) {
                 ThemeToggle()
             }
         }
@@ -284,6 +525,22 @@ struct EditorScreen: View {
     private var frenchPane: some View {
         VStack(spacing: 0) {
             PaneHeader(title: "FRANÇAIS", showsDivider: true)
+                .overlay(alignment: .trailing) {
+                    Menu {
+                        saveMenuItems
+                    } label: {
+                        Text(model.isEdited || model.fileURL == nil ? "Save" : "Saved")
+                    } primaryAction: {
+                        save(then: nil)
+                    }
+                    .menuStyle(.button)
+                    .buttonStyle(.borderless)
+                    .fixedSize()
+                    .disabled(!model.canSave)
+                    .help("Save to your journal (⌘S)")
+                    .padding(.trailing, 16)
+                }
+                .contextMenu { saveMenuItems }
             editor
         }
         .overlay(alignment: .bottom) {
@@ -303,7 +560,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, newEntry: newEntry, openFile: openFile, saveFile: saveFile, saveFileAs: saveFileAs)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, perform: handle)
 
                 if isWide {
                     HStack(spacing: 0) {
@@ -363,8 +620,16 @@ struct EditorScreen: View {
             .font(.plexMono(Typography.frenchSize, relativeTo: .title3))
             .lineSpacing(Typography.frenchLineSpacing)
             .scrollContentBackground(.hidden)
-            // The learner's own mistakes are the point: never let the keyboard fix them.
+            // The learner's own mistakes are the point: never let the keyboard fix them,
+            // nor Writing Tools' Proofread or Rewrite, whose fixes would never be the learner's.
             .autocorrectionDisabled()
+            .writingToolsBehavior(.disabled)
+            #if os(macOS)
+            // The right-click menu holds only Cut, Copy, Paste and Save. iPhone and iPad
+            // keep the system's edit menu, since a context menu there would take over the
+            // long press that selects text.
+            .contextMenu { editorMenuItems }
+            #endif
             // Pasted text keeps only Coquille's own styling, never the source's fonts or colors.
             .attributedTextFormattingDefinition(EditorAttributes.self)
             .focused($editorIsFocused)
@@ -378,8 +643,11 @@ struct EditorScreen: View {
                             .foregroundStyle(.tertiary)
                             .allowsHitTesting(false)
                         if model.loadFailure == nil {
-                            Button("Try an example", systemImage: "text.badge.checkmark", action: model.loadExample)
-                                .buttonStyle(.bordered)
+                            HStack(spacing: 12) {
+                                Button("Start today's entry", systemImage: "calendar") { move(.todaysEntry) }
+                                Button("Try an example", systemImage: "text.badge.checkmark") { move(.example) }
+                            }
+                            .buttonStyle(.bordered)
                         }
                     }
                     .padding(.horizontal, 25)
@@ -418,5 +686,5 @@ struct PaneHeader: View {
 }
 
 #Preview {
-    EditorScreen(stats: StatsStore(fileURL: nil))
+    EditorScreen(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")), workspace: nil)
 }

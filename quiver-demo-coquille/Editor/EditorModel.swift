@@ -60,15 +60,23 @@ final class EditorModel {
     /// editor's text, and each one stops the other so two voices never overlap.
     let phraseNarrator: any Narrator
     let stats: StatsStore
-    /// Where the text is kept between launches, or `nil` to keep it only in memory.
-    let draftURL: URL?
-    /// The file the text was opened from or last saved to, which Save writes back to.
-    /// New text, such as a new entry, the example, or an empty editor, has none.
-    private(set) var fileURL: URL?
+    /// The saved entries, or `nil` in tests that don't need them.
+    let journal: Journal?
+    /// Where the writing is kept between launches, or `nil` to keep it only in memory.
+    let workspace: Workspace?
+    /// What the editor has open: unsaved writing, or a saved entry.
+    private(set) var document = EditorDocument.unsaved
+    /// The text the open entry was last saved with, or what unsaved writing started
+    /// from: a new entry's opening lines, or nothing.
+    private(set) var savedText = ""
 
     @ObservationIgnored private var linter: Linter?
-    /// The text last written to `draftURL`, so an unchanged draft isn't written again.
-    @ObservationIgnored private var savedDraft: String?
+    /// Whether the French pack has loaded, so the linter can check text.
+    private(set) var isReady = false
+    /// The text last kept in `workspace`, so unchanged text isn't written again.
+    @ObservationIgnored private var bufferedText: String?
+    /// The day a new entry's file is named for, set by New Entry.
+    @ObservationIgnored private var entryDate = Date.now
     @ObservationIgnored private var translator: (any Translator)?
     /// The exact text the current `issues` describe.
     @ObservationIgnored private var lintedText = ""
@@ -85,17 +93,19 @@ final class EditorModel {
 
     /// Creates a model. Without a `linter`, the French pack loads in `load()`; tests
     /// pass their own linter, narrator and in-memory stats instead. The app passes a
-    /// `draftURL` to keep the text between launches; tests leave it `nil`.
+    /// `journal` for saved entries and a `workspace` to keep unsaved work between launches.
     init(
         stats: StatsStore = StatsStore(),
-        draftURL: URL? = nil,
+        journal: Journal? = nil,
+        workspace: Workspace? = nil,
         narrator: any Narrator = SpeechNarrator(language: "fr-FR"),
         phraseNarrator: any Narrator = SpeechNarrator(language: "fr-FR"),
         linter: Linter? = nil,
         translator: (any Translator)? = nil
     ) {
         self.stats = stats
-        self.draftURL = draftURL
+        self.journal = journal
+        self.workspace = workspace
         self.narrator = narrator
         self.phraseNarrator = phraseNarrator
         self.linter = linter
@@ -103,6 +113,40 @@ final class EditorModel {
     }
 
     // MARK: - Derived state
+
+    /// The open entry's file, or `nil` for unsaved writing.
+    var fileURL: URL? {
+        if case .entry(let url) = document { url } else { nil }
+    }
+
+    /// Whether the writing has changed since it was last saved, or for unsaved writing,
+    /// since it started: a new entry's opening lines alone aren't a change.
+    var isEdited: Bool {
+        plainText != savedText
+    }
+
+    /// Whether moving to other writing would lose work, so the learner should first
+    /// choose Save or Don't Save, as in the Notebook. The example isn't the learner's
+    /// work, and empty unsaved writing has nothing to lose.
+    var needsSaveDecision: Bool {
+        canSave && isEdited && (document != .unsaved || hasText)
+    }
+
+    /// Whether Save can keep this writing: anything but the example, once there's French.
+    var canSave: Bool {
+        !isRehearsal && (hasText || fileURL != nil)
+    }
+
+    /// Whether any text is selected, for Cut and Copy.
+    var hasSelection: Bool {
+        guard case .ranges(let ranges) = selection.indices(in: text) else { return false }
+        return ranges.ranges.contains { !$0.isEmpty }
+    }
+
+    /// Whether Save first asks for a title, as it does for writing not yet in the journal.
+    var saveNeedsTitle: Bool {
+        fileURL == nil
+    }
 
     /// The learner's text without styling.
     var plainText: String {
@@ -152,7 +196,7 @@ final class EditorModel {
     /// Loads the French pack off the main actor, then wires up the linter and translator.
     func load() async {
         guard linter == nil else { return }
-        restoreDraft()
+        restore()
         do {
             let pack = try await Task.detached { try LanguagePack.french() }.value
             linter = Linter(
@@ -162,6 +206,7 @@ final class EditorModel {
                 explanations: pack.explanations
             )
             translator = AppleTranslator(source: pack.language, target: Locale.Language(identifier: "en"))
+            isReady = true
             phrases = pack.phrases
             lintNow()
         } catch {
@@ -225,7 +270,7 @@ final class EditorModel {
             }
             stats.record(text: plain, issues: visibleIssues, editingAt: caretOffset())
         }
-        saveDraft(plain)
+        persist(plain)
         applyStyling()
         refreshEnglish()
     }
@@ -350,57 +395,133 @@ final class EditorModel {
     /// While it's in the text, the editor is still holding the example.
     static let exampleOpening = "Hier, je suis allé au marché avec ma sœur."
 
-    /// Starts the sample paragraph from a clean slate, so a rehearsal never changes
-    /// the next run: ignored issues come back, and playback and English reset.
+    /// Starts the sample paragraph as unsaved writing from a clean slate, so a rehearsal
+    /// never changes the next run: ignored issues come back, and playback and English reset.
     func loadExample() {
-        narrator.stop()
-        lintTask?.cancel()
-        translationTask?.cancel()
-        ignoredKeys = []
-        selectedIssueID = nil
-        english = .idle
-        fileURL = nil
-        text = AttributedString(Self.example)
-        selection = AttributedTextSelection()
+        show(.unsaved, text: Self.example, savedText: "")
         isRehearsal = true
         lintNow()
         jumpToFirstError()
     }
 
-    /// Replaces the text with an opened file's, from a clean slate like the example.
-    /// Save then writes back to `url`.
+    /// Opens `contents` from a clean slate like the example, as the saved entry in `url`,
+    /// or as unsaved writing without one.
     ///
     /// The old text's errors are dropped before the lint, so none of them count as
     /// fixed by the learner just because the new text happens to hold their fix.
     func open(_ contents: String, from url: URL? = nil) {
-        replaceText(with: contents)
-        fileURL = url
+        show(url.map(EditorDocument.entry) ?? .unsaved, text: contents, savedText: url == nil ? "" : contents)
         lintNow()
     }
 
-    /// Starts a new journal entry with today's date and opening lines for the weather,
-    /// the place, clothes and mood, with the caret after "Il fait".
+    /// Opens a saved entry, or throws when its file can't be read.
+    func openEntry(_ url: URL) throws {
+        open(try FrenchTextFile.text(at: url), from: url)
+    }
+
+    /// Starts today's journal entry, unsaved, with the date and opening lines for the
+    /// weather, the place, clothes and mood, with the caret after "Il fait". Save names
+    /// its file for `date`.
     func newEntry(on date: Date = .now) {
         let entry = Self.entryHeader(for: date)
-        replaceText(with: entry.text)
-        fileURL = nil
+        show(.unsaved, text: entry.text, savedText: entry.text)
+        entryDate = date
         let caret = text.characters.index(text.startIndex, offsetBy: entry.caret)
         selection = AttributedTextSelection(insertionPoint: caret)
         lintNow()
     }
 
-    /// Notes the file a save went to, so the next Save writes there too.
-    func didSave(to url: URL) {
-        fileURL = url
+    /// Starts over with a blank editor, as the Notebook's New does. Whatever wasn't
+    /// saved is let go, since the learner already chose Save or Don't Save.
+    func startNew() {
+        show(.unsaved, text: "", savedText: "")
+        entryDate = .now
+        lintNow()
     }
 
-    /// Empties the editor.
-    func clear() {
-        narrator.stop()
-        fileURL = nil
-        text = AttributedString()
-        selection = AttributedTextSelection()
-        lintNow()
+    // MARK: - Saving
+
+    /// Saves the writing. A saved entry is written back to its file; unsaved writing
+    /// becomes a new entry named for its date and `title`.
+    func save(title: String? = nil) throws {
+        guard let journal, canSave else { return }
+        let plain = plainText
+        if let fileURL {
+            try journal.write(plain, to: fileURL)
+            didSave(plain, as: fileURL)
+        } else {
+            try saveAsNewEntry(title: title)
+        }
+    }
+
+    /// Saves the writing as a new entry named for its date and `title`, leaving any entry
+    /// it came from as it was saved.
+    func saveAsNewEntry(title: String?) throws {
+        guard let journal, canSave else { return }
+        let plain = plainText
+        let url = try journal.createEntry(text: plain, title: title, on: document == .unsaved ? entryDate : .now)
+        didSave(plain, as: url)
+    }
+
+    /// The name Save would give new writing, such as "2026-10-31 Une journée au marché".
+    func proposedName(title: String?) -> String {
+        journal?.proposedName(title: title, on: document == .unsaved ? entryDate : .now) ?? ""
+    }
+
+    /// Notes that the editor now shows the saved entry at `url`.
+    private func didSave(_ plain: String, as url: URL) {
+        document = .entry(url)
+        savedText = plain
+        bufferedText = plain
+        workspace?.clearUnsaved()
+        workspace?.setOpenDocument(document)
+    }
+
+    // MARK: - Managing entries
+
+    /// Gives a saved entry a new title; the open entry follows its file.
+    func renameEntry(_ url: URL, to title: String) throws {
+        guard let journal else { return }
+        let renamed = try journal.rename(url, to: title)
+        if url == fileURL {
+            document = .entry(renamed)
+            workspace?.setOpenDocument(document)
+        }
+    }
+
+    /// Copies a saved entry, leaving the editor as it is.
+    @discardableResult
+    func duplicateEntry(_ url: URL) throws -> URL? {
+        try journal?.duplicate(url)
+    }
+
+    /// Deletes a saved entry. Deleting the open one keeps its text in the editor as
+    /// unsaved writing, so nothing on screen is lost until the learner moves on.
+    func deleteEntry(_ url: URL) throws {
+        try journal?.delete(url)
+        guard url == fileURL else { return }
+        document = .unsaved
+        savedText = ""
+        entryDate = .now
+        workspace?.setOpenDocument(document)
+        bufferedText = nil
+        persist(plainText)
+    }
+
+    /// Keeps any typing the last lint hasn't kept yet, as when the app goes to the background.
+    func saveNow() {
+        persist(plainText)
+    }
+
+    /// Replaces the editor's writing with `contents` as `newDocument`. Whatever wasn't
+    /// saved is let go, since the learner already chose Save or Don't Save.
+    private func show(_ newDocument: EditorDocument, text contents: String, savedText saved: String) {
+        workspace?.clearUnsaved()
+        replaceText(with: contents)
+        document = newDocument
+        savedText = saved
+        bufferedText = nil
+        workspace?.setOpenDocument(newDocument)
     }
 
     /// The French month names, as a journal writes them.
@@ -569,33 +690,50 @@ final class EditorModel {
         }
     }
 
-    // MARK: - Draft
+    // MARK: - Workspace
 
-    /// The draft file inside the app's Application Support folder.
-    static func defaultDraftURL() -> URL? {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appending(path: "Draft.txt")
-    }
-
-    /// Puts back the text from the last session, into an empty editor only.
+    /// Puts back the writing from last time, into an empty editor only: unsaved writing,
+    /// or an entry with any changes it hadn't saved.
     /// A restored example is still the example, so its mistakes still aren't the learner's.
-    private func restoreDraft() {
-        guard let draftURL, !hasText,
-              let data = try? Data(contentsOf: draftURL),
-              let draft = String(data: data, encoding: .utf8), !draft.isEmpty else { return }
-        savedDraft = draft
-        observedText = draft
-        isRehearsal = draft.contains(Self.exampleOpening)
-        text = AttributedString(draft)
+    func restore() {
+        guard let workspace, let journal, !hasText else { return }
+        var restored = workspace.openDocument(in: journal)
+        var saved = ""
+        var contents = workspace.unsavedText() ?? ""
+        if case .entry(let url) = restored {
+            if let file = try? FrenchTextFile.text(at: url) {
+                saved = file
+                contents = workspace.unsavedText() ?? file
+            } else {
+                restored = .unsaved
+            }
+        }
+        document = restored
+        savedText = saved
+        bufferedText = contents
+        observedText = contents
+        isRehearsal = restored == .unsaved && contents.contains(Self.exampleOpening)
+        text = AttributedString(contents)
     }
 
-    /// Writes the text to the draft file. A failed write loses only this update, which the next lint retries.
-    private func saveDraft(_ plain: String) {
-        guard let draftURL, plain != savedDraft else { return }
-        try? FileManager.default.createDirectory(at: draftURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        if (try? Data(plain.utf8).write(to: draftURL, options: .atomic)) != nil {
-            savedDraft = plain
+    /// Keeps the writing between launches, as the Notebook keeps its editor: unsaved
+    /// writing as it stands, or an entry's changes until they're saved or discarded.
+    /// Nothing here touches the journal.
+    private func persist(_ plain: String) {
+        guard plain != bufferedText else { return }
+        bufferedText = plain
+        if document == .unsaved || isEdited {
+            workspace?.writeUnsaved(plain)
+        } else {
+            workspace?.clearUnsaved()
         }
+    }
+
+    /// Whether `text` would still block play: an error the linter finds in it, or `nil`
+    /// before the French pack has loaded. Used to mark entries in the journal list.
+    func hasErrors(in text: String) -> Bool? {
+        guard let linter else { return nil }
+        return linter.lint(text).contains { $0.severity.blocksPlayback }
     }
 
     // MARK: - Helpers

@@ -14,7 +14,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The learner's French as a plain-text file, for Open…, Save and Save As….
+/// The learner's French as a plain-text file, for journal entries, Import… and Export a Copy….
 ///
 /// Only the words are saved, never the issues or their fixes: Coquille lints a file
 /// again when it opens, and any text editor or teacher can read it.
@@ -51,15 +51,6 @@ struct FrenchTextFile: FileDocument {
         return try decode(Data(contentsOf: url))
     }
 
-    /// Writes `text` as UTF-8 over the file at `url`, which Open… or Save As… already granted.
-    static func write(_ text: String, to url: URL) throws {
-        let isAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if isAccessing { url.stopAccessingSecurityScopedResource() }
-        }
-        try Data(text.utf8).write(to: url, options: .atomic)
-    }
-
     /// Decodes UTF-8 first, then Windows Latin, which accepts any bytes.
     private static func decode(_ data: Data) throws -> String {
         if let text = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .windowsCP1252) {
@@ -68,7 +59,7 @@ struct FrenchTextFile: FileDocument {
         throw CocoaError(.fileReadInapplicableStringEncoding)
     }
 
-    /// The suggested name for a new save: the story's title from the window, such as
+    /// The suggested name for an exported copy: the story's title from the window, such as
     /// "Une journée au marché", or the date, such as "2026-10-31", as a journal dates
     /// its entries, until there's a title.
     ///
@@ -83,44 +74,68 @@ struct FrenchTextFile: FileDocument {
 
 /// A File menu command for the focused window to carry out.
 enum FileRequest {
-    case newEntry
-    case open
+    case new
+    case importFile
     case save
-    case saveAs
+    case saveAsNewEntry
+    case renameEntry
+    case duplicateEntry
+    case deleteEntry
+    case export
+}
+
+/// What the focused window's File menu can do right now.
+struct FileMenuState: Equatable {
+    /// Whether there's writing Save can keep.
+    var canSave = false
+    /// Whether there's French to export.
+    var canExport = false
+    /// Whether a saved entry is open, for Rename, Duplicate and Delete.
+    var hasOpenEntry = false
 }
 
 extension FocusedValues {
     /// The focused window's pending File menu command.
     @Entry var fileRequest: Binding<FileRequest?>?
-    /// Whether the focused window has French to save.
-    @Entry var canSaveFile: Bool?
+    /// What the focused window's File menu can do.
+    @Entry var fileMenuState: FileMenuState?
 }
 
-/// New Entry, Open…, Save and Save As… in the File menu on the Mac and iPad.
+/// The File menu on the Mac and iPad, arranged as in Xcode: new, import, save, then the
+/// open entry's Rename, Duplicate and Delete, then export.
 ///
-/// New Entry takes ⌘N from New Window: every window shares one draft, so a second
-/// window would only show the same text.
+/// Nothing is saved to the journal without Save. New takes ⌘N from New Window, since
+/// each window would only show the same journal.
 struct FileCommands: Commands {
 
     @FocusedValue(\.fileRequest) private var fileRequest
-    @FocusedValue(\.canSaveFile) private var canSaveFile
+    @FocusedValue(\.fileMenuState) private var state
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("New Entry") { fileRequest?.wrappedValue = .newEntry }
+            button("New", .new, enabled: fileRequest != nil)
                 .keyboardShortcut("n", modifiers: .command)
-                .disabled(fileRequest == nil)
-            Button("Open…") { fileRequest?.wrappedValue = .open }
+            button("Import…", .importFile, enabled: fileRequest != nil)
                 .keyboardShortcut("o", modifiers: .command)
-                .disabled(fileRequest == nil)
         }
         CommandGroup(replacing: .saveItem) {
-            Button("Save") { fileRequest?.wrappedValue = .save }
+            button("Save", .save, enabled: state?.canSave == true)
                 .keyboardShortcut("s", modifiers: .command)
-                .disabled(canSaveFile != true)
-            Button("Save As…") { fileRequest?.wrappedValue = .saveAs }
+            button("Save as New Entry…", .saveAsNewEntry, enabled: state?.canSave == true)
                 .keyboardShortcut("s", modifiers: [.command, .shift])
-                .disabled(canSaveFile != true)
+            Divider()
+            button("Rename Entry…", .renameEntry, enabled: state?.hasOpenEntry == true)
+            button("Duplicate Entry", .duplicateEntry, enabled: state?.hasOpenEntry == true)
+            button("Delete Entry…", .deleteEntry, enabled: state?.hasOpenEntry == true)
+            Divider()
+            button("Export a Copy…", .export, enabled: state?.canExport == true)
+                .keyboardShortcut("e", modifiers: [.command, .shift])
         }
+    }
+
+    /// A menu item that hands `request` to the focused window.
+    private func button(_ title: String, _ request: FileRequest, enabled: Bool) -> some View {
+        Button(title) { fileRequest?.wrappedValue = request }
+            .disabled(!enabled)
     }
 }

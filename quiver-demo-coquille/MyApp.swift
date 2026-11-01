@@ -5,6 +5,8 @@ import SwiftUI
     /// The learner's stats, shared by the editor and, on the Mac, the Corrections window,
     /// so a fix shows in the list as soon as it's made.
     @State private var stats = StatsStore()
+    /// The learner's entries, one text file each, in the app's Documents folder.
+    @State private var journal = Journal(folderURL: Journal.defaultFolderURL())
 
     /// Registers the bundled fonts before the first view draws.
     init() {
@@ -13,9 +15,12 @@ import SwiftUI
 
     var body: some Scene {
         WindowGroup {
-            ContentView(stats: stats)
+            ContentView(stats: stats, journal: journal)
         }
-        .commands { FileCommands() }
+        .commands {
+            FileCommands()
+            SidebarCommands()
+        }
         #if os(macOS)
         .defaultSize(width: 1100, height: 720)
         #endif

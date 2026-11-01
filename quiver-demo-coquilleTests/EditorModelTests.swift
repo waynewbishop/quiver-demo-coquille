@@ -55,12 +55,12 @@ final class EditorModelTests: XCTestCase {
     private var phraseNarrator = FakeNarrator()
 
     /// Builds a model over the bundled French rules, with in-memory stats.
-    private func makeModel(spellChecker: any SpellChecker = SilentSpellChecker()) throws -> EditorModel {
+    private func makeModel(spellChecker: any SpellChecker = SilentSpellChecker(), journal: Journal? = nil) throws -> EditorModel {
         let pack = try LanguagePack.french()
         let linter = Linter(spellChecker: spellChecker, grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
         narrator = FakeNarrator()
         phraseNarrator = FakeNarrator()
-        return EditorModel(stats: StatsStore(fileURL: nil), narrator: narrator, phraseNarrator: phraseNarrator, linter: linter)
+        return EditorModel(stats: StatsStore(fileURL: nil), journal: journal, narrator: narrator, phraseNarrator: phraseNarrator, linter: linter)
     }
 
     /// Replaces the text as typing would, leaving the debounced lint pending.
@@ -149,7 +149,7 @@ final class EditorModelTests: XCTestCase {
         model.spokenWordDidChange()
         XCTAssertEqual(highlightedWords(in: model), ["crème"])
 
-        model.clear()
+        model.startNew()
         XCTAssertEqual(highlightedWords(in: model), [])
     }
 
@@ -169,7 +169,7 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(narrator.state, .idle)
     }
 
-    // Try an example's mistakes aren't the learner's: fixing them counts nothing until the editor is cleared.
+    // Try an example's mistakes aren't the learner's: fixing them counts nothing until New starts a blank page.
     func testExampleIsNotCounted() throws {
         let model = try makeModel()
         model.loadExample()
@@ -178,7 +178,7 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
         XCTAssertEqual(model.stats.stats.sentencesChecked, 0)
 
-        model.clear()
+        model.startNew()
         type("Nous avons une fromage.", into: model)
         model.lintNow()
         XCTAssertEqual(model.stats.stats.sentencesChecked, 1)
@@ -363,18 +363,20 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(String(header.text.prefix(header.caret)), "Le 31 octobre 2026\n\nIl fait ")
     }
 
-    // Save writes back to an opened file; new text, cleared text and the example have none.
+    // New starts a blank page with no file, and the example has none either.
     func testFileURLFollowsTheText() throws {
         let model = try makeModel()
         let url = URL(fileURLWithPath: "/tmp/entry.txt")
         model.open("Il pleut.", from: url)
         XCTAssertEqual(model.fileURL, url)
-        model.clear()
+        model.startNew()
         XCTAssertNil(model.fileURL)
-        model.didSave(to: url)
-        XCTAssertEqual(model.fileURL, url)
+        XCTAssertFalse(model.hasText)
+        XCTAssertFalse(model.needsSaveDecision)
+        model.open("Il pleut.", from: url)
         model.loadExample()
         XCTAssertNil(model.fileURL)
+        XCTAssertEqual(model.document, .unsaved)
     }
 
     // A typed fix shows in the corrections list with the sentence it was made in.
@@ -387,6 +389,188 @@ final class EditorModelTests: XCTestCase {
         let correction = try XCTUnwrap(model.stats.stats.corrections.last)
         XCTAssertEqual(correction.corrected, "un fromage")
         XCTAssertEqual(correction.sentence, "Nous avons une fromage.")
+    }
+
+    // Cut and Copy need selected text; a bare caret has none.
+    func testHasSelection() throws {
+        let model = try makeModel()
+        type("Il pleut.", into: model)
+        model.selection = AttributedTextSelection(insertionPoint: model.text.startIndex)
+        XCTAssertFalse(model.hasSelection)
+        let end = model.text.characters.index(model.text.startIndex, offsetBy: 2)
+        model.selection = AttributedTextSelection(range: model.text.startIndex..<end)
+        XCTAssertTrue(model.hasSelection)
+    }
+
+    // MARK: - Journal
+
+    /// An empty journal and workspace in their own temporary folder, with their own defaults.
+    private func makeJournal() throws -> (journal: Journal, workspace: Workspace) {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "CoquilleTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: folder) }
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "CoquilleTests-\(UUID().uuidString)"))
+        let workspace = Workspace(folderURL: folder.appending(path: "Workspace"), defaults: defaults)
+        return (Journal(folderURL: folder.appending(path: "Journal")), workspace)
+    }
+
+    /// A model over a journal and workspace.
+    private func makeModel(_ files: (journal: Journal, workspace: Workspace)) throws -> EditorModel {
+        let pack = try LanguagePack.french()
+        let linter = Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        return EditorModel(stats: StatsStore(fileURL: nil), journal: files.journal, workspace: files.workspace, narrator: FakeNarrator(), phraseNarrator: FakeNarrator(), linter: linter)
+    }
+
+    /// Today as "2026-10-31", the way entry names start.
+    private var today: String {
+        LearnerStats.dayKey(for: .now, calendar: .current)
+    }
+
+    // Writing never reaches the journal on its own, and asks to be saved before it's replaced.
+    func testUnsavedWritingIsNeverSavedToTheJournal() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        XCTAssertFalse(model.needsSaveDecision)
+        type("Il pleut.", into: model)
+        model.lintNow()
+        XCTAssertEqual(model.document, .unsaved)
+        XCTAssertTrue(files.journal.entries.isEmpty)
+        XCTAssertTrue(model.needsSaveDecision)
+    }
+
+    // Opening an entry lets unsaved writing go, so the next launch shows the entry.
+    func testOpeningAnEntryLetsUnsavedWritingGo() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        type("Mes notes.", into: model)
+        model.lintNow()
+        let url = try files.journal.createEntry(text: "Il neige.", title: "Hiver")
+        try model.openEntry(url)
+        XCTAssertEqual(model.plainText, "Il neige.")
+
+        let next = try makeModel(files)
+        next.restore()
+        XCTAssertEqual(next.fileURL, url)
+        XCTAssertEqual(next.plainText, "Il neige.")
+        XCTAssertFalse(next.isEdited)
+    }
+
+    // Saving writing makes it an entry, named for today and its title.
+    func testSavingUnsavedWritingMakesAnEntry() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        type("Il pleut.", into: model)
+        model.lintNow()
+        XCTAssertTrue(model.saveNeedsTitle)
+        try model.save(title: "Au marché")
+        XCTAssertEqual(model.fileURL?.lastPathComponent, "\(today) Au marché.txt")
+        XCTAssertFalse(model.isEdited)
+        XCTAssertFalse(model.needsSaveDecision)
+        XCTAssertEqual(files.journal.entries.map(\.text), ["Il pleut."])
+    }
+
+    // Changing a saved entry marks it edited, and Save writes it back to the same file.
+    func testSaveWritesBackToTheEntry() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(url)
+        XCTAssertFalse(model.needsSaveDecision)
+        type("Il pleut beaucoup.", into: model)
+        XCTAssertTrue(model.isEdited)
+        XCTAssertTrue(model.needsSaveDecision)
+        // Typing alone never touches the entry's file.
+        XCTAssertEqual(try FrenchTextFile.text(at: url), "Il pleut.")
+        try model.save()
+        XCTAssertEqual(try FrenchTextFile.text(at: url), "Il pleut beaucoup.")
+        XCTAssertFalse(model.isEdited)
+    }
+
+    // A new entry asks to be saved only once it differs from its opening lines.
+    func testNewEntryNeedsSavingOnceChanged() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        model.newEntry()
+        XCTAssertFalse(model.needsSaveDecision)
+        XCTAssertNil(model.fileURL)
+        type(model.plainText + "Il fait beau.", into: model)
+        XCTAssertTrue(model.needsSaveDecision)
+        try model.save(title: "")
+        XCTAssertEqual(model.fileURL?.lastPathComponent, "\(today).txt")
+    }
+
+    // Save as New Entry leaves the original as it was saved.
+    func testSaveAsNewEntryLeavesTheOriginal() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let original = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(original)
+        type("Il neige.", into: model)
+        try model.saveAsNewEntry(title: "Neige")
+        XCTAssertEqual(try FrenchTextFile.text(at: original), "Il pleut.")
+        XCTAssertEqual(model.fileURL?.lastPathComponent, "\(today) Neige.txt")
+        XCTAssertEqual(files.journal.entries.count, 2)
+    }
+
+    // Renaming the open entry keeps the editor on it, under its new name.
+    func testRenameFollowsTheOpenEntry() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(url)
+        try model.renameEntry(url, to: "Averse")
+        XCTAssertEqual(model.fileURL?.lastPathComponent, "\(today) Averse.txt")
+        XCTAssertEqual(model.plainText, "Il pleut.")
+    }
+
+    // Deleting the open entry keeps its text as a new entry that asks to be saved.
+    func testDeletingTheOpenEntryKeepsItsText() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(url)
+        try model.deleteEntry(url)
+        XCTAssertEqual(model.document, .unsaved)
+        XCTAssertEqual(model.plainText, "Il pleut.")
+        XCTAssertTrue(model.needsSaveDecision)
+        XCTAssertTrue(files.journal.entries.isEmpty)
+    }
+
+    // The example's mistakes aren't the learner's, so it can't be saved.
+    func testExampleCannotBeSaved() throws {
+        let model = try makeModel(try makeJournal())
+        model.loadExample()
+        XCTAssertFalse(model.canSave)
+        XCTAssertFalse(model.needsSaveDecision)
+    }
+
+    // The next launch reopens the entry with the changes it hadn't saved, still marked edited.
+    func testRestoreBringsBackUnsavedChanges() throws {
+        let files = try makeJournal()
+        let first = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try first.openEntry(url)
+        type("Il pleut fort.", into: first)
+        first.lintNow()
+
+        let second = try makeModel(files)
+        second.restore()
+        XCTAssertEqual(second.fileURL, url)
+        XCTAssertEqual(second.plainText, "Il pleut fort.")
+        XCTAssertTrue(second.isEdited)
+    }
+
+    // The next launch brings back writing that wasn't saved.
+    func testRestoreBringsBackUnsavedWriting() throws {
+        let files = try makeJournal()
+        let first = try makeModel(files)
+        type("Mes notes.", into: first)
+        first.lintNow()
+
+        let second = try makeModel(files)
+        second.restore()
+        XCTAssertEqual(second.document, .unsaved)
+        XCTAssertTrue(second.needsSaveDecision)
+        XCTAssertEqual(second.plainText, "Mes notes.")
     }
 }
 
