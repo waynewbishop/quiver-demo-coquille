@@ -1,0 +1,1150 @@
+{
+  "classes": {
+    "avoirNoun": [
+      "faim",
+      "soif",
+      "peur",
+      "sommeil",
+      "raison",
+      "tort"
+    ],
+    "feminineInstrument": [
+      "guitare",
+      "flûte",
+      "batterie",
+      "harpe",
+      "trompette",
+      "clarinette",
+      "contrebasse"
+    ],
+    "masculineInstrument": [
+      "piano",
+      "violon",
+      "saxophone",
+      "violoncelle",
+      "ukulélé",
+      "synthétiseur"
+    ],
+    "month": [
+      "janvier",
+      "février",
+      "mars",
+      "avril",
+      "mai",
+      "juin",
+      "juillet",
+      "août",
+      "septembre",
+      "octobre",
+      "novembre",
+      "décembre"
+    ],
+    "possessive": [
+      "mon",
+      "ma",
+      "mes",
+      "ton",
+      "ta",
+      "tes",
+      "son",
+      "sa",
+      "ses",
+      "notre",
+      "votre",
+      "nos",
+      "vos",
+      "leur",
+      "leurs"
+    ],
+    "professional": [
+      "dentiste",
+      "médecin",
+      "docteur",
+      "coiffeur",
+      "boulanger",
+      "boucher",
+      "notaire",
+      "vétérinaire"
+    ],
+    "sport": [
+      "foot",
+      "football",
+      "tennis",
+      "basket",
+      "golf",
+      "rugby",
+      "volley",
+      "hockey",
+      "baseball"
+    ],
+    "weekday": [
+      "lundi",
+      "mardi",
+      "mercredi",
+      "jeudi",
+      "vendredi",
+      "samedi",
+      "dimanche"
+    ]
+  },
+  "countries": {
+    "Afrique du Sud": "l'",
+    "Albanie": "l'",
+    "Algérie": "l'",
+    "Allemagne": "l'",
+    "Andorre": "l'",
+    "Angola": "l'",
+    "Antigua-et-Barbuda": "",
+    "Arabie saoudite": "l'",
+    "Argentine": "l'",
+    "Arménie": "l'",
+    "Australie": "l'",
+    "Autriche": "l'",
+    "Azerbaïdjan": "l'",
+    "Bahamas": "les",
+    "Bahreïn": "",
+    "Bangladesh": "le",
+    "Barbade": "la",
+    "Belgique": "la",
+    "Belize": "le",
+    "Bhoutan": "le",
+    "Birmanie": "la",
+    "Bolivie": "la",
+    "Bosnie-Herzégovine": "la",
+    "Botswana": "le",
+    "Brunei": "le",
+    "Brésil": "le",
+    "Bulgarie": "la",
+    "Burkina": "le",
+    "Burundi": "le",
+    "Bélarus": "le",
+    "Bénin": "le",
+    "Cambodge": "le",
+    "Cameroun": "le",
+    "Canada": "le",
+    "Cap-Vert": "le",
+    "Chili": "le",
+    "Chine": "la",
+    "Chypre": "",
+    "Colombie": "la",
+    "Comores": "les",
+    "Congo": "le",
+    "Corée du Nord": "la",
+    "Corée du Sud": "la",
+    "Costa Rica": "le",
+    "Croatie": "la",
+    "Cuba": "",
+    "Côte d'Ivoire": "la",
+    "Danemark": "le",
+    "Dominique": "la",
+    "Espagne": "l'",
+    "Estonie": "l'",
+    "Eswatini": "l'",
+    "Fidji": "les",
+    "Finlande": "la",
+    "France": "la",
+    "Gabon": "le",
+    "Gambie": "la",
+    "Ghana": "le",
+    "Grèce": "la",
+    "Guinée": "la",
+    "Guinée équatoriale": "la",
+    "Guinée-Bissau": "la",
+    "Guyana": "le",
+    "Géorgie": "la",
+    "Haïti": "",
+    "Honduras": "le",
+    "Hongrie": "la",
+    "Inde": "l'",
+    "Indonésie": "l'",
+    "Irak": "l'",
+    "Iran": "l'",
+    "Irlande": "l'",
+    "Islande": "l'",
+    "Israël": "",
+    "Italie": "l'",
+    "Jamaïque": "la",
+    "Japon": "le",
+    "Jordanie": "la",
+    "Kazakhstan": "le",
+    "Kenya": "le",
+    "Kiribati": "",
+    "Laos": "le",
+    "Lesotho": "le",
+    "Lettonie": "la",
+    "Liban": "le",
+    "Libye": "la",
+    "Libéria": "le",
+    "Liechtenstein": "le",
+    "Lituanie": "la",
+    "Macédoine du Nord": "la",
+    "Madagascar": "",
+    "Malaisie": "la",
+    "Malawi": "le",
+    "Maldives": "les",
+    "Mali": "le",
+    "Malte": "",
+    "Maroc": "le",
+    "Marshall": "les",
+    "Maurice": "",
+    "Mauritanie": "la",
+    "Mexique": "le",
+    "Micronésie": "la",
+    "Moldavie": "la",
+    "Mongolie": "la",
+    "Monténégro": "le",
+    "Mozambique": "le",
+    "Namibie": "la",
+    "Nauru": "",
+    "Nicaragua": "le",
+    "Niger": "le",
+    "Nigéria": "le",
+    "Niue": "",
+    "Norvège": "la",
+    "Nouvelle-Zélande": "la",
+    "Népal": "le",
+    "Oman": "",
+    "Ouganda": "l'",
+    "Ouzbékistan": "l'",
+    "Pakistan": "le",
+    "Palaos": "les",
+    "Papouasie-Nouvelle-Guinée": "la",
+    "Paraguay": "le",
+    "Pays-Bas": "les",
+    "Philippines": "les",
+    "Pologne": "la",
+    "Portugal": "le",
+    "Pérou": "le",
+    "Qatar": "le",
+    "Roumanie": "la",
+    "Royaume-Uni": "le",
+    "Russie": "la",
+    "Rwanda": "le",
+    "République centrafricaine": "la",
+    "République dominicaine": "la",
+    "République démocratique du Congo": "la",
+    "Saint-Christophe-et-Niévès": "",
+    "Saint-Vincent-et-les Grenadines": "",
+    "Sainte-Lucie": "",
+    "Samoa": "les",
+    "Sao Tomé-et-Principe": "",
+    "Serbie": "la",
+    "Seychelles": "les",
+    "Sierra Leone": "la",
+    "Slovaquie": "la",
+    "Slovénie": "la",
+    "Somalie": "la",
+    "Soudan": "le",
+    "Sri Lanka": "",
+    "Suisse": "la",
+    "Suriname": "le",
+    "Suède": "la",
+    "Syrie": "la",
+    "Sénégal": "le",
+    "Tadjikistan": "le",
+    "Tanzanie": "la",
+    "Tchad": "le",
+    "Tchéquie": "la",
+    "Thaïlande": "la",
+    "Timor oriental": "le",
+    "Togo": "le",
+    "Tonga": "les",
+    "Trinité-et-Tobago": "",
+    "Tunisie": "la",
+    "Turkménistan": "le",
+    "Turquie": "la",
+    "Tuvalu": "les",
+    "Ukraine": "l'",
+    "Uruguay": "l'",
+    "Vanuatu": "le",
+    "Vatican": "le",
+    "Venezuela": "le",
+    "Viêt Nam": "le",
+    "Yémen": "le",
+    "Zambie": "la",
+    "Zimbabwe": "le",
+    "Égypte": "l'",
+    "Émirats arabes unis": "les",
+    "Équateur": "l'",
+    "Érythrée": "l'",
+    "États-Unis": "les",
+    "Éthiopie": "l'",
+    "Îles Cook": "les",
+    "Îles Salomon": "les"
+  },
+  "entries": [
+    {
+      "fix": "ça va",
+      "kind": "lookAlike",
+      "match": "cava",
+      "note": "cava is a past form of caver, “to dig,” as in il cava un trou.",
+      "unlessAfter": [
+        "il",
+        "elle",
+        "on",
+        "qui"
+      ],
+      "unlessBefore": [
+        "un",
+        "une",
+        "le",
+        "la",
+        "les",
+        "l'",
+        "des",
+        "du"
+      ]
+    },
+    {
+      "fix": "ça va",
+      "kind": "lookAlike",
+      "match": "sava",
+      "note": "sava isn't a French word; it sounds like two words run together."
+    },
+    {
+      "fix": "ça va",
+      "kind": "lookAlike",
+      "match": "sa va",
+      "note": "sa means his or her, so it comes before a noun, never before a verb like va."
+    },
+    {
+      "fix": "ça va",
+      "kind": "lookAlike",
+      "match": "ça vas",
+      "note": "ça takes the il form of the verb, and vas is the tu form."
+    },
+    {
+      "fix": "@avoir $avoirNoun",
+      "kind": "wordChoice",
+      "match": "@être $avoirNoun",
+      "note": "French says avoir for hunger, thirst, fear and sleepiness."
+    },
+    {
+      "fix": "@poser une question",
+      "kind": "wordChoice",
+      "match": "@demander une question",
+      "note": "French asks a question with poser, not demander."
+    },
+    {
+      "fix": "@prendre une décision",
+      "kind": "wordChoice",
+      "match": "@faire une décision",
+      "note": "French takes a decision, with prendre, rather than making one."
+    },
+    {
+      "fix": "@suivre un cours",
+      "kind": "wordChoice",
+      "match": "@prendre une classe",
+      "note": "A classe is a group of students or a room; taking a course is suivre un cours."
+    },
+    {
+      "fix": "@parler au téléphone",
+      "kind": "preposition",
+      "match": "@parler sur le téléphone",
+      "note": "On the phone is au téléphone; sur le téléphone means on top of it."
+    },
+    {
+      "fix": "@faire du vélo",
+      "kind": "wordChoice",
+      "match": "@faire le vélo",
+      "note": "Activities take du with faire: faire du vélo, faire du sport."
+    },
+    {
+      "fix": "@faire du sport",
+      "kind": "wordChoice",
+      "match": "@faire le sport",
+      "note": "Activities take du with faire: faire du vélo, faire du sport."
+    },
+    {
+      "fix": "@faire du sport",
+      "kind": "wordChoice",
+      "match": "@aller du sport",
+      "note": "Aller is for going somewhere; activities take faire: je fais du sport."
+    },
+    {
+      "fix": "@faire du vélo",
+      "kind": "wordChoice",
+      "match": "@aller du vélo",
+      "note": "Aller is for going somewhere; activities take faire: je fais du sport."
+    },
+    {
+      "fix": "@aimer:ip le",
+      "kind": "wordChoice",
+      "match": "@aimer:ip du",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@aimer:ip la",
+      "kind": "wordChoice",
+      "match": "@aimer:ip de la",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@adorer:ip le",
+      "kind": "wordChoice",
+      "match": "@adorer:ip du",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@adorer:ip la",
+      "kind": "wordChoice",
+      "match": "@adorer:ip de la",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@détester:ip le",
+      "kind": "wordChoice",
+      "match": "@détester:ip du",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@détester:ip la",
+      "kind": "wordChoice",
+      "match": "@détester:ip de la",
+      "note": "Liking takes le or la: j'aime le vélo. Du and de la are for doing or having some of something.",
+      "unlessAfter": [
+        "que",
+        "qu'"
+      ]
+    },
+    {
+      "fix": "@jouer au $sport",
+      "kind": "preposition",
+      "match": "@jouer le $sport",
+      "note": "Sports and games take au: jouer au foot."
+    },
+    {
+      "fix": "@jouer de la $feminineInstrument",
+      "kind": "preposition",
+      "match": "@jouer la $feminineInstrument",
+      "note": "Instruments take de: jouer de la guitare, jouer du piano."
+    },
+    {
+      "fix": "@jouer du $masculineInstrument",
+      "kind": "preposition",
+      "match": "@jouer le $masculineInstrument",
+      "note": "Instruments take de: jouer de la guitare, jouer du piano."
+    },
+    {
+      "fix": "@faire une promenade",
+      "kind": "wordChoice",
+      "match": "@prendre une marche",
+      "note": "French doesn't take a walk; it does one: faire une promenade."
+    },
+    {
+      "fix": "@passer un bon moment",
+      "kind": "wordChoice",
+      "match": "@avoir un bon temps",
+      "note": "Temps means time or weather, not a good time. French says passer un bon moment."
+    },
+    {
+      "fix": "en $month",
+      "kind": "preposition",
+      "match": "dans $month",
+      "note": "Months take en: en juillet."
+    },
+    {
+      "fix": "$weekday",
+      "kind": "preposition",
+      "match": "sur $weekday",
+      "note": "Days need no preposition: lundi, or le lundi for every Monday."
+    },
+    {
+      "fix": "je suis en retard",
+      "kind": "wordChoice",
+      "match": "je suis tard",
+      "note": "Tard means late in the day; for being late, French says en retard."
+    },
+    {
+      "fix": "il va pleuvoir",
+      "kind": "wordChoice",
+      "match": "il va faire pleuvoir",
+      "note": "Rain and snow are verbs of their own: il va pleuvoir, il va neiger. Faire is for other weather, like il va faire beau."
+    },
+    {
+      "fix": "il va neiger",
+      "kind": "wordChoice",
+      "match": "il va faire neiger",
+      "note": "Rain and snow are verbs of their own: il va pleuvoir, il va neiger. Faire is for other weather, like il va faire beau."
+    },
+    {
+      "fix": "il pleut",
+      "kind": "wordChoice",
+      "match": "il y a pleuvoir",
+      "note": "Pleuvoir is a verb, so it takes no il y a: il pleut now, il va pleuvoir later."
+    },
+    {
+      "fix": "il pleut",
+      "kind": "wordChoice",
+      "match": "il fait pluie",
+      "note": "Rain and snow are verbs of their own: il pleut, il neige."
+    },
+    {
+      "fix": "il neige",
+      "kind": "wordChoice",
+      "match": "il fait neige",
+      "note": "Rain and snow are verbs of their own: il pleut, il neige."
+    },
+    {
+      "fix": "mal à la tête",
+      "kind": "wordChoice",
+      "match": "mal aux têtes",
+      "note": "French has one head here: j'ai mal à la tête."
+    },
+    {
+      "fix": "un",
+      "kind": "wordChoice",
+      "match": "un du",
+      "note": "Un already means a, so it needs no du: un billet."
+    },
+    {
+      "fix": "et toi",
+      "kind": "wordChoice",
+      "match": "et tu",
+      "note": "After et, tu becomes toi: et toi ? To a stranger, say et vous ?",
+      "onlyAtClauseEnd": true
+    },
+    {
+      "fix": "à la montagne",
+      "kind": "wordChoice",
+      "match": "à montagne",
+      "note": "Montagne keeps its article: à la montagne."
+    },
+    {
+      "fix": "à la plage",
+      "kind": "wordChoice",
+      "match": "à plage",
+      "note": "Plage keeps its article: à la plage."
+    },
+    {
+      "fix": "à pied",
+      "kind": "preposition",
+      "match": "en pied",
+      "note": "On foot is à pied.",
+      "onlyAfter": [
+        "vais",
+        "vas",
+        "va",
+        "allons",
+        "allez",
+        "vont",
+        "aller",
+        "allé",
+        "allée",
+        "allés",
+        "allées",
+        "viens",
+        "vient",
+        "venons",
+        "venez",
+        "viennent",
+        "venir",
+        "venu",
+        "venue",
+        "rentre",
+        "rentres",
+        "rentrons",
+        "rentrez",
+        "rentrent",
+        "rentrer",
+        "rentré",
+        "rentrée",
+        "pars",
+        "part",
+        "partons",
+        "partez",
+        "partent",
+        "partir",
+        "parti",
+        "partie"
+      ]
+    },
+    {
+      "fix": "tu me manques",
+      "kind": "wordChoice",
+      "match": "je manque toi",
+      "note": "French turns it around: the person you miss is the subject. Tu me manques means I miss you."
+    },
+    {
+      "fix": "vous me manquez",
+      "kind": "wordChoice",
+      "match": "je manque vous",
+      "note": "French turns it around: the person you miss is the subject. Vous me manquez means I miss you."
+    },
+    {
+      "fix": "en vacances",
+      "kind": "preposition",
+      "match": "sur vacances",
+      "note": "On holiday is en vacances."
+    },
+    {
+      "fix": "le matin",
+      "kind": "preposition",
+      "match": "dans le matin",
+      "note": "In the morning is just le matin."
+    },
+    {
+      "fix": "le soir",
+      "kind": "preposition",
+      "match": "dans le soir",
+      "note": "In the evening is just le soir.",
+      "unlessBefore": [
+        "de",
+        "d'"
+      ]
+    },
+    {
+      "fix": "dimanche",
+      "kind": "wordChoice",
+      "match": "sur dimanche",
+      "note": "Days need no preposition: lundi, or le lundi for every Monday."
+    },
+    {
+      "fix": "chez le $professional",
+      "kind": "idiom",
+      "match": "au $professional",
+      "note": "If you mean going to their office or shop, French uses chez: chez le dentiste."
+    },
+    {
+      "fix": "a du sens",
+      "kind": "idiom",
+      "match": "fait du sens",
+      "note": "Faire du sens copies the English “make sense”; French usually says avoir du sens."
+    },
+    {
+      "fix": "j'ai hâte",
+      "kind": "idiom",
+      "match": "je suis excité",
+      "note": "Je suis excité can suggest overexcitement or arousal. If you mean you're looking forward to something, French says j'ai hâte."
+    },
+    {
+      "fix": "j'ai froid",
+      "kind": "idiom",
+      "match": "je suis froid",
+      "note": "Je suis froid describes a cold person or a cold body. If you mean you feel cold, French says avoir froid."
+    },
+    {
+      "fix": "j'ai froid",
+      "kind": "idiom",
+      "match": "je suis froide",
+      "note": "Je suis froid describes a cold person or a cold body. If you mean you feel cold, French says avoir froid."
+    },
+    {
+      "fix": "j'ai chaud",
+      "kind": "idiom",
+      "match": "je suis chaud",
+      "note": "Je suis chaud is slang for being up for something and can sound suggestive. If you mean you feel warm, French says avoir chaud."
+    },
+    {
+      "fix": "j'ai chaud",
+      "kind": "idiom",
+      "match": "je suis chaude",
+      "note": "Je suis chaud is slang for being up for something and can sound suggestive. If you mean you feel warm, French says avoir chaud."
+    },
+    {
+      "fix": "j'ai fini",
+      "kind": "idiom",
+      "match": "je suis fini",
+      "note": "Je suis fini means being done for. If you mean you've finished something, French says j'ai fini."
+    },
+    {
+      "fix": "j'ai fini",
+      "kind": "idiom",
+      "match": "je suis finie",
+      "note": "Je suis fini means being done for. If you mean you've finished something, French says j'ai fini."
+    },
+    {
+      "fix": "je me suis rendu compte que",
+      "kind": "idiom",
+      "match": "j'ai réalisé que",
+      "note": "Réaliser in the sense of realize is common, but some style guides call it an English borrowing. Careful writing often prefers se rendre compte."
+    },
+    {
+      "fix": "basket",
+      "kind": "idiom",
+      "match": "basketball",
+      "note": "French usually shortens it: le basket."
+    },
+    {
+      "fix": "il faisait froid",
+      "kind": "idiom",
+      "match": "c'était froid",
+      "note": "If you mean the weather, French uses faire: il faisait froid. C'était froid describes a thing, like a soup."
+    },
+    {
+      "fix": "il faisait chaud",
+      "kind": "idiom",
+      "match": "c'était chaud",
+      "note": "If you mean the weather, French uses faire: il faisait chaud. C'était chaud describes a thing, like a soup."
+    },
+    {
+      "fix": "il fait froid",
+      "kind": "idiom",
+      "match": "c'est froid",
+      "note": "If you mean the weather, French uses faire: il fait froid. This describes a thing, like a soup."
+    },
+    {
+      "fix": "il fait chaud",
+      "kind": "idiom",
+      "match": "c'est chaud",
+      "note": "If you mean the weather, French uses faire: il fait chaud. C'est chaud describes a thing, or means it's tricky."
+    },
+    {
+      "fix": "il fait froid",
+      "kind": "idiom",
+      "match": "il est froid",
+      "note": "If you mean the weather, French uses faire: il fait froid. Il est froid describes a thing or a person."
+    },
+    {
+      "fix": "il fait chaud",
+      "kind": "idiom",
+      "match": "il est chaud",
+      "note": "If you mean the weather, French uses faire: il fait chaud. Il est chaud describes a thing or a person."
+    },
+    {
+      "fix": "j'ai bien mangé",
+      "kind": "idiom",
+      "match": "je suis plein",
+      "note": "If you mean you've eaten enough, say j'ai bien mangé. Je suis plein can mean drunk.",
+      "unlessBefore": [
+        "de",
+        "d'"
+      ]
+    },
+    {
+      "fix": "j'ai bien mangé",
+      "kind": "idiom",
+      "match": "je suis pleine",
+      "note": "If you mean you've eaten enough, say j'ai bien mangé. Je suis pleine can mean pregnant, for an animal.",
+      "unlessBefore": [
+        "de",
+        "d'"
+      ]
+    },
+    {
+      "fix": "à la télé",
+      "kind": "idiom",
+      "match": "sur la télé",
+      "note": "If you mean a programme, French says à la télé. Sur la télé means on top of the set."
+    },
+    {
+      "fix": "à la radio",
+      "kind": "idiom",
+      "match": "sur la radio",
+      "note": "If you mean a programme, French says à la radio. Sur la radio means on top of it."
+    },
+    {
+      "fix": "aux toilettes",
+      "kind": "idiom",
+      "match": "à la toilette",
+      "note": "If you mean the bathroom, French says aux toilettes. La toilette means washing and getting ready."
+    },
+    {
+      "choices": [
+        {
+          "meaning": "not yet: it will happen later",
+          "text": "pas encore"
+        },
+        {
+          "meaning": "no longer: it used to happen",
+          "text": "plus"
+        }
+      ],
+      "kind": "meaning",
+      "match": "pas encore",
+      "note": "Pas encore means not yet; ne… plus means no longer.",
+      "unlessBeforeParticiple": true
+    },
+    {
+      "fix": "@dépendre de",
+      "kind": "preposition",
+      "match": "@dépendre sur",
+      "note": "Dépendre takes de, even though English says “depend on.”"
+    },
+    {
+      "fix": "@participer à",
+      "kind": "preposition",
+      "match": "@participer dans",
+      "note": "Participer takes à: participer à un cours. English says “participate in.”"
+    },
+    {
+      "fix": "@intéresser à",
+      "kind": "preposition",
+      "match": "@intéresser dans",
+      "note": "S'intéresser takes à: je m'intéresse à l'art. English says “interested in.”"
+    },
+    {
+      "fix": "@essayer de",
+      "kind": "preposition",
+      "match": "@essayer à",
+      "note": "Before an infinitive, essayer takes de: j'essaie de comprendre.",
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "fix": "@téléphoner à $possessive",
+      "kind": "preposition",
+      "match": "@téléphoner $possessive",
+      "note": "Téléphoner takes à before the person you call."
+    },
+    {
+      "fix": "@répondre à $possessive",
+      "kind": "preposition",
+      "match": "@répondre $possessive",
+      "note": "Répondre takes à before the person or question you answer."
+    },
+    {
+      "fix": "@ressembler à $possessive",
+      "kind": "preposition",
+      "match": "@ressembler $possessive",
+      "note": "Ressembler takes à before the person you look like."
+    },
+    {
+      "fix": "@obéir à $possessive",
+      "kind": "preposition",
+      "match": "@obéir $possessive",
+      "note": "Obéir takes à before the person you obey."
+    },
+    {
+      "fix": "@écouter",
+      "kind": "preposition",
+      "match": "@écouter à",
+      "note": "Écouter takes what you hear directly: écouter la radio. English says “listen to.”"
+    },
+    {
+      "fix": "@attendre:ip",
+      "kind": "preposition",
+      "match": "@attendre:ip pour",
+      "note": "Attendre takes what you wait for directly: attendre le bus. English says “wait for.”",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@chercher",
+      "kind": "preposition",
+      "match": "@chercher pour",
+      "note": "Chercher takes what you look for directly: chercher ses clés. English says “look for.”",
+      "unlessBefore": [
+        "moi",
+        "toi",
+        "lui",
+        "elle",
+        "nous",
+        "vous",
+        "eux",
+        "elles"
+      ],
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@apprendre à",
+      "kind": "preposition",
+      "match": "@apprendre de",
+      "note": "Before an infinitive, apprendre takes à: 14 of 14 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@cesser de",
+      "kind": "preposition",
+      "match": "@cesser à",
+      "note": "Before an infinitive, cesser takes de: 12 of 12 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@charger de",
+      "kind": "preposition",
+      "match": "@charger à",
+      "note": "Before an infinitive, charger takes de: 21 of 21 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@choisir de",
+      "kind": "preposition",
+      "match": "@choisir à",
+      "note": "Before an infinitive, choisir takes de: 16 of 17 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@consister à",
+      "kind": "preposition",
+      "match": "@consister de",
+      "note": "Before an infinitive, consister takes à: 20 of 20 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@contribuer à",
+      "kind": "preposition",
+      "match": "@contribuer de",
+      "note": "Before an infinitive, contribuer takes à: 9 of 9 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@destiner à",
+      "kind": "preposition",
+      "match": "@destiner de",
+      "note": "Before an infinitive, destiner takes à: 13 of 13 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@engager à",
+      "kind": "preposition",
+      "match": "@engager de",
+      "note": "Before an infinitive, engager takes à: 11 of 11 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@hésiter à",
+      "kind": "preposition",
+      "match": "@hésiter de",
+      "note": "Before an infinitive, hésiter takes à: 13 of 14 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@inviter à",
+      "kind": "preposition",
+      "match": "@inviter de",
+      "note": "Before an infinitive, inviter takes à: 19 of 19 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@parvenir à",
+      "kind": "preposition",
+      "match": "@parvenir de",
+      "note": "Before an infinitive, parvenir takes à: 42 of 42 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@proposer de",
+      "kind": "preposition",
+      "match": "@proposer à",
+      "note": "Before an infinitive, proposer takes de: 17 of 17 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@refuser de",
+      "kind": "preposition",
+      "match": "@refuser à",
+      "note": "Before an infinitive, refuser takes de: 13 of 14 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@réussir à",
+      "kind": "preposition",
+      "match": "@réussir de",
+      "note": "Before an infinitive, réussir takes à: 36 of 36 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@tenter de",
+      "kind": "preposition",
+      "match": "@tenter à",
+      "note": "Before an infinitive, tenter takes de: 63 of 63 times in the treebanks.",
+      "onlyBeforeInfinitive": true,
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@aboutir à $possessive",
+      "kind": "preposition",
+      "match": "@aboutir $possessive",
+      "note": "Aboutir takes à before a person or thing: 14 of 15 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@accéder à",
+      "kind": "preposition",
+      "match": "@accéder sur",
+      "note": "Accéder takes à before what it's about: 16 of 16 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@accéder à $possessive",
+      "kind": "preposition",
+      "match": "@accéder $possessive",
+      "note": "Accéder takes à before a person or thing: 16 of 16 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@appartenir à",
+      "kind": "preposition",
+      "match": "@appartenir sur",
+      "note": "Appartenir takes à before what it's about: 70 of 70 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@appartenir à $possessive",
+      "kind": "preposition",
+      "match": "@appartenir $possessive",
+      "note": "Appartenir takes à before a person or thing: 70 of 70 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@contribuer à",
+      "kind": "preposition",
+      "match": "@contribuer sur",
+      "note": "Contribuer takes à before what it's about: 19 of 20 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@correspondre à",
+      "kind": "preposition",
+      "match": "@correspondre sur",
+      "note": "Correspondre takes à before what it's about: 40 of 41 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@correspondre à $possessive",
+      "kind": "preposition",
+      "match": "@correspondre $possessive",
+      "note": "Correspondre takes à before a person or thing: 40 of 41 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@dater de",
+      "kind": "preposition",
+      "match": "@dater sur",
+      "note": "Dater takes de before what it's about: 29 of 29 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@destiner à",
+      "kind": "preposition",
+      "match": "@destiner sur",
+      "note": "Destiner takes à before what it's about: 21 of 21 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@disposer de",
+      "kind": "preposition",
+      "match": "@disposer sur",
+      "note": "Disposer takes de before what it's about: 39 of 42 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@hériter de",
+      "kind": "preposition",
+      "match": "@hériter sur",
+      "note": "Hériter takes de before what it's about: 12 of 12 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@participer à",
+      "kind": "preposition",
+      "match": "@participer sur",
+      "note": "Participer takes à before what it's about: 127 of 129 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@parvenir à",
+      "kind": "preposition",
+      "match": "@parvenir sur",
+      "note": "Parvenir takes à before what it's about: 20 of 22 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@parvenir à $possessive",
+      "kind": "preposition",
+      "match": "@parvenir $possessive",
+      "note": "Parvenir takes à before a person or thing: 20 of 22 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@procéder à",
+      "kind": "preposition",
+      "match": "@procéder sur",
+      "note": "Procéder takes à before what it's about: 10 of 10 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@procéder à $possessive",
+      "kind": "preposition",
+      "match": "@procéder $possessive",
+      "note": "Procéder takes à before a person or thing: 10 of 10 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@provenir de",
+      "kind": "preposition",
+      "match": "@provenir sur",
+      "note": "Provenir takes de before what it's about: 25 of 25 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@provenir de $possessive",
+      "kind": "preposition",
+      "match": "@provenir $possessive",
+      "note": "Provenir takes de before a person or thing: 25 of 25 times in the treebanks, never a direct object.",
+      "origin": "UD treebanks"
+    },
+    {
+      "fix": "@rattacher à",
+      "kind": "preposition",
+      "match": "@rattacher sur",
+      "note": "Rattacher takes à before what it's about: 20 of 20 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@ressembler à",
+      "kind": "preposition",
+      "match": "@ressembler sur",
+      "note": "Ressembler takes à before what it's about: 13 of 13 times in the treebanks.",
+      "origin": "UD treebanks",
+      "unlessBeforeInfinitive": true
+    },
+    {
+      "fix": "@attendre:inf",
+      "kind": "preposition",
+      "match": "@attendre:inf pour",
+      "note": "Attendre takes what you wait for directly: attendre le bus. English says “wait for.”",
+      "unlessBeforeInfinitive": true
+    }
+  ],
+  "sources": {
+    "countries": "Article of each country's short name, from the French Wikipedia article “Liste des pays du monde” (wikitext retrieved 2026-11-01), CC BY-SA 4.0. Left out: names that are also a city or a person (Luxembourg, Panama, Guatemala, Grenade, Salvador, Koweït, Djibouti, Singapour, Monaco, Saint-Marin)",
+    "generated": "Entries with origin “UD treebanks” come from Tools/BuildVerbPrepositions.swift over Universal Dependencies French-GSD, -Rhapsodie and -ParisStories, CC BY-SA 4.0"
+  }
+}

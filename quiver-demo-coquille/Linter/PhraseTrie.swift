@@ -75,21 +75,31 @@ nonisolated struct PhraseTrie: Sendable {
 
     /// Returns every phrase in `tokens` whose words are adjacent, ordered by list
     /// position and then by where it starts, the order a scan of the list produces.
-    func matches(in tokens: [Token]) -> [Match] {
+    ///
+    /// `keys` lists every trie word the token at an index can stand for: its own normalized text, and
+    /// for pattern lists also `@verb` and `$class` keys. A token with several keys can
+    /// follow several paths at once, so the walk branches.
+    func matches(in tokens: [Token], keys: ((Int) -> [String])? = nil) -> [Match] {
+        let tokenKeys = tokens.indices.map { keys?($0) ?? [tokens[$0].normalized] }
         var found: [Match] = []
         for start in tokens.indices {
-            var current = 0
-            var index = start
-            while index < tokens.count, let next = nodes[current].children[tokens[index].normalized] {
-                current = next
-                for entry in nodes[current].entries {
-                    found.append(Match(entry: entry, start: start, length: index - start + 1))
-                }
-                // A phrase's words can't span punctuation, as in "comment, cava".
-                guard tokens[index].isAdjacentToNext else { break }
-                index += 1
-            }
+            walk(from: 0, at: start, start: start, tokens: tokens, keys: tokenKeys, into: &found)
         }
         return found.sorted { ($0.entry, $0.start) < ($1.entry, $1.start) }
+    }
+
+    /// Follows every child of `node` that token `index` can stand for, recording each phrase that ends.
+    private func walk(from node: Int, at index: Int, start: Int, tokens: [Token], keys: [[String]], into found: inout [Match]) {
+        guard index < tokens.count else { return }
+        for key in keys[index] {
+            guard let next = nodes[node].children[key] else { continue }
+            for entry in nodes[next].entries {
+                found.append(Match(entry: entry, start: start, length: index - start + 1))
+            }
+            // A phrase's words can't span punctuation, as in "comment, cava".
+            if tokens[index].isAdjacentToNext {
+                walk(from: next, at: index + 1, start: start, tokens: tokens, keys: keys, into: &found)
+            }
+        }
     }
 }

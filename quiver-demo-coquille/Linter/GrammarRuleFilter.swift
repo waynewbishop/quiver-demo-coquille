@@ -21,8 +21,8 @@ struct GrammarRuleFilter: LinguisticFilter {
     var layer: LinguisticLayer { rule.layer }
     var targetLevel: CefrLevel { rule.targetLevel }
 
-    /// Runs the rule on the pass's shared tokens, so the text is tokenized once.
+    /// Runs the rule on the pass's shared tagged text, so the text is tokenized and tagged once.
     func evaluate(_ context: LintContext) -> [Issue] {
-        rule.check(context.tokens)
+        rule.check(context.tagged)
     }
 }

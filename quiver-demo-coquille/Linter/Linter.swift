@@ -17,6 +17,8 @@ import Foundation
 struct Linter {
 
     let filters: [any LinguisticFilter]
+    /// Tags each pass's tokens for the grammar rules; `nil` leaves every word without a verdict.
+    let tag: (@Sendable ([Token]) -> TaggedText)?
 
     /// Builds the pipeline: spelling first, then each of the grammar's rules as its own filter.
     init(
@@ -27,17 +29,19 @@ struct Linter {
     ) {
         let spelling = OrthographicFilter(spellChecker: spellChecker, lexicon: lexicon, explanations: explanations)
         filters = [spelling] + grammar.rules.map { GrammarRuleFilter(rule: $0) }
+        tag = { grammar.tag($0) }
     }
 
     /// Builds a pipeline from any filters, in the order they should run.
-    init(filters: [any LinguisticFilter]) {
+    init(filters: [any LinguisticFilter], tag: (@Sendable ([Token]) -> TaggedText)? = nil) {
         self.filters = filters
+        self.tag = tag
     }
 
     /// Returns every issue in `text` from the filters at or below `level`, ordered by
     /// position, with no two issues overlapping. The default level runs every filter.
     func lint(_ text: String, through level: CefrLevel = .c2) -> [Issue] {
-        let context = LintContext(text: text)
+        let context = LintContext(text: text, tag: tag)
         let active = filters.filter { $0.targetLevel <= level }
         return ResolutionMatrix.resolve(active.flatMap { $0.evaluate(context) })
     }

@@ -95,24 +95,24 @@ final class RuleScorecardTests: XCTestCase {
         ("Je vais du sport.", "grammar.wordChoice"),
         ("J'aime du vélo.", "grammar.wordChoice"),
         ("Tu aimes de la musique?", "grammar.wordChoice"),
-        ("Il est venu en pied.", "grammar.wordChoice"),
+        ("Il est venu en pied.", "grammar.preposition"),
         ("Je voudrais un du billet.", "grammar.wordChoice"),
         ("Ça va, et tu?", "grammar.wordChoice"),
         ("Je vais à montagne.", "grammar.wordChoice"),
-        ("Je joue le foot.", "grammar.wordChoice"),
-        ("Je joue la guitare.", "grammar.wordChoice"),
-        ("Je téléphone ma mère.", "grammar.wordChoice"),
+        ("Je joue le foot.", "grammar.preposition"),
+        ("Je joue la guitare.", "grammar.preposition"),
+        ("Je téléphone ma mère.", "grammar.preposition"),
         ("Je manque toi.", "grammar.wordChoice"),
         ("J'ai pris une marche.", "grammar.wordChoice"),
         ("J'ai eu un bon temps.", "grammar.wordChoice"),
         ("Il fait pluie.", "grammar.wordChoice"),
-        ("Je suis sur vacances.", "grammar.wordChoice"),
-        ("Je bois un thé dans le matin.", "grammar.wordChoice"),
-        ("Il fait beau dans juillet.", "grammar.wordChoice"),
-        ("Je travaille sur lundi.", "grammar.wordChoice"),
+        ("Je suis sur vacances.", "grammar.preposition"),
+        ("Je bois un thé dans le matin.", "grammar.preposition"),
+        ("Il fait beau dans juillet.", "grammar.preposition"),
+        ("Je travaille sur lundi.", "grammar.preposition"),
         ("Je suis faim.", "grammar.wordChoice"),
         ("J'ai demandé une question.", "grammar.wordChoice"),
-        ("Il habite à Canada.", "grammar.wordChoice"),
+        ("Il habite à Canada.", "grammar.preposition"),
         ("J'aime plus.", "grammar.negation"),
         ("Je vais au dentiste.", "grammar.idiom"),
         ("J'ai regardé un match de basketball.", "grammar.idiom"),
@@ -212,7 +212,54 @@ final class RuleScorecardTests: XCTestCase {
         ("J'ai un chien et un chat.", nil),
         ("Il parle français et anglais.", nil),
         ("Le film est intéressant.", nil),
-        ("Elle est très gentille et drôle.", nil)
+        ("Elle est très gentille et drôle.", nil),
+        // Written before the accent rule learned the à-for-a direction and the
+        // participle and adjective contexts for a.
+        ("Il à faim.", "grammar.accent"),
+        ("On à mangé au restaurant.", "grammar.accent"),
+        ("Il y à un problème.", "grammar.accent"),
+        ("Qu'est-ce qu'il y à dans le frigo?", "grammar.accent"),
+        ("Elle à soif.", "grammar.accent"),
+        ("Elle à fini ses devoirs.", "grammar.accent"),
+        ("Il est allé a Paris.", "grammar.accent"),
+        ("Je suis né a Lyon.", "grammar.accent"),
+        ("Nous sommes arrivés a la gare.", "grammar.accent"),
+        ("C'est facile a faire.", "grammar.accent"),
+        ("C'est difficile a comprendre.", "grammar.accent"),
+        ("Il pense a sa mère.", "grammar.accent"),
+        ("Il a faim.", nil),
+        ("Elle a fini ses devoirs.", nil),
+        ("C'est à elle.", nil),
+        ("Un cadeau pour elle à Noël.", nil),
+        ("Il y a un problème.", nil),
+        ("Il pense à elle.", nil),
+        ("Elle est née à Lyon.", nil),
+        ("Ce qui est arrivé a changé ma vie.", nil),
+        ("La police qui est intervenue a tiré.", nil),
+        ("Lui à pied, elle à vélo.", nil),
+        ("On a tout à gagner.", nil),
+        ("À demain!", nil),
+        // Written after the preposition rule was built and never used to tune it.
+        ("Mes cousins habitent à Portugal.", "grammar.preposition"),
+        ("Nous partons en Brésil demain.", "grammar.preposition"),
+        ("Elle travaille à Allemagne.", "grammar.preposition"),
+        ("Ils reviennent de Maroc.", "grammar.preposition"),
+        ("Le prix dépend sur la saison.", "grammar.preposition"),
+        ("Tu as réussi de trouver la gare?", "grammar.preposition"),
+        ("Il ressemble son père.", "grammar.preposition"),
+        ("Nous écoutons à la musique.", "grammar.preposition"),
+        ("Je téléphone mon frère ce soir.", "grammar.preposition"),
+        ("Elle participe dans le concours.", "grammar.preposition"),
+        ("Mes cousins habitent au Portugal.", nil),
+        ("Nous partons au Brésil demain.", nil),
+        ("Elle travaille en Allemagne.", nil),
+        ("Ils reviennent du Maroc.", nil),
+        ("Le prix dépend de la saison.", nil),
+        ("Il ressemble à son père.", nil),
+        ("Nous écoutons la musique.", nil),
+        ("La demande sur le site est longue.", nil),
+        ("Elle participe au concours dans la ville.", nil),
+        ("J'attends pour voir.", nil)
     ]
 
     /// One rule's report on the corpus, with any sentence it got wrong.
@@ -226,14 +273,14 @@ final class RuleScorecardTests: XCTestCase {
     /// Runs each rule on every sentence and scores its yes-or-no answers against the labels.
     private func scores(on corpus: [(text: String, rule: String?)]) throws -> [RuleScore] {
         let grammar = try XCTUnwrap(Self.pack, "The French language pack failed to load").grammar
-        let tokenized = corpus.map { (tokens: FrenchTokenizer.tokens(in: $0.text), text: $0.text, rule: $0.rule) }
+        let tokenized = corpus.map { (tagged: grammar.tag(FrenchTokenizer.tokens(in: $0.text)), text: $0.text, rule: $0.rule) }
         return grammar.rules.map { rule in
             var predicted: [Int] = []
             var actual: [Int] = []
             var misses: [String] = []
             var falseAlarms: [String] = []
             for sentence in tokenized {
-                let fires = !rule.check(sentence.tokens).isEmpty
+                let fires = !rule.check(sentence.tagged).isEmpty
                 let labelled = sentence.rule == rule.identifier
                 predicted.append(fires ? 1 : 0)
                 actual.append(labelled ? 1 : 0)
@@ -288,7 +335,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 16)
+        XCTAssertEqual(tuning.count, 17)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }

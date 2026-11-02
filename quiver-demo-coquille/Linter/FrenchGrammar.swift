@@ -24,17 +24,20 @@ import Foundation
 nonisolated struct FrenchGrammar: Grammar {
 
     let lexicon: Lexicon
-    let idioms: [Idiom]
-    let lookAlikes: [PhraseFix]
-    let wordChoices: [PhraseFix]
     let explanations: ExplanationTemplates
     /// Predicts gender for nouns missing from the lexicon; `nil` until a trained model ships.
     let genderPredictor: (any GenderPredictor)?
     /// Decides whether le, la, les or l' is an article or a pronoun from the words
     /// around it; `nil` leaves the decision to the hand rule alone.
-    var articleModel: ArticleOrPronounModel? = nil
-    /// Correct phrases whose meaning English speakers often mix up, from `fr.meanings.json`.
-    var meaningChecks: [MeaningCheck] = []
+    var articleModel: ContextDecider? = nil
+    /// Decides whether a word Lexique lists as both is an adjective or a noun.
+    var adjectiveOrNounModel: ContextDecider? = nil
+    /// Decides whether a form of avoir or être is a helper verb or a main verb.
+    var helperOrMainModel: ContextDecider? = nil
+    /// Decides whether a word Lexique lists as both is a noun or a verb.
+    var nounOrVerbModel: ContextDecider? = nil
+    /// Every listed phrase, from `fr.patterns.json`: look-alikes, word choices, idioms and meaning questions.
+    var patterns = PhrasePatterns()
     /// Decides whether et or est belongs from the words around it; `nil` leaves both unchecked.
     var etOrEstModel: EtOrEstModel? = nil
 
@@ -49,9 +52,27 @@ nonisolated struct FrenchGrammar: Grammar {
     /// raise nothing.
     static let etOrEstQuestion = 0.8
 
-    /// How sure the article model must be that a word is an article before a rule
-    /// treats it as one. Below this the word may be a pronoun, so the rule stays silent.
-    static let articleCertainty = 0.95
+    /// How sure the tagger must be of a word's part of speech before a rule acts on it.
+    static let tagCertainty = 0.95
+
+    /// How strongly the tagger must lean toward adjective before "difficile a comprendre"
+    /// counts as an adjective, an a and an infinitive. The infinitive already rules out
+    /// avoir after a noun subject in correct French, so this check only needs to keep a
+    /// noun subject ("le malade a dormi") out of the rule.
+    static let adjectiveLean = 0.8
+
+    /// The part-of-speech layer built from this grammar's lexicon and deciders.
+    var tagger: FrenchTagger {
+        FrenchTagger(
+            lexicon: lexicon, articleOrPronoun: articleModel, adjectiveOrNoun: adjectiveOrNounModel,
+            helperOrMain: helperOrMainModel, nounOrVerb: nounOrVerbModel
+        )
+    }
+
+    /// Decides the ambiguous words once, for every rule in a pass to read.
+    func tag(_ tokens: [Token]) -> TaggedText {
+        tagger.tag(tokens)
+    }
 
     /// The probability a model guess needs before it becomes a warning.
     ///
@@ -67,12 +88,14 @@ nonisolated struct FrenchGrammar: Grammar {
     /// The order matters: when two issues of the same severity cover the same words,
     /// the resolution matrix keeps the one from the earlier rule.
     var rules: [GrammarRule] {
-        // Each phrase list becomes a word trie once, when the pipeline is built, so a
-        // lint pass walks the text once per list instead of trying every phrase.
-        let lookAlikeTrie = PhraseTrie(phrases: lookAlikes.map { Self.words(of: $0.phrase) })
-        let wordChoiceTrie = PhraseTrie(phrases: wordChoices.map { Self.words(of: $0.phrase) })
-        let idiomTrie = PhraseTrie(phrases: idioms.map { Self.words(of: $0.phrase) })
-        let meaningTrie = PhraseTrie(phrases: meaningChecks.map { Self.words(of: $0.phrase) })
+        // Each kind of listed phrase becomes a word trie once, when the pipeline is built,
+        // so a lint pass walks the text once per kind instead of trying every phrase.
+        let lists = [PhrasePattern.Kind.lookAlike, .wordChoice, .idiom, .meaning, .preposition].map { kind in
+            let entries = patterns.entries(of: kind)
+            return (kind: kind, entries: entries, trie: PhraseTrie(phrases: entries.map(\.matchWords)))
+        }
+        let countries = patterns.countries.sorted { $0.key < $1.key }
+        let countryTrie = PhraseTrie(phrases: countries.map { PhrasePattern.words(of: $0.key) })
         return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
                 articleGenderIssues(in: $0)
@@ -81,7 +104,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 predictedGenderIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.contraction", layer: .localMorphosyntax, targetLevel: .a1) {
-                contractionIssues(in: $0)
+                contractionIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.accent", layer: .localMorphosyntax, targetLevel: .a1) {
                 accentIssues(in: $0)
@@ -90,37 +113,41 @@ nonisolated struct FrenchGrammar: Grammar {
                 auxiliaryIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
-                conjugationIssues(in: $0)
+                conjugationIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.siClause", layer: .relationalGrammar, targetLevel: .b1) {
-                siClauseIssues(in: $0)
+                siClauseIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.participle", layer: .relationalGrammar, targetLevel: .a2) {
-                participleWithEtreIssues(in: $0)
+                participleWithEtreIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.article", layer: .localMorphosyntax, targetLevel: .a2) {
-                generalArticleIssues(in: $0)
+                generalArticleIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.agreement", layer: .localMorphosyntax, targetLevel: .a1) {
                 agreementIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.lookAlike", layer: .orthography, targetLevel: .a1) {
-                phraseFixIssues(in: $0, from: lookAlikes, trie: lookAlikeTrie, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
+                patternIssues(in: $0, list: lists[0])
             },
             GrammarRule(identifier: "grammar.wordChoice", layer: .contextualSemantics, targetLevel: .a2) {
-                phraseFixIssues(in: $0, from: wordChoices, trie: wordChoiceTrie, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
+                patternIssues(in: $0, list: lists[1])
             },
             GrammarRule(identifier: "grammar.negation", layer: .relationalGrammar, targetLevel: .a2) {
-                negationIssues(in: $0)
+                negationIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.idiom", layer: .contextualSemantics, targetLevel: .b2) {
-                idiomIssues(in: $0, trie: idiomTrie)
+                patternIssues(in: $0, list: lists[2])
             },
             GrammarRule(identifier: "grammar.meaning", layer: .contextualSemantics, targetLevel: .a2) {
-                meaningIssues(in: $0, trie: meaningTrie)
+                patternIssues(in: $0, list: lists[3])
             },
             GrammarRule(identifier: "grammar.etOrEst", layer: .orthography, targetLevel: .a1) {
                 etOrEstIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.preposition", layer: .relationalGrammar, targetLevel: .a1) {
+                countryIssues(in: $0.tokens, countries: countries, trie: countryTrie)
+                    + patternIssues(in: $0, list: lists[4])
             }
         ]
     }
@@ -131,17 +158,6 @@ nonisolated struct FrenchGrammar: Grammar {
     private static let articles: [String: (gender: Gender, isDefinite: Bool)] = [
         "le": (.masculine, true), "la": (.feminine, true),
         "un": (.masculine, false), "une": (.feminine, false)
-    ]
-
-    /// Words after which le or la is an object pronoun, as in "je le porte".
-    private static let pronounContext: Set<String> = [
-        "je", "j'", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles",
-        "ne", "n'", "me", "m'", "te", "t'", "se", "s'", "y"
-    ]
-
-    /// Prepositions that take an infinitive, as in "pour le faire".
-    private static let infinitivePrepositions: Set<String> = [
-        "pour", "de", "d'", "à", "sans", "après", "avant", "par"
     ]
 
     /// Subject pronouns that can open "il dort plus".
@@ -194,8 +210,9 @@ nonisolated struct FrenchGrammar: Grammar {
     // MARK: - Article gender
 
     /// Flags le/la/un/une before a known noun of the other gender.
-    private func articleGenderIssues(in tokens: [Token]) -> [Issue] {
-        articleNounPairs(in: tokens).compactMap { index, marked in
+    private func articleGenderIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        return articleNounPairs(in: text).compactMap { index, marked in
             let article = tokens[index]
             let noun = tokens[index + 1]
             guard let entry = lexicon.noun(noun.normalized),
@@ -218,9 +235,10 @@ nonisolated struct FrenchGrammar: Grammar {
     ///
     /// Only nouns missing from the lexicon reach the model, so this rule never
     /// disagrees with `articleGenderIssues`; it covers the words that rule can't.
-    private func predictedGenderIssues(in tokens: [Token]) -> [Issue] {
+    private func predictedGenderIssues(in text: TaggedText) -> [Issue] {
         guard let genderPredictor else { return [] }
-        return articleNounPairs(in: tokens).compactMap { index, marked in
+        let tokens = text.tokens
+        return articleNounPairs(in: text).compactMap { index, marked in
             let article = tokens[index]
             let noun = tokens[index + 1]
             let word = noun.normalized
@@ -250,116 +268,23 @@ nonisolated struct FrenchGrammar: Grammar {
     ///
     /// Both gender rules share these skips, so a known noun and a predicted one are
     /// judged in exactly the same positions.
-    private func articleNounPairs(in tokens: [Token]) -> [(index: Int, marked: (gender: Gender, isDefinite: Bool))] {
-        tokens.indices.dropLast().compactMap { index in
+    private func articleNounPairs(in text: TaggedText) -> [(index: Int, marked: (gender: Gender, isDefinite: Bool))] {
+        let tokens = text.tokens
+        return tokens.indices.dropLast().compactMap { index in
             let article = tokens[index]
             let noun = tokens[index + 1]
             guard let marked = Self.articles[article.normalized], article.isAdjacentToNext else { return nil }
             // Before a vowel or h, le and la elide to l', which is a separate rule.
             if marked.isDefinite && noun.startsWithVowelOrH { return nil }
-            if isPronounPosition(of: tokens, articleAt: index) { return nil }
+            // "je le porte": the tagger can't rule out a pronoun.
+            if text.mayBePronoun[index] { return nil }
             if Self.superlativeMarkers.contains(noun.normalized) { return nil }
-            // "une petit maison": the word after the article is an adjective before the real noun.
-            if modifiesFollowingNoun(tokens, at: index + 1) { return nil }
-            // "la rouge", as in "la bleue ou la rouge": an adjective that agrees stands in for a noun.
-            if isAgreeingAdjective(noun.normalized, gender: marked.gender) { return nil }
+            // A word that can also be an adjective counts only when the tagger is sure it's
+            // the noun: "une petit maison" and "la rouge" stay silent.
+            if !lexicon.adjectiveLemmas(of: noun.normalized).isEmpty,
+               !text.isNoun(index + 1, certainty: Self.tagCertainty) { return nil }
             return (index, marked)
         }
-    }
-
-    /// Whether le/la at `index` may be an object pronoun, as in "je le porte" or
-    /// "pour la voir", so that no rule should treat it as an article.
-    ///
-    /// The hand rule's pronoun verdict always stands. With a model, an article
-    /// also needs the model to be sure of it, so "qui le porte ?" stays silent
-    /// where the hand rule alone would call "le porte" a gender error.
-    private func isPronounPosition(of tokens: [Token], articleAt index: Int) -> Bool {
-        if handRuleSaysPronoun(tokens, at: index) { return true }
-        let word = tokens[index].normalized
-        guard let articleModel, articleModel.decides(word) else { return false }
-        let context = modelContext(of: tokens, at: index)
-        // An object pronoun follows its subject, so a sentence never opens with one:
-        // the three training treebanks start 4,604 sentences with le, la, les or l',
-        // every one an article. The model is unsure of "Le voiture est rouge" only
-        // because Lexique also lists voiture as a form of voiturer.
-        guard context.previous != nil else { return false }
-        let pronoun = articleModel.pronounProbability(
-            of: word, previous: context.previous, next: context.next, afterNext: context.afterNext, lexicon: lexicon
-        )
-        return pronoun > 1.0 - Self.articleCertainty
-    }
-
-    /// The hand rule: le or la before a verb is a pronoun after a subject or object
-    /// pronoun, or after a preposition when the verb is an infinitive.
-    private func handRuleSaysPronoun(_ tokens: [Token], at index: Int) -> Bool {
-        let word = tokens[index + 1].normalized
-        guard lexicon.isVerb(word), index > 0 else { return false }
-        let previous = tokens[index - 1].normalized
-        if Self.pronounContext.contains(previous) { return true }
-        return isInfinitive(word) && Self.infinitivePrepositions.contains(previous)
-    }
-
-    /// Returns the words around `index` as the article model saw them in training,
-    /// where punctuation is a word of its own and a sentence starts with nothing before it.
-    private func modelContext(of tokens: [Token], at index: Int) -> (previous: String?, next: String?, afterNext: String?) {
-        var previous: String?
-        if index > 0 {
-            let before = tokens[index - 1]
-            switch Self.mark(in: before.gap) {
-            case .none: previous = before.normalized
-            case .some(let mark): previous = Self.sentenceEnds.contains(mark) || mark == "\n" ? nil : mark
-            }
-        }
-        let (next, nextIsMark) = neighbour(after: index, in: tokens)
-        var afterNext: String?
-        if nextIsMark {
-            afterNext = index + 1 < tokens.count ? tokens[index + 1].normalized : nil
-        } else if next != nil {
-            afterNext = neighbour(after: index + 1, in: tokens).word
-        }
-        return (previous, next, afterNext)
-    }
-
-    /// Returns what follows the token at `index`: a punctuation mark in its gap, the
-    /// next word, or `nil` at a line break or the end of the text.
-    private func neighbour(after index: Int, in tokens: [Token]) -> (word: String?, isMark: Bool) {
-        switch Self.mark(in: tokens[index].gap) {
-        case .some("\n"): return (nil, false)
-        case .some(let mark): return (mark, true)
-        case .none: return (index + 1 < tokens.count ? tokens[index + 1].normalized : nil, false)
-        }
-    }
-
-    /// Punctuation that ends a sentence, after which the model sees nothing before a word.
-    private static let sentenceEnds: Set<String> = [".", "!", "?", "…"]
-
-    /// Returns the first mark in a gap, "\n" for a line break, or `nil` when only spaces separate the words.
-    private static func mark(in gap: String) -> String? {
-        for character in gap {
-            if character.isNewline { return "\n" }
-            if character.isWhitespace { continue }
-            return String(character)
-        }
-        return nil
-    }
-
-    /// Whether a word is a verb form with an infinitive ending, such as faire or voir.
-    private func isInfinitive(_ word: String) -> Bool {
-        lexicon.isVerb(word) && ["er", "ir", "re", "oir"].contains { word.hasSuffix($0) }
-    }
-
-    /// Whether a word is a singular adjective form of `gender`, such as rouge for la.
-    private func isAgreeingAdjective(_ word: String, gender: Gender) -> Bool {
-        lexicon.adjectiveLemmas(of: word).contains { lemma in
-            lexicon.readings(of: word, lemma: lemma).contains { $0.gender == gender && $0.number == .singular }
-        }
-    }
-
-    /// Whether the word at `index` is an adjective directly followed by a known noun.
-    private func modifiesFollowingNoun(_ tokens: [Token], at index: Int) -> Bool {
-        guard index + 1 < tokens.count, tokens[index].isAdjacentToNext else { return false }
-        return !lexicon.adjectiveLemmas(of: tokens[index].normalized).isEmpty
-            && lexicon.noun(tokens[index + 1].normalized) != nil
     }
 
     // MARK: - Contractions
@@ -380,7 +305,7 @@ nonisolated struct FrenchGrammar: Grammar {
             // "de le faire": le is a pronoun before an infinitive, and no contraction applies.
             let word = next.normalized
             let isNominal = lexicon.noun(word) != nil || !lexicon.adjectiveLemmas(of: word).isEmpty
-            guard isNominal, !isInfinitive(word) else { continue }
+            guard isNominal, !lexicon.isInfinitive(word) else { continue }
 
             issues.append(issue(
                 .contraction, .error, from: index, through: index + 1, in: tokens,
@@ -398,34 +323,117 @@ nonisolated struct FrenchGrammar: Grammar {
 
     // MARK: - The accent on à
 
-    /// Flags a, the verb avoir, where only the preposition à fits: after a subject and
-    /// its verb ("je vais a Paris"), after jusqu', and after dans ("dans a la maison").
-    ///
-    /// Anywhere else a can have a subject, as in "il a la maison", so the rule stays silent.
-    private func accentIssues(in tokens: [Token]) -> [Issue] {
-        var issues: [Issue] = []
-        for index in tokens.indices.dropFirst() where tokens[index].normalized == "a" {
-            let previous = tokens[index - 1]
-            guard previous.isAdjacentToNext else { continue }
+    /// Nouns that take avoir where English uses "to be", as in "elle a faim".
+    private static let avoirNouns: Set<String> = [
+        "faim", "soif", "peur", "froid", "chaud", "raison", "tort", "besoin",
+        "envie", "sommeil", "mal", "honte", "hâte"
+    ]
 
-            if previous.normalized == "jusqu'" {
-                issues.append(accentIssue(from: index, through: index, in: tokens, explanation: .accentAfterJusqu))
-            } else if previous.normalized == "dans" {
-                // Two prepositions can't share one noun, so à replaces dans rather than joining it.
-                issues.append(accentIssue(from: index - 1, through: index, in: tokens, explanation: .accentAfterDans))
-            } else if index >= 2, lexicon.isVerb(previous.normalized),
-                      // "il y a", "il l'a", "il n'a": a pronoun or ne before a makes it avoir.
-                      !Self.preverbalWords.contains(previous.normalized),
-                      tokens[index - 2].isAdjacentToNext,
-                      Self.subjectPronouns.contains(tokens[index - 2].normalized),
-                      !isRelativeClauseSubject(tokens, before: index - 2) {
-                issues.append(accentIssue(
-                    from: index, through: index, in: tokens,
-                    explanation: .accentAfterVerb, ["verb": previous.text]
-                ))
+    /// Flags a and à written for each other, in both directions.
+    ///
+    /// a, the verb avoir, is flagged where only the preposition fits: after a subject and
+    /// its verb ("je vais a Paris"), after être and a participle ("il est allé a Paris"),
+    /// between an adjective and an infinitive ("facile a faire"), after jusqu', and after
+    /// dans. à is flagged where only avoir fits: right after il or on ("il à faim"), in
+    /// "il y à", and after elle when a participle or an avoir noun follows ("elle à soif").
+    ///
+    /// Anywhere else either word can be right, as in "il a la maison" or "un cadeau pour
+    /// elle à Noël", so the rule stays silent. On the UD French treebanks the new contexts
+    /// raise no false alarm across 8,281 à and 3,211 a.
+    private func accentIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropFirst() {
+            switch tokens[index].normalized {
+            case "a": issues += missingAccentIssues(at: index, in: text)
+            case "à": issues += extraAccentIssues(at: index, in: tokens)
+            default: continue
             }
         }
         return issues
+    }
+
+    /// Flags the a at `index` when only the preposition à fits there.
+    private func missingAccentIssues(at index: Int, in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        let previous = tokens[index - 1]
+        guard previous.isAdjacentToNext else { return [] }
+        let next = index + 1 < tokens.count && tokens[index].isAdjacentToNext ? tokens[index + 1] : nil
+
+        if previous.normalized == "jusqu'" {
+            return [accentIssue(from: index, through: index, in: tokens, explanation: .accentAfterJusqu)]
+        } else if previous.normalized == "dans" {
+            // Two prepositions can't share one noun, so à replaces dans rather than joining it.
+            return [accentIssue(from: index - 1, through: index, in: tokens, explanation: .accentAfterDans)]
+        } else if index >= 2, lexicon.isVerb(previous.normalized),
+                  // "il y a", "il l'a", "il n'a": a pronoun or ne before a makes it avoir.
+                  !Self.preverbalWords.contains(previous.normalized),
+                  tokens[index - 2].isAdjacentToNext,
+                  Self.subjectPronouns.contains(tokens[index - 2].normalized),
+                  !isRelativeClauseSubject(tokens, before: index - 2) {
+            return [accentIssue(
+                from: index, through: index, in: tokens,
+                explanation: .accentAfterVerb, ["verb": previous.text]
+            )]
+        } else if index >= 3, !lexicon.participles(previous.normalized).isEmpty,
+                  tokens[index - 2].isAdjacentToNext,
+                  Self.etreForms.contains(tokens[index - 2].normalized),
+                  // "ce qui est arrivé a changé": the tagger sees a as avoir, helping changé.
+                  !text.isHelperVerb(index, certainty: Self.tagCertainty) {
+            return [accentIssue(
+                from: index, through: index, in: tokens,
+                explanation: .accentAfterVerb, ["verb": previous.text]
+            )]
+        } else if let next, lexicon.isInfinitive(next.normalized),
+                  !lexicon.adjectiveLemmas(of: previous.normalized).isEmpty,
+                  // A noun or verb before a could be avoir's subject, as in "le chat a mangé",
+                  // so a word that can be a noun counts only when the tagger leans adjective.
+                  !lexicon.isVerb(previous.normalized),
+                  lexicon.noun(previous.normalized) == nil || text.isAdjective(index - 1, certainty: Self.adjectiveLean) {
+            return [accentIssue(
+                from: index, through: index, in: tokens,
+                explanation: .accentAfterAdjective, ["adjective": previous.text]
+            )]
+        }
+        return []
+    }
+
+    /// Flags the à at `index` when only the verb avoir fits there.
+    private func extraAccentIssues(at index: Int, in tokens: [Token]) -> [Issue] {
+        let previous = tokens[index - 1]
+        guard previous.isAdjacentToNext else { return [] }
+        let next = index + 1 < tokens.count && tokens[index].isAdjacentToNext ? tokens[index + 1] : nil
+
+        switch previous.normalized {
+        case "il", "on":
+            // Il and on are only ever subjects, and a preposition never follows a subject.
+            return [graveIssue(at: index, in: tokens, explanation: .graveAfterSubject, ["subject": previous.text])]
+        case "y" where index >= 2 && tokens[index - 2].normalized == "il" && tokens[index - 2].isAdjacentToNext:
+            return [graveIssue(at: index, in: tokens, explanation: .graveInIlYA)]
+        case "elle":
+            // Elle can follow a preposition ("pour elle à Noël"), so only what comes next decides.
+            guard let next, !lexicon.participles(next.normalized).isEmpty || Self.avoirNouns.contains(next.normalized) else {
+                return []
+            }
+            return [graveIssue(at: index, in: tokens, explanation: .graveAfterSubject, ["subject": previous.text])]
+        default:
+            return []
+        }
+    }
+
+    /// Builds an accent issue that replaces the à at `index` with a.
+    private func graveIssue(
+        at index: Int,
+        in tokens: [Token],
+        explanation key: ExplanationKey,
+        _ values: [String: String] = [:]
+    ) -> Issue {
+        issue(
+            .accent, .error, from: index, through: index, in: tokens,
+            replacement: matchingCase(of: tokens[index].text, "a"),
+            explanation: explanations.render(key, values),
+            source: "Accent rule"
+        )
     }
 
     /// Whether the subject at `subject` opens a relative clause, as in "ce qu'il dit a du sens"
@@ -498,7 +506,8 @@ nonisolated struct FrenchGrammar: Grammar {
     ///
     /// Only a subject pronoun directly followed by avoir and the participle is judged, so an
     /// object pronoun in between ("il l'a mangée") or ne ("il n'a pas") keeps the rule silent.
-    private func auxiliaryIssues(in tokens: [Token]) -> [Issue] {
+    private func auxiliaryIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
         var issues: [Issue] = []
         guard tokens.count >= 3 else { return issues }
         for index in 0..<(tokens.count - 2) {
@@ -534,8 +543,10 @@ nonisolated struct FrenchGrammar: Grammar {
                     source: "Auxiliary rule · Lexique"
                 ))
             } else if readings.allSatisfy({ $0.gender == .feminine || $0.number == .plural }),
-                      // "elle a vue sur la mer": vue is a noun there, not a participle.
-                      lexicon.noun(participle.normalized) == nil,
+                      // "elle a vue sur la mer": vue is a noun there, not a participle. A form
+                      // that is also a noun counts only when the tagger is sure avoir is the
+                      // helper and an object follows: "elle a prise une photo".
+                      lexicon.noun(participle.normalized) == nil || isPastTenseWithObject(text, avoirAt: index + 1),
                       let base = lexicon.participle(of: verb, gender: .masculine, number: .singular),
                       base != participle.normalized {
                 issues.append(issue(
@@ -547,6 +558,15 @@ nonisolated struct FrenchGrammar: Grammar {
             }
         }
         return issues
+    }
+
+    /// Whether avoir at `index` is surely a helper verb whose participle is followed by a
+    /// determiner, as in "il a faite ses devoirs".
+    private func isPastTenseWithObject(_ text: TaggedText, avoirAt index: Int) -> Bool {
+        let tokens = text.tokens
+        guard text.isHelperVerb(index, certainty: Self.tagCertainty),
+              index + 2 < tokens.count, tokens[index + 1].isAdjacentToNext else { return false }
+        return Self.determiners[tokens[index + 2].normalized] != nil
     }
 
     // MARK: - Conjugation
@@ -755,13 +775,8 @@ nonisolated struct FrenchGrammar: Grammar {
 
     // MARK: - Articles for things in general
 
-    /// Present forms of the verbs of liking, each with its infinitive.
-    private static let likingVerbs: [String: String] = [
-        "aime": "aimer", "aimes": "aimer", "aimons": "aimer", "aimez": "aimer", "aiment": "aimer",
-        "adore": "adorer", "adores": "adorer", "adorons": "adorer", "adorez": "adorer", "adorent": "adorer",
-        "déteste": "détester", "détestes": "détester", "détestons": "détester", "détestez": "détester", "détestent": "détester",
-        "préfère": "préférer", "préfères": "préférer", "préférons": "préférer", "préférez": "préférer", "préfèrent": "préférer"
-    ]
+    /// The verbs of liking, whose present forms Lexique supplies.
+    private static let likingVerbs: Set<String> = ["aimer", "adorer", "détester", "préférer"]
 
     /// Words that can sit between the verb and its noun: "je n'aime pas le fromage", "j'aime bien le chocolat".
     private static let likingAdverbs: Set<String> = [
@@ -787,7 +802,9 @@ nonisolated struct FrenchGrammar: Grammar {
         var issues: [Issue] = []
         for index in tokens.indices.dropLast() {
             let verbToken = tokens[index]
-            guard let verb = Self.likingVerbs[verbToken.normalized], verbToken.isAdjacentToNext,
+            guard let verb = lexicon.conjugations(verbToken.normalized).first(where: { reading in
+                      Self.likingVerbs.contains(reading.verb) && reading.codes.contains { $0.hasPrefix("ip") }
+                  })?.verb, verbToken.isAdjacentToNext,
                   // "le fromage que j'aime est bon": the object came before, so the next word is the main verb.
                   !tokens[max(0, index - 2)..<index].contains(where: { ["que", "qu'"].contains($0.normalized) }) else { continue }
             // Look past one adverb: "je n'aime pas fromage", "j'aime bien chocolat".
@@ -801,7 +818,7 @@ nonisolated struct FrenchGrammar: Grammar {
                   noun.text.first?.isUppercase == false,
                   word.first != "h",
                   // "j'aime dîner": an infinitive, even one that is also a noun, takes no article.
-                  !isInfinitive(word),
+                  !lexicon.isInfinitive(word),
                   let entry = lexicon.noun(word) else { continue }
 
             let article: String
@@ -827,7 +844,8 @@ nonisolated struct FrenchGrammar: Grammar {
 
     /// Flags an adjective directly after its noun that doesn't agree with it, as in
     /// "des pommes rouge".
-    private func agreementIssues(in tokens: [Token]) -> [Issue] {
+    private func agreementIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
         var issues: [Issue] = []
         guard tokens.count >= 3 else { return issues }
         for index in 0..<(tokens.count - 2) {
@@ -839,7 +857,7 @@ nonisolated struct FrenchGrammar: Grammar {
                   !Self.superlativeMarkers.contains(noun.normalized),
                   let entry = lexicon.noun(noun.normalized) else { continue }
             // "je le porte tous les jours": le is a pronoun, so porte is a verb with no adjective.
-            if Self.articles[determiner.normalized] != nil, isPronounPosition(of: tokens, articleAt: index) { continue }
+            if text.mayBePronoun[index] { continue }
 
             let word = adjective.normalized
             // Past participles ("des pommes achetées") are verb forms with their own rules.
@@ -915,107 +933,271 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
-    // MARK: - Look-alikes and word choice
+    // MARK: - Listed phrases
 
-    /// Flags each listed phrase: look-alikes such as "comment cava", whose words are each
-    /// French but wrong together, and English patterns such as "je suis faim". Each entry
-    /// is wrong wherever it appears, apart from its listed exceptions, so these are errors.
-    private func phraseFixIssues(
-        in tokens: [Token],
-        from fixes: [PhraseFix],
-        trie: PhraseTrie,
-        kind: IssueKind,
-        explanation key: ExplanationKey,
-        source: String
+    /// Flags each listed phrase of one kind: look-alikes such as "comment cava" and English
+    /// patterns such as "je suis faim" are errors, idioms are suggestions, and meaning
+    /// questions ask which wording the learner meant. Each entry is wrong (or worth a
+    /// question) wherever it appears, apart from its listed exceptions.
+    private func patternIssues(
+        in text: TaggedText,
+        list: (kind: PhrasePattern.Kind, entries: [PhrasePattern], trie: PhraseTrie)
     ) -> [Issue] {
-        trie.matches(in: tokens).compactMap { match in
-            let fix = fixes[match.entry]
-            guard allowsMatch(
-                match, in: tokens,
-                unlessAfter: fix.unlessAfter, onlyAfter: fix.onlyAfter,
-                unlessBefore: fix.unlessBefore, onlyAtClauseEnd: fix.onlyAtClauseEnd == true
-            ) else { return nil }
-            return issue(
-                kind, .error, from: match.start, through: match.start + match.length - 1, in: tokens,
-                replacement: matchingCase(of: tokens[match.start].text, fix.fix),
-                explanation: explanations.render(key, ["note": fix.note, "fix": fix.fix]),
-                source: source
-            )
+        let tokens = text.tokens
+        return list.trie.matches(in: tokens, keys: { patternKeys(at: $0, in: text) }).compactMap { match in
+            let entry = list.entries[match.entry]
+            guard allowsMatch(match, in: tokens, entry: entry) else { return nil }
+            if list.kind == .meaning {
+                let last = match.start + match.length - 1
+                var question = issue(
+                    .meaning, .suggestion, from: match.start, through: last, in: tokens,
+                    replacement: nil,
+                    explanation: explanations.render(.meaning, ["note": entry.note]),
+                    source: "Meaning list"
+                )
+                let first = tokens[match.start].text
+                question.choices = (entry.choices ?? []).map { Choice(text: matchingCase(of: first, $0.text), meaning: $0.meaning) }
+                return question
+            }
+            guard let fix = entry.fix,
+                  let rendered = renderedFix(fix, for: entry, match: match, in: tokens) else { return nil }
+            let (first, elision) = elided(rendered, before: match.start, in: tokens)
+            let (last, replacement) = contracted(elision, after: match.start + match.length - 1, in: tokens)
+            let caseMatched = matchingCase(of: tokens[first].text, replacement)
+            switch list.kind {
+            case .lookAlike, .wordChoice:
+                let isLookAlike = list.kind == .lookAlike
+                return issue(
+                    isLookAlike ? .lookAlike : .wordChoice, .error, from: first, through: last, in: tokens,
+                    replacement: caseMatched,
+                    explanation: explanations.render(isLookAlike ? .lookAlike : .wordChoice, ["note": entry.note, "fix": replacement]),
+                    source: isLookAlike ? "Look-alike list" : "Word-choice list"
+                )
+            case .preposition:
+                return issue(
+                    .preposition, .error, from: first, through: last, in: tokens,
+                    replacement: caseMatched,
+                    explanation: explanations.render(.preposition, ["note": entry.note, "fix": replacement]),
+                    source: "Preposition list"
+                )
+            case .idiom, .meaning:
+                return issue(
+                    .idiom, .suggestion, from: first, through: last, in: tokens,
+                    replacement: caseMatched,
+                    explanation: explanations.render(.idiom, ["suggestion": replacement, "note": entry.note]),
+                    source: "Idiom list"
+                )
+            }
         }
     }
 
-    /// Splits a listed phrase into the normalized words the tokenizer produces for it.
-    private static func words(of phrase: String) -> [String] {
-        FrenchTokenizer.tokens(in: phrase).map(\.normalized)
+    /// Returns every pattern word token `index` can stand for: itself, each `$class` that lists
+    /// it, and `@verb` and `@verb:tense` for each verb Lexique says it is a form of, unless the
+    /// tagger is sure it's a noun here, as demande in "la demande sur le site".
+    private func patternKeys(at index: Int, in text: TaggedText) -> [String] {
+        let word = text.tokens[index].normalized
+        var keys = [word] + patterns.classKeys(of: word)
+        guard !text.isNounNotVerb(index, certainty: Self.tagCertainty) else { return keys }
+        for reading in lexicon.conjugations(word) {
+            keys.append("@" + reading.verb)
+            keys += reading.codes.map { "@\(reading.verb):\($0.prefix(2))" }
+        }
+        for reading in lexicon.participles(word) {
+            keys += ["@" + reading.verb, "@\(reading.verb):pp"]
+        }
+        if lexicon.isInfinitive(word) {
+            keys += ["@" + word, "@\(word):inf"]
+        }
+        var seen = Set<String>()
+        return keys.filter { seen.insert($0).inserted }
+    }
+
+    /// Fills a fix's `@verb` and `$class` words from the learner's own words, or returns
+    /// `nil` when Lexique has no form of the new verb for the learner's person and tense.
+    private func renderedFix(_ fix: String, for entry: PhrasePattern, match: PhraseTrie.Match, in tokens: [Token]) -> String? {
+        let pattern = entry.matchWords
+        let classTokens = pattern.indices.filter { pattern[$0].hasPrefix("$") }.map { tokens[match.start + $0] }
+        let verbPosition = pattern.firstIndex { $0.hasPrefix("@") }
+        var nextClass = 0
+        var words: [String] = []
+        for word in fix.split(separator: " ").map(String.init) {
+            if word.hasPrefix("$") {
+                guard nextClass < classTokens.count else { return nil }
+                words.append(classTokens[nextClass].text)
+                nextClass += 1
+            } else if word.hasPrefix("@"), let verbPosition {
+                let token = tokens[match.start + verbPosition]
+                let source = Self.lemma(of: pattern[verbPosition])
+                let target = Self.lemma(of: word)
+                if source == target {
+                    words.append(token.text)
+                } else {
+                    guard let form = inflect(token.normalized, of: source, as: target, at: match.start + verbPosition, in: tokens) else { return nil }
+                    words.append(form)
+                }
+            } else {
+                words.append(word)
+            }
+        }
+        return words.joined(separator: " ")
+    }
+
+    /// The verb a `@verb` or `@verb:ip` pattern word names.
+    private static func lemma(of patternWord: String) -> String {
+        String(patternWord.dropFirst().prefix { $0 != ":" })
+    }
+
+    /// Returns `target` in the person and tense of `form`, a form of `source`: "fait" of faire
+    /// becomes "prend" of prendre, or "pris" after avoir.
+    private func inflect(_ form: String, of source: String, as target: String, at index: Int, in tokens: [Token]) -> String? {
+        if form == source, lexicon.isInfinitive(form) { return target }
+        let participle = lexicon.participles(form).first { $0.verb == source }
+        let conjugation = lexicon.conjugations(form).first { $0.verb == source }
+        // "pris" is also a passé simple, which learners rarely mean; "fait" is also a
+        // present, so it's a participle only after avoir or être.
+        let everydayTense = conjugation?.codes.contains { code in Self.tensePriority.prefix(5).contains { code.hasPrefix($0) } } ?? false
+        if let participle, !everydayTense || followsAuxiliary(index, in: tokens) {
+            return lexicon.participle(of: target, gender: participle.gender ?? .masculine, number: participle.number ?? .singular)
+        }
+        guard let conjugation,
+              let code = Self.tensePriority.lazy.compactMap({ tense in conjugation.codes.sorted().first { $0.hasPrefix(tense) } }).first
+        else { return nil }
+        return lexicon.conjugate(target, code)
+    }
+
+    /// Whether a form of avoir or être comes within three words before `index`, as in "j'ai
+    /// fait" or "je n'ai pas fait".
+    private func followsAuxiliary(_ index: Int, in tokens: [Token]) -> Bool {
+        tokens[max(0, index - 3)..<index].contains { Self.avoirTenses[$0.normalized] != nil || Self.etreForms.contains($0.normalized) }
+    }
+
+    /// Adjusts je and j' before a fix whose first word changes: "je suis faim" becomes
+    /// "j'ai faim", and "j'ai un bon temps" becomes "je passe un bon moment". Returns the
+    /// first token the fix covers and its text.
+    private func elided(_ replacement: String, before start: Int, in tokens: [Token]) -> (first: Int, text: String) {
+        guard start > 0, tokens[start - 1].isAdjacentToNext, let initial = replacement.first else { return (start, replacement) }
+        let subject = tokens[start - 1]
+        let startsWithVowel = "aeiouyàâéèêëîïôûh".contains(initial)
+        if subject.normalized == "je", startsWithVowel {
+            return (start - 1, matchingCase(of: subject.text, "j'") + replacement)
+        }
+        if subject.normalized == "j'", !startsWithVowel {
+            return (start - 1, matchingCase(of: subject.text, "je") + " " + replacement)
+        }
+        return (start, replacement)
     }
 
     /// Whether a trie match stands, given the words around it: some listed phrases are
     /// correct French after or before particular words.
-    private func allowsMatch(
-        _ match: PhraseTrie.Match,
-        in tokens: [Token],
-        unlessAfter: [String]?,
-        onlyAfter: [String]?,
-        unlessBefore: [String]?,
-        onlyAtClauseEnd: Bool
-    ) -> Bool {
+    private func allowsMatch(_ match: PhraseTrie.Match, in tokens: [Token], entry: PhrasePattern) -> Bool {
         let start = match.start
         let end = start + match.length
         let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
         let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
         // "il cava" is the verb caver, which is correct French.
-        if let before, unlessAfter?.contains(before) == true { return false }
-        // "a fait une décision" takes pris; "il fait une décision" takes prend.
-        if let onlyAfter, !onlyAfter.contains(before ?? "") { return false }
+        if let before, entry.unlessAfter?.contains(before) == true { return false }
+        // A subject pronoun belongs to the verb after it, so "ce que j'aime du roman" checks
+        // the word before j' too.
+        if let before, Self.subjectPronouns.contains(before), start > 1, tokens[start - 2].isAdjacentToNext,
+           entry.unlessAfter?.contains(tokens[start - 2].normalized) == true { return false }
+        if let onlyAfter = entry.onlyAfter, !onlyAfter.contains(before ?? "") { return false }
         // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
-        if let after, unlessBefore?.contains(after) == true { return false }
+        if let after, entry.unlessBefore?.contains(after) == true { return false }
         // "et tu ?" is wrong; "et tu vas bien" is correct French.
-        if onlyAtClauseEnd, end < tokens.count, !tokens[end - 1].endsClause { return false }
+        if entry.onlyAtClauseEnd == true, end < tokens.count, !tokens[end - 1].endsClause { return false }
+        // "je n'ai pas encore fini": only "not yet" makes sense, so the question would be noise.
+        if entry.unlessBeforeParticiple == true, let after, !lexicon.participles(after).isEmpty { return false }
+        // "essaie à faire" is wrong, but "essaie à Paris" says where.
+        let infinitiveFollows = infinitiveFollows(end, in: tokens)
+        if entry.onlyBeforeInfinitive == true, !infinitiveFollows { return false }
+        // "j'attends pour voir" and "attendre pour en savoir" are correct; "j'attends pour le bus" copies "wait for".
+        if entry.unlessBeforeInfinitive == true, infinitiveFollows { return false }
         return true
     }
 
-    // MARK: - Idioms
-
-    /// Suggests the more natural wording for phrases in the idiom list.
-    private func idiomIssues(in tokens: [Token], trie: PhraseTrie) -> [Issue] {
-        trie.matches(in: tokens).compactMap { match in
-            let idiom = idioms[match.entry]
-            guard allowsMatch(
-                match, in: tokens,
-                unlessAfter: idiom.unlessAfter, onlyAfter: idiom.onlyAfter,
-                unlessBefore: idiom.unlessBefore, onlyAtClauseEnd: false
-            ) else { return nil }
-            return issue(
-                .idiom, .suggestion, from: match.start, through: match.start + match.length - 1, in: tokens,
-                replacement: matchingCase(of: tokens[match.start].text, idiom.suggestion),
-                explanation: explanations.render(.idiom, ["suggestion": idiom.suggestion, "note": idiom.note]),
-                source: "Idiom list"
-            )
-        }
+    /// Whether an infinitive starts at token `index`, after at most one object pronoun, as in
+    /// "pour voir" or "pour en savoir".
+    private func infinitiveFollows(_ index: Int, in tokens: [Token]) -> Bool {
+        guard index > 0, index < tokens.count, tokens[index - 1].isAdjacentToNext else { return false }
+        if lexicon.isInfinitive(tokens[index].normalized) { return true }
+        guard Self.preverbalWords.contains(tokens[index].normalized), tokens[index].isAdjacentToNext,
+              index + 1 < tokens.count else { return false }
+        return lexicon.isInfinitive(tokens[index + 1].normalized)
     }
 
-    // MARK: - Meaning
+    /// Contracts a fix that ends in à or de with a le or les right after the phrase, so
+    /// "dépend sur le temps" becomes "dépend du temps" rather than "dépend de le temps".
+    /// Returns the last token the fix covers and its text.
+    private func contracted(_ replacement: String, after last: Int, in tokens: [Token]) -> (last: Int, text: String) {
+        guard last + 1 < tokens.count, tokens[last].isAdjacentToNext else { return (last, replacement) }
+        let words = replacement.split(separator: " ").map(String.init)
+        guard let preposition = words.last,
+              let contraction = Self.contractions[preposition + " " + tokens[last + 1].normalized],
+              // "de le faire": le is a pronoun before an infinitive, and no contraction applies.
+              last + 2 >= tokens.count || !lexicon.isInfinitive(tokens[last + 2].normalized) else { return (last, replacement) }
+        return (last + 1, (words.dropLast() + [contraction]).joined(separator: " "))
+    }
 
-    /// Asks which wording the learner meant for correct phrases that English speakers
-    /// often mix up, such as "pas encore" for "plus". A suggestion with choices, never
-    /// an error, because only the learner knows what they meant.
-    private func meaningIssues(in tokens: [Token], trie: PhraseTrie) -> [Issue] {
+    // MARK: - Countries
+
+    /// Verbs of coming from somewhere, after which de before a country is about origin.
+    private static let originVerbs = ["venir", "revenir", "rentrer", "arriver", "partir", "sortir", "retourner", "repartir"]
+
+    /// Whether `word` is a conjugated form, participle or infinitive of `verb`.
+    private func isForm(_ word: String, of verb: String) -> Bool {
+        word == verb || lexicon.conjugations(word).contains { $0.verb == verb } || lexicon.participles(word).contains { $0.verb == verb }
+    }
+
+    /// Flags the wrong preposition before a country: "à France" → "en France", "en Canada"
+    /// → "au Canada", "de Canada" → "du Canada". The country's article settles it: la and
+    /// l' take en (de, d'), le takes au (du), and les takes aux (des).
+    ///
+    /// Only a capitalised name with no article of its own is judged, so "à la France" and
+    /// "la chine" (porcelain) stay silent. Countries listed without an article, such as Cuba
+    /// and Israël, vary in usage and are left alone.
+    private func countryIssues(in tokens: [Token], countries: [(key: String, value: String)], trie: PhraseTrie) -> [Issue] {
         trie.matches(in: tokens).compactMap { match in
-            let check = meaningChecks[match.entry]
-            let end = match.start + match.length
-            if check.unlessBeforeParticiple == true, end < tokens.count, tokens[end - 1].isAdjacentToNext,
-               !lexicon.participles(tokens[end].normalized).isEmpty {
+            let (name, article) = countries[match.entry]
+            let start = match.start
+            guard start > 0, tokens[start].text.first?.isUppercase == true,
+                  tokens[start - 1].isAdjacentToNext, !article.isEmpty else { return nil }
+            let preposition = tokens[start - 1]
+            let isOrigin: Bool
+            switch preposition.normalized {
+            case "à", "en", "au", "aux", "dans": isOrigin = false
+            case "de", "d'", "du", "des": isOrigin = true
+            default: return nil
+            }
+            // "la République de Vanuatu", "Frédéric II de Danemark": after a noun, de can belong
+            // to a fixed title, so a missing du or des counts only after a verb of coming.
+            if isOrigin, ["de", "d'"].contains(preposition.normalized), ["le", "les"].contains(article),
+               !(start >= 2 && Self.originVerbs.contains { isForm(tokens[start - 2].normalized, of: $0) }) { return nil }
+            let expected: String
+            let reason: String
+            switch article {
+            case "la":
+                (expected, reason) = (isOrigin ? "de" : "en", "a feminine country")
+            case "l'":
+                (expected, reason) = (isOrigin ? "d'" : "en", "a country starting with a vowel")
+            case "le":
+                (expected, reason) = (isOrigin ? "du" : "au", "a masculine country")
+            case "les":
+                (expected, reason) = (isOrigin ? "des" : "aux", "a plural country")
+            default:
                 return nil
             }
-            let first = tokens[match.start].text
-            var flagged = issue(
-                .meaning, .suggestion, from: match.start, through: match.start + match.length - 1, in: tokens,
-                replacement: nil,
-                explanation: explanations.render(.meaning, ["note": check.note]),
-                source: "Meaning list"
+            guard expected != preposition.normalized else { return nil }
+            let last = start + match.length - 1
+            var nameText = ""
+            for index in start..<last { nameText += tokens[index].text + tokens[index].gap }
+            nameText += tokens[last].text
+            let fix = expected + (expected.hasSuffix("'") ? "" : " ") + nameText
+            return issue(
+                .preposition, .error, from: start - 1, through: last, in: tokens,
+                replacement: matchingCase(of: preposition.text, fix),
+                explanation: explanations.render(.placePreposition, ["place": name, "reason": reason, "fix": fix]),
+                source: "Country list"
             )
-            flagged.choices = check.choices.map { Choice(text: matchingCase(of: first, $0.text), meaning: $0.meaning) }
-            return flagged
         }
     }
 
@@ -1027,16 +1209,16 @@ nonisolated struct FrenchGrammar: Grammar {
     /// Flags et written for est, or est for et, using the Quiver model. When the other
     /// word is almost certain it's an error with a fix; when the model only leans
     /// toward it, the learner is asked which word they meant.
-    private func etOrEstIssues(in tokens: [Token]) -> [Issue] {
+    private func etOrEstIssues(in text: TaggedText) -> [Issue] {
         guard let etOrEstModel else { return [] }
-        let stream = modelSentences(of: tokens)
+        let tokens = text.tokens
         var issues: [Issue] = []
         for (index, token) in tokens.enumerated() {
             let written = token.normalized
             guard written == "et" || written == "est" else { continue }
             let other = written == "et" ? "est" : "et"
-            let place = stream.places[index]
-            let words = stream.sentences[place.sentence]
+            let place = text.places[index]
+            let words = text.sentences[place.sentence]
             let word = { (offset: Int) -> String? in
                 words.indices.contains(place.index + offset) ? words[place.index + offset] : nil
             }
@@ -1071,34 +1253,6 @@ nonisolated struct FrenchGrammar: Grammar {
             }
         }
         return issues
-    }
-
-    /// Splits the text into sentences of words as the treebank models saw them in
-    /// training: punctuation is a word of its own, a sentence keeps its closing mark,
-    /// and a line break ends a sentence. Returns where each token landed.
-    private func modelSentences(of tokens: [Token]) -> (sentences: [[String]], places: [(sentence: Int, index: Int)]) {
-        var sentences: [[String]] = []
-        var places: [(sentence: Int, index: Int)] = []
-        var current: [String] = []
-        for token in tokens {
-            places.append((sentences.count, current.count))
-            current.append(token.normalized)
-            switch Self.mark(in: token.gap) {
-            case .none:
-                continue
-            case .some("\n"):
-                sentences.append(current)
-                current = []
-            case .some(let mark):
-                current.append(mark)
-                if Self.sentenceEnds.contains(mark) {
-                    sentences.append(current)
-                    current = []
-                }
-            }
-        }
-        sentences.append(current)
-        return (sentences, places)
     }
 
     // MARK: - Helpers

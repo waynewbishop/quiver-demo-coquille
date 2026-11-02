@@ -29,6 +29,37 @@ final class FrenchGrammarTests: XCTestCase {
         try grammar().check(text).map { "\($0.original) → \($0.replacement ?? "")" }
     }
 
+    // MARK: - The part-of-speech layer
+
+    // The bundled deciders load, and each settles its own ambiguity in plain cases.
+    func testTaggerSettlesTheCommonAmbiguities() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let french = try XCTUnwrap(pack.grammar as? FrenchGrammar)
+        XCTAssertNotNil(french.adjectiveOrNounModel)
+        XCTAssertNotNil(french.helperOrMainModel)
+
+        let pronoun = french.tag(FrenchTokenizer.tokens(in: "Je le porte."))
+        XCTAssertTrue(pronoun.mayBePronoun[1])
+        let helper = french.tag(FrenchTokenizer.tokens(in: "Il a mangé une pomme."))
+        XCTAssertTrue(helper.isHelperVerb(1, certainty: FrenchGrammar.tagCertainty))
+        let main = french.tag(FrenchTokenizer.tokens(in: "Il a un chat."))
+        XCTAssertEqual(try XCTUnwrap(main.helperProbability[1]), 0, accuracy: 0.05)
+        let adjective = french.tag(FrenchTokenizer.tokens(in: "Des pommes rouges."))
+        XCTAssertTrue(adjective.isAdjective(2, certainty: FrenchGrammar.tagCertainty))
+        // Words with one reading get no verdict: Lexique already settles them.
+        let plain = french.tag(FrenchTokenizer.tokens(in: "C'est difficile."))
+        XCTAssertNil(plain.adjectiveProbability[2])
+    }
+
+    // With avoir surely a helper and an object after it, a participle that is also a noun
+    // still agrees wrongly: "elle a prise une photo".
+    func testParticipleThatIsAlsoANounWithAnObject() throws {
+        XCTAssertEqual(try fixes("Elle a prise une photo."), ["prise → pris"])
+        XCTAssertEqual(try fixes("Il a faite ses devoirs."), ["faite → fait"])
+        XCTAssertEqual(try fixes("Elle a vue sur la mer."), [])
+        XCTAssertEqual(try fixes("Elle a pris une photo."), [])
+    }
+
     // MARK: - The mockup sentence
 
     // The design's example paragraph: every grammar error it shows, known nouns as errors.
@@ -65,33 +96,44 @@ final class FrenchGrammarTests: XCTestCase {
 
     // MARK: - Article or pronoun model
 
-    // The bundled model rebuilds the Notebook's features exactly: these are the
+    // The bundled deciders rebuild the Notebook's features exactly: these are the
     // probabilities the training script printed for its trap sentences.
-    func testArticleModelMatchesTheNotebook() throws {
+    func testDecidersMatchTheNotebook() throws {
         let pack = try XCTUnwrap(Self.pack)
-        let model = try XCTUnwrap(pack.articleModel, "fr.article-model.json should be bundled")
-        let cases: [(word: String, previous: String?, next: String?, afterNext: String?, pronoun: Double)] = [
-            ("le", "je", "porte", ".", 0.64),
-            ("la", "il", "porte", "tous", 0.22),
-            ("le", "qui", "porte", "?", 0.12),
-            ("le", "ouvre", "porte", ".", 0.02),
-            ("la", "a", "grippe", ".", 0.01),
-            ("l'", "je", "ai", "vu", 1.00),
-            ("la", "allons", "visiter", ".", 0.71)
+        let french = try XCTUnwrap(pack.grammar as? FrenchGrammar)
+        let article = try XCTUnwrap(pack.articleModel, "fr.article-pronoun-model.json should be bundled")
+        let nounOrVerb = try XCTUnwrap(french.nounOrVerbModel, "fr.noun-verb-model.json should be bundled")
+        let cases: [(model: ContextDecider, text: String, index: Int, probability: Double)] = [
+            (article, "Je le porte.", 1, 0.866),
+            (article, "Il la porte.", 1, 0.416),
+            (article, "Je ne la vois pas.", 2, 0.962),
+            (article, "Il ouvre le porte.", 2, 0.010),
+            (article, "Je ferme la porte.", 2, 0.005),
+            (nounOrVerb, "Je joue le foot.", 1, 1.000),
+            (nounOrVerb, "Elle demande pour le bus.", 1, 0.975),
+            (nounOrVerb, "La demande sur le site.", 1, 0.005)
         ]
         for item in cases {
-            let pronoun = model.pronounProbability(
-                of: item.word, previous: item.previous, next: item.next, afterNext: item.afterNext, lexicon: pack.lexicon
-            )
-            XCTAssertEqual(pronoun, item.pronoun, accuracy: 0.005, "\(item.previous ?? "") \(item.word) \(item.next ?? "")")
+            let tagged = french.tag(FrenchTokenizer.tokens(in: item.text))
+            let probability = item.model.probability(of: tagged.window(at: item.index), lexicon: pack.lexicon)
+            XCTAssertEqual(probability, item.probability, accuracy: 0.005, item.text)
         }
+    }
+
+    // A noun that is also a verb form never matches a verb pattern: "la demande" isn't demander.
+    func testNounNeverMatchesAVerbPattern() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let french = try XCTUnwrap(pack.grammar as? FrenchGrammar)
+        let tagged = french.tag(FrenchTokenizer.tokens(in: "La demande sur le site."))
+        XCTAssertTrue(tagged.isNounNotVerb(1, certainty: FrenchGrammar.tagCertainty))
+        XCTAssertEqual(try fixes("Je joue le foot."), ["joue le foot → joue au foot"])
     }
 
     // A pronoun the hand rule misses, before a word that is also a noun of the other
     // gender: alone, the hand rule calls "le porte" a gender error; the model keeps it silent.
     func testArticleModelSilencesPronounsTheHandRuleMisses() throws {
         let pack = try XCTUnwrap(Self.pack)
-        let handRuleOnly = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: pack.genderModel)
+        let handRuleOnly = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: pack.genderModel)
         XCTAssertEqual(handRuleOnly.check("Qui le porte ?").map(\.original), ["le porte"])
 
         XCTAssertEqual(try fixes("Qui le porte ?"), [])
@@ -191,6 +233,36 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Il y a un chat."), [])
         XCTAssertEqual(try fixes("Ce qu'il dit a du sens."), [])
         XCTAssertEqual(try fixes("Je vais à Paris."), [])
+    }
+
+    // After être and a participle, or between an adjective and an infinitive, a is the preposition.
+    func testMissingAccentAfterParticipleOrAdjective() throws {
+        XCTAssertEqual(try fixes("Il est allé a Paris."), ["a → à"])
+        XCTAssertEqual(try fixes("C'est facile a faire."), ["a → à"])
+        // Lexique also lists comprendre as a conjugated form of itself; it's still an infinitive.
+        XCTAssertEqual(try fixes("C'est difficile a comprendre."), ["a → à"])
+    }
+
+    // A relative clause before être and a participle is avoir's subject, so a stays.
+    func testRelativeClauseKeepsA() throws {
+        XCTAssertEqual(try fixes("Ce qui est arrivé a changé ma vie."), [])
+        XCTAssertEqual(try fixes("La police qui est intervenue a tiré."), [])
+    }
+
+    // Right after il or on, or in il y a, à is the verb avoir and loses its accent.
+    func testExtraAccentOnA() throws {
+        XCTAssertEqual(try fixes("Il à faim."), ["à → a"])
+        XCTAssertEqual(try fixes("On à mangé."), ["à → a"])
+        XCTAssertEqual(try fixes("Il y à un chat."), ["à → a"])
+        XCTAssertEqual(try fixes("Elle à soif."), ["à → a"])
+        XCTAssertEqual(try grammar().check("Il à faim.").first?.kind, .accent)
+    }
+
+    // Elle can follow a preposition, so à after elle stays unless avoir clearly fits.
+    func testAAfterStressedElleStays() throws {
+        XCTAssertEqual(try fixes("Un cadeau pour elle à Noël."), [])
+        XCTAssertEqual(try fixes("Lui à pied, elle à vélo."), [])
+        XCTAssertEqual(try fixes("À demain !"), [])
     }
 
     // MARK: - Être or avoir
@@ -362,8 +434,8 @@ final class FrenchGrammarTests: XCTestCase {
         ("J'ai mal aux têtes.", "mal aux têtes → mal à la tête"),
         ("J'ai fait le vélo.", "fait le vélo → fait du vélo"),
         ("Je vais du sport.", "vais du sport → fais du sport"),
-        ("J'aime du vélo.", "J'aime du → J'aime le"),
-        ("Tu aimes de la musique?", "Tu aimes de la → Tu aimes la"),
+        ("J'aime du vélo.", "aime du → aime le"),
+        ("Tu aimes de la musique?", "aimes de la → aimes la"),
         ("Il est venu en pied.", "en pied → à pied"),
         // Être or avoir, from the Review List: "J'ai arrivé à l'hôtel".
         ("J'ai allé à la gare.", "J'ai allé → Je suis allé"),
@@ -595,6 +667,83 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("J'ai pris une décision en France."), [])
     }
 
+    // One entry per verb covers every person and tense, and the fix keeps the learner's form.
+    func testVerbPatternsMatchEveryForm() throws {
+        XCTAssertEqual(try fixes("Nous jouons le foot."), ["jouons le foot → jouons au foot"])
+        XCTAssertEqual(try fixes("Il fait une décision."), ["fait une décision → prend une décision"])
+        XCTAssertEqual(try fixes("Il a fait une décision."), ["fait une décision → pris une décision"])
+        XCTAssertEqual(try fixes("Vous faites une décision."), ["faites une décision → prenez une décision"])
+        XCTAssertEqual(try fixes("Nous sommes faim."), ["sommes faim → avons faim"])
+        XCTAssertEqual(try fixes("J'ai un bon temps."), ["J'ai un bon temps → Je passe un bon moment"])
+        XCTAssertEqual(try fixes("Il est né dans mai."), ["dans mai → en mai"])
+        // Only the present of aimer: "j'aimerais du café" is a polite request.
+        XCTAssertEqual(try fixes("J'aimerais du café."), [])
+        XCTAssertEqual(try fixes("J'adore du chocolat."), ["adore du → adore le"])
+    }
+
+    // MARK: - Prepositions
+
+    // A country's article settles its preposition, going there or coming from it.
+    func testCountryPrepositions() throws {
+        XCTAssertEqual(try fixes("Il habite à Canada."), ["à Canada → au Canada"])
+        XCTAssertEqual(try fixes("Je vais à France."), ["à France → en France"])
+        XCTAssertEqual(try fixes("Elle habite en Mexique."), ["en Mexique → au Mexique"])
+        XCTAssertEqual(try fixes("Je vais à États-Unis."), ["à États-Unis → aux États-Unis"])
+        XCTAssertEqual(try fixes("Il vient de Japon."), ["de Japon → du Japon"])
+        XCTAssertEqual(try fixes("Je vais à Iran."), ["à Iran → en Iran"])
+        let issue = try XCTUnwrap(grammar().check("Il habite à Canada.").first)
+        XCTAssertEqual(issue.kind, .preposition)
+        XCTAssertEqual(issue.reason, "Canada is a masculine country, so French says au Canada.")
+    }
+
+    // The right preposition, an article of its own, or a country without one raises nothing.
+    func testCorrectCountryPrepositionsPass() throws {
+        XCTAssertEqual(try fixes("J'habite en France, au Canada et aux États-Unis."), [])
+        XCTAssertEqual(try fixes("Il vient du Japon et d'Iran."), [])
+        XCTAssertEqual(try fixes("Elle parle à la France entière."), [])
+        XCTAssertEqual(try fixes("Je vais à Cuba."), [])
+    }
+
+    // Verbs that take a fixed preposition, from the treebank counts and the hand list.
+    func testVerbPrepositions() throws {
+        XCTAssertEqual(try fixes("Ça dépend sur le temps."), ["dépend sur le → dépend du"])
+        XCTAssertEqual(try fixes("Je participe dans un cours."), ["participe dans → participe à"])
+        XCTAssertEqual(try fixes("J'essaie à comprendre."), ["essaie à → essaie de"])
+        XCTAssertEqual(try fixes("Il a réussi de finir."), ["réussi de → réussi à"])
+        XCTAssertEqual(try fixes("Elle ressemble sa mère."), ["ressemble sa → ressemble à sa"])
+        XCTAssertEqual(try fixes("J'écoute à la radio."), ["écoute à → écoute"])
+        XCTAssertEqual(try fixes("J'attends pour le bus."), ["attends pour → attends"])
+        XCTAssertEqual(try grammar().check("Ça dépend sur le temps.").first?.kind, .preposition)
+    }
+
+    // The same words are correct French in other places.
+    func testCorrectVerbPrepositionsPass() throws {
+        XCTAssertEqual(try fixes("Ça dépend du temps."), [])
+        XCTAssertEqual(try fixes("J'essaie à Paris et j'essaie de comprendre."), [])
+        XCTAssertEqual(try fixes("J'attends pour voir."), [])
+        XCTAssertEqual(try fixes("Je cherche pour toi."), [])
+        XCTAssertEqual(try fixes("Je téléphone à ma mère."), [])
+    }
+
+    // Correct sentences from the UD treebanks that an earlier version of the preposition
+    // rule flagged: cities that share a country's name, titles, and attendu as an adjective.
+    func testTreebankPrepositionTrapsPass() throws {
+        for text in [
+            "Elle est née à Luxembourg le 22 mai.",
+            "Le groupe est présent à Panama.",
+            "La route la relie à Grenade.",
+            "Il joue en équipe de Samoa depuis 1993.",
+            "Il donne à Frédéric II de Danemark le droit.",
+            "Il est né dans la République de Vanuatu.",
+            "Il faudra encore attendre pour en savoir plus.",
+            "Ce film est attendu pour 2012."
+        ] {
+            XCTAssertEqual(try fixes(text), [], text)
+        }
+        // Coming from somewhere, a masculine country still takes du.
+        XCTAssertEqual(try fixes("Il revient de Japon."), ["de Japon → du Japon"])
+    }
+
     // MARK: - Idioms
 
     // Correct French with a different meaning gets a suggestion, never an error.
@@ -643,7 +792,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionWithoutEndingIsSilent() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: nil))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("C'est un frobnication.").count, 0)
     }
 
@@ -651,7 +800,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionOnUnknownNounIsAWarning() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.97, ending: "tion"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: predictor)
 
         let issues = grammar.check("C'est un frobnication.")
         XCTAssertEqual(issues.map { "\($0.original) → \($0.replacement ?? "")" }, ["un frobnication → une frobnication"])
@@ -663,7 +812,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testPredictionNeverOverridesLexicon() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.99, ending: "ette"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un squelette.").count, 0)
     }
 
@@ -671,7 +820,7 @@ final class FrenchGrammarTests: XCTestCase {
     func testLowConfidencePredictionIsSilent() throws {
         let pack = try XCTUnwrap(Self.pack)
         let predictor = FixedPredictor(prediction: GenderPrediction(gender: .feminine, probability: 0.6, ending: "e"))
-        let grammar = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: predictor)
+        let grammar = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: predictor)
         XCTAssertEqual(grammar.check("Un frobnication.").count, 0)
     }
 }

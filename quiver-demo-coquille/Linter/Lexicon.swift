@@ -152,6 +152,18 @@ nonisolated struct Lexicon: Sendable {
         verbs.contains(word)
     }
 
+    /// Whether the word is an infinitive, such as "faire" or "comprendre": a verb form with
+    /// an infinitive ending, no participle reading, and no conjugated reading of another verb.
+    ///
+    /// "ouvre" ends in -re but is a form of ouvrir, so it isn't one. Lexique lists a few
+    /// infinitives under their own verb as conjugated forms ("comprendre", ii3s), and
+    /// those still count.
+    func isInfinitive(_ word: String) -> Bool {
+        guard verbs.contains(word), participlesByForm[word] == nil,
+              ["er", "ir", "re", "oir"].contains(where: { word.hasSuffix($0) }) else { return false }
+        return conjugationsByForm[word]?.allSatisfy { $0.verb == word } ?? true
+    }
+
     /// Whether the word appears anywhere in the lexicon.
     func contains(_ word: String) -> Bool {
         nouns[word] != nil || adjectiveLemmasByForm[word] != nil || verbs.contains(word) || otherWords.contains(word)

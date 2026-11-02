@@ -21,62 +21,15 @@ import Foundation
 nonisolated protocol Grammar: Sendable {
     /// The language's rule families, in the order they run.
     var rules: [GrammarRule] { get }
+
+    /// Decides the ambiguous words in `tokens` once, for every rule in a pass to read.
+    func tag(_ tokens: [Token]) -> TaggedText
 }
 
 nonisolated extension Grammar {
     /// Returns every grammar issue in `text` from every rule, ordered by position.
     func check(_ text: String) -> [Issue] {
-        let tokens = FrenchTokenizer.tokens(in: text)
-        return rules.flatMap { $0.check(tokens) }.sorted { $0.offset < $1.offset }
+        let tagged = tag(FrenchTokenizer.tokens(in: text))
+        return rules.flatMap { $0.check(tagged) }.sorted { $0.offset < $1.offset }
     }
-}
-
-/// A fixed phrase that is correct but has a more natural alternative, from `fr.idioms.json`.
-///
-/// The optional context lists work as they do on `PhraseFix`, so "je suis plein" can
-/// stay silent in "je suis plein de vie".
-nonisolated struct Idiom: Codable, Equatable, Sendable {
-    let phrase: String
-    let suggestion: String
-    var unlessAfter: [String]? = nil
-    var onlyAfter: [String]? = nil
-    var unlessBefore: [String]? = nil
-    let note: String
-}
-
-/// Correct French that says something different from what English speakers often mean,
-/// from `fr.meanings.json`. The learner is asked which wording they meant rather than
-/// told they are wrong, as with "pas encore" (not yet) and "plus" (no longer).
-nonisolated struct MeaningCheck: Codable, Equatable, Sendable {
-    /// The words as the learner writes them, such as "pas encore".
-    let phrase: String
-    /// Every wording to offer, the phrase itself included, each with its meaning.
-    let choices: [Choice]
-    /// Whether to stay silent when a past participle follows, as in "je n'ai pas encore
-    /// fini", where only "not yet" makes sense and the question would be noise.
-    var unlessBeforeParticiple: Bool? = nil
-    /// Why the wordings differ, shown on the card.
-    let note: String
-}
-
-/// A phrase that is wrong wherever it appears, apart from listed exceptions, and its
-/// fix: look-alikes such as "comment cava" from `fr.lookalikes.json`, and English
-/// patterns such as "je suis faim" from `fr.wordchoice.json`.
-nonisolated struct PhraseFix: Codable, Equatable, Sendable {
-    /// The words as a learner writes them, such as "cava" or "je suis faim".
-    let phrase: String
-    /// The words the learner means, such as "ça va" or "j'ai faim".
-    let fix: String
-    /// Words after which the phrase is correct French, so the rule stays silent, as in "il cava".
-    let unlessAfter: [String]
-    /// Words that must come right before the phrase, as in "a fait une décision", where the
-    /// fix depends on the tense. `nil` means the phrase applies after any word.
-    var onlyAfter: [String]? = nil
-    /// Words that make the phrase correct French when they come right after it, as in "cava un trou".
-    var unlessBefore: [String]? = nil
-    /// Whether the phrase is wrong only at the end of a clause, as in "et tu ?", which is
-    /// correct French when a verb follows ("et tu vas bien").
-    var onlyAtClauseEnd: Bool? = nil
-    /// Why the phrase is wrong, without the answer.
-    let note: String
 }

@@ -68,6 +68,21 @@
     "template": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans.",
     "example": "a without an accent is the verb avoir, which can't follow dans. The preposition is à, and it takes the place of dans."
   },
+  "accentAfterAdjective": {
+    "hint": "a without an accent is the verb avoir, which can't join an adjective like {adjective} to an infinitive.",
+    "template": "a without an accent is the verb avoir, which can't join an adjective like {adjective} to an infinitive. Here it's the preposition à.",
+    "example": "a without an accent is the verb avoir, which can't join an adjective like facile to an infinitive. Here it's the preposition à."
+  },
+  "graveAfterSubject": {
+    "hint": "à with an accent is a preposition, and a preposition can't come right after the subject {subject}.",
+    "template": "à with an accent is a preposition, and a preposition can't come right after the subject {subject}. Here it's the verb avoir: a, with no accent.",
+    "example": "à with an accent is a preposition, and a preposition can't come right after the subject il. Here it's the verb avoir: a, with no accent."
+  },
+  "graveInIlYA": {
+    "hint": "In il y a, the a is the verb avoir.",
+    "template": "In il y a, the a is the verb avoir, so it has no accent.",
+    "example": "In il y a, the a is the verb avoir, so it has no accent."
+  },
   "auxiliaryChoice": {
     "hint": "{verb} takes être in the past, not avoir.",
     "template": "{verb} takes être in the past, not avoir: {fix}.",
@@ -112,5 +127,15 @@
     "hint": "This is correct, but a native would usually say it another way. {note}",
     "template": "This is correct. Here's how a native would usually say it: {suggestion}. {note}",
     "example": "This is correct. Here's how a native would usually say it: a du sens. Faire du sens copies the English “make sense”; French usually says avoir du sens."
+  },
+  "preposition": {
+    "hint": "{note}",
+    "template": "{note} It should be {fix}.",
+    "example": "Dépendre takes de before what it's about. It should be dépend de."
+  },
+  "placePreposition": {
+    "hint": "{place} is {reason}.",
+    "template": "{place} is {reason}, so French says {fix}.",
+    "example": "Canada is a masculine country, so French says au Canada."
   }
 }

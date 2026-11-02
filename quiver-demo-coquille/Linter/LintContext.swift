@@ -17,9 +17,13 @@ import Foundation
 nonisolated struct LintContext: Sendable {
     let text: String
     let tokens: [Token]
+    /// The tokens with the part-of-speech layer's verdicts, decided once for every rule.
+    let tagged: TaggedText
 
-    init(text: String) {
+    /// Tokenizes `text` and tags it with `tag`, or leaves every word without a verdict.
+    init(text: String, tag: (@Sendable ([Token]) -> TaggedText)? = nil) {
         self.text = text
         tokens = FrenchTokenizer.tokens(in: text)
+        tagged = tag?(tokens) ?? TaggedText(untagged: tokens)
     }
 }

@@ -30,6 +30,9 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case accentAfterVerb
     case accentAfterJusqu
     case accentAfterDans
+    case accentAfterAdjective
+    case graveAfterSubject
+    case graveInIlYA
     case auxiliaryChoice
     case participleWithAvoir
     case participleWithEtre
@@ -38,6 +41,8 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case siClause
     case meaning
     case etOrEst
+    case preposition
+    case placePreposition
 
     /// The placeholders the rule fills for this key. A template may use any of them and no others.
     var placeholders: Set<String> {
@@ -48,11 +53,14 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .agreementGender, .agreementNumber, .agreementGenderAndNumber: ["noun", "gender", "number"]
         case .spelling: ["word", "suggestion"]
         case .unknownWord: ["word"]
-        case .lookAlike, .wordChoice: ["note", "fix"]
+        case .lookAlike, .wordChoice, .preposition: ["note", "fix"]
+        case .placePreposition: ["place", "reason", "fix"]
         case .negation: ["corrected"]
         case .idiom: ["suggestion", "note"]
         case .accentAfterVerb: ["verb"]
-        case .accentAfterJusqu, .accentAfterDans: []
+        case .accentAfterJusqu, .accentAfterDans, .graveInIlYA: []
+        case .accentAfterAdjective: ["adjective"]
+        case .graveAfterSubject: ["subject"]
         case .auxiliaryChoice: ["verb", "fix"]
         case .participleWithAvoir: ["fix"]
         case .participleWithEtre: ["subject", "fix"]

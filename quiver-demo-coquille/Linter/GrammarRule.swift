@@ -20,6 +20,6 @@ nonisolated struct GrammarRule: Sendable {
     let identifier: String
     let layer: LinguisticLayer
     let targetLevel: CefrLevel
-    /// Returns the rule's issues for one tokenized text.
-    let check: @Sendable ([Token]) -> [Issue]
+    /// Returns the rule's issues for one tagged text.
+    let check: @Sendable (TaggedText) -> [Issue]
 }
