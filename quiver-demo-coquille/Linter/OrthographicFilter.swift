@@ -38,7 +38,11 @@ struct OrthographicFilter: LinguisticFilter {
             guard let best = SuggestionRanker.ranked(frenchGuesses, for: misspelling.word).first else {
                 return unknownWordIssue(misspelling)
             }
-            let explanation = explanations.render(.spelling, ["word": misspelling.word, "suggestion": best])
+            let explanation = explanations.render(.spelling, [
+                "word": misspelling.word,
+                "suggestion": best,
+                "where": Self.changedPart(of: misspelling.word, toReach: best)
+            ])
             return Issue(
                 kind: .spelling,
                 severity: .error,
@@ -50,6 +54,40 @@ struct OrthographicFilter: LinguisticFilter {
                 hint: explanation.hint,
                 source: "System spellcheck · ranked by Quiver"
             )
+        }
+    }
+
+    /// Where `word` must change to become `suggestion`, as the hint names it: "the accents",
+    /// "the ending", "the start" or "the middle".
+    ///
+    /// The hint points the learner at the part to rework without giving the answer,
+    /// which stays behind Show fix.
+    static func changedPart(of word: String, toReach suggestion: String) -> String {
+        let typo = Array(word.lowercased())
+        let fix = Array(suggestion.lowercased())
+        let unaccented: (String) -> String = { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "fr")).lowercased() }
+        if typo != fix && unaccented(word) == unaccented(suggestion) {
+            return "the accents"
+        }
+
+        var sharedStart = 0
+        while sharedStart < min(typo.count, fix.count) && typo[sharedStart] == fix[sharedStart] {
+            sharedStart += 1
+        }
+        var sharedEnd = 0
+        while sharedEnd < min(typo.count, fix.count) - sharedStart
+                && typo[typo.count - 1 - sharedEnd] == fix[fix.count - 1 - sharedEnd] {
+            sharedEnd += 1
+        }
+
+        // The letters of the typo that differ run from `sharedStart` up to `changeEnd`.
+        let changeEnd = typo.count - sharedEnd
+        if sharedStart >= typo.count * 2 / 3 {
+            return "the ending"
+        } else if changeEnd <= (typo.count + 2) / 3 {
+            return "the start"
+        } else {
+            return "the middle"
         }
     }
 

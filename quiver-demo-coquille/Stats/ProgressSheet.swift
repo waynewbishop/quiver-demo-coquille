@@ -35,14 +35,23 @@ struct ProgressSheet: View {
                     trickyWords
                     corrections
                     footer
+                    #if !os(macOS)
+                    // At the end of the page, away from Done, so it's never tapped by mistake.
+                    Button("Reset Progress…", role: .destructive) { confirmsReset = true }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
+                        .frame(maxWidth: .infinity)
+                    #endif
                 }
                 .padding(24)
             }
             .navigationTitle("Your progress")
             .toolbar {
+                #if os(macOS)
                 ToolbarItem(placement: .destructiveAction) {
                     Button("Reset Progress…", role: .destructive) { confirmsReset = true }
                 }
+                #endif
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }

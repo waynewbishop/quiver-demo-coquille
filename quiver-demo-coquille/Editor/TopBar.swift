@@ -29,7 +29,7 @@ struct TopBar: View {
             Button {
                 showsIssueList = true
             } label: {
-                StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count)
+                StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count, isGentle: true)
             }
             .buttonStyle(.plain)
             .accessibilityHint("Shows every issue")
@@ -96,11 +96,71 @@ struct TopBar: View {
     }
 }
 
-/// "2 errors · 1 warning", "1 warning", or "No issues".
+#if !os(macOS)
+/// The iPhone navigation bar's buttons: the journal on the leading edge, then the
+/// phrasebook and a More menu holding the file commands, progress, and the theme.
+struct CompactToolbar: ToolbarContent {
+
+    let model: EditorModel
+    @Binding var showsProgress: Bool
+    @Binding var showsPhrasebook: Bool
+    @Binding var showsEntries: Bool
+    /// Hands a file command to the editor, which asks about unsaved changes first.
+    let perform: (FileRequest) -> Void
+
+    var body: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button("Journal", systemImage: "list.bullet") { showsEntries = true }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Phrasebook", systemImage: "book") { showsPhrasebook.toggle() }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Section {
+                    Button("New", systemImage: "square.and.pencil") { perform(.new) }
+                        .disabled(!model.hasText && model.fileURL == nil)
+                    Button("Save", systemImage: "square.and.arrow.down") { perform(.save) }
+                        .disabled(!model.canSave)
+                    Button("Save as New Entry…", systemImage: "plus.square.on.square") { perform(.saveAsNewEntry) }
+                        .disabled(!model.canSave)
+                }
+                Section {
+                    Button("Import…", systemImage: "folder") { perform(.importFile) }
+                    Button("Export a Copy…", systemImage: "square.and.arrow.up") { perform(.export) }
+                        .disabled(!model.hasText)
+                    ShareLink(item: model.plainText)
+                        .disabled(!model.hasText)
+                }
+                Section {
+                    Button("Progress · \(plural(streak, "day")) streak", systemImage: "chart.bar.xaxis") {
+                        showsProgress = true
+                    }
+                    ThemeToggle()
+                }
+            } label: {
+                Label("More", systemImage: "ellipsis")
+            }
+        }
+    }
+
+    /// The learner's current streak, in days.
+    private var streak: Int {
+        model.stats.stats.streak(asOf: .now)
+    }
+}
+#endif
+
+/// "2 errors · 1 warning", "1 warning", or "No issues"; in the gentle style, "3 to look at".
 struct StatusChip: View {
 
     let errors: Int
     let warnings: Int
+    /// Whether the chip reads as a to-do list rather than a grade: one neutral count, with
+    /// only the small red or orange mark for color, so a learner's first draft isn't scored.
+    var isGentle = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -117,17 +177,30 @@ struct StatusChip: View {
             }
         }
         .font(.subheadline.weight(.medium))
-        .foregroundStyle(errors > 0 ? AnyShapeStyle(.red) : warnings > 0 ? AnyShapeStyle(.orange) : AnyShapeStyle(.tint))
+        .foregroundStyle(textStyle)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(
-            Capsule().fill(errors > 0 ? AnyShapeStyle(.red.opacity(0.12)) : warnings > 0 ? AnyShapeStyle(.orange.opacity(0.14)) : AnyShapeStyle(.tint.opacity(0.12)))
-        )
+        .background(Capsule().fill(fillStyle))
         .frame(minHeight: 44)
     }
 
-    /// The counts, as "2 errors · 1 warning".
+    /// The label's color: red, orange or the tint, or the primary color in the gentle style.
+    private var textStyle: AnyShapeStyle {
+        if errors == 0 && warnings == 0 { return AnyShapeStyle(.tint) }
+        if isGentle { return AnyShapeStyle(.primary) }
+        return errors > 0 ? AnyShapeStyle(.red) : AnyShapeStyle(.orange)
+    }
+
+    /// The capsule's fill, tinted to match the label, or neutral in the gentle style.
+    private var fillStyle: AnyShapeStyle {
+        if errors == 0 && warnings == 0 { return AnyShapeStyle(.tint.opacity(0.12)) }
+        if isGentle { return AnyShapeStyle(.fill.tertiary) }
+        return errors > 0 ? AnyShapeStyle(.red.opacity(0.12)) : AnyShapeStyle(.orange.opacity(0.14))
+    }
+
+    /// The counts, as "2 errors · 1 warning", or "3 to look at" in the gentle style.
     private var label: String {
+        if isGentle { return "\(errors + warnings) to look at" }
         let parts = [
             errors > 0 ? plural(errors, "error") : nil,
             warnings > 0 ? plural(warnings, "warning") : nil

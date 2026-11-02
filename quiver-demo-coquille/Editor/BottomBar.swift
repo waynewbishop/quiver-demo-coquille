@@ -39,6 +39,81 @@ struct BottomBar: View {
     }
 }
 
+#if !os(macOS)
+/// The iPhone bar: status on the left beside the English toggle, and play on the right.
+///
+/// The status chip lives here rather than in the navigation bar, as it does in the Mac
+/// footer, so it always has room for "2 errors · 1 warning" on one line.
+struct CompactBottomBar: View {
+
+    @Bindable var model: EditorModel
+    @Binding var showsIssueList: Bool
+    /// Whether the French editor has the keyboard up.
+    let isEditing: Bool
+    /// Whether height is scarce, as in landscape, which slims the bar and its play button.
+    var isShort = false
+    /// Hides the keyboard by taking focus from the editor.
+    let dismissKeyboard: () -> Void
+    /// Called when the learner taps the locked play button.
+    let jumpToFirstError: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                showsIssueList = true
+            } label: {
+                StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count, isGentle: true)
+            }
+            .buttonStyle(.plain)
+            .fixedSize()
+            .accessibilityHint("Shows every issue")
+
+            // Grey when off and solid blue when on, so the state reads at a glance.
+            Button {
+                model.isEnglishOn.toggle()
+            } label: {
+                Image(systemName: "translate")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(model.isEnglishOn ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(model.isEnglishOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.fill.tertiary)))
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("English")
+            .accessibilityValue(model.isEnglishOn ? "On" : "Off")
+            .accessibilityHint("Shows the English translation below the French")
+
+            Spacer(minLength: 0)
+
+            // Shown only while typing, as in Things, so the learner can see the whole page again.
+            if isEditing {
+                Button(action: dismissKeyboard) {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(.fill.tertiary))
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Hide keyboard")
+                .transition(.scale.combined(with: .opacity))
+            }
+
+            // The chip already counts the errors, so the locked caption only says why play
+            // waits; while typing there's no room for any caption beside the keyboard button.
+            PlayControl(model: model, diameter: isShort ? 44 : 52, usesShortLockedCaption: true, showsCaption: !isEditing, jumpToFirstError: jumpToFirstError)
+        }
+        .animation(.snappy(duration: 0.2), value: isEditing)
+        .padding(.horizontal, 16)
+        .padding(.vertical, isShort ? 4 : 10)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
+    }
+}
+#endif
+
 #if os(macOS)
 /// The Mac footer: status on the left and the English toggle on the right. Play
 /// sits in the toolbar, as Run does in Xcode.
@@ -107,11 +182,15 @@ struct MacStopButton: View {
 struct PlayControl: View {
 
     let model: EditorModel
+    /// The button's diameter, in points.
+    var diameter = 60.0
+    /// Whether the locked caption is "Fix to listen" rather than "Fix 2 errors to play",
+    /// for a bar whose status chip already gives the count.
+    var usesShortLockedCaption = false
+    /// Whether any caption shows beside the button.
+    var showsCaption = true
     /// Called when the learner taps the locked play button.
     let jumpToFirstError: () -> Void
-
-    /// The button's diameter, in points.
-    private static let diameter = 60.0
 
     var body: some View {
         HStack(spacing: 12) {
@@ -127,7 +206,11 @@ struct PlayControl: View {
     /// "Fix 4 errors to play", "Speaking French…", or "Paused".
     private var caption: some View {
         Group {
-            if model.isLocked {
+            if !showsCaption {
+                EmptyView()
+            } else if model.isLocked && usesShortLockedCaption {
+                Text("Fix to\nlisten")
+            } else if model.isLocked {
                 // Beside the button, the caption wraps to stay compact.
                 Text("Fix \(plural(model.blockingIssues.count, "error"))\nto play")
             } else if model.narrator.isSpeaking {
@@ -146,7 +229,7 @@ struct PlayControl: View {
         Button(action: jumpToFirstError) {
             Image(systemName: "lock")
                 .font(.title3)
-                .frame(width: Self.diameter, height: Self.diameter)
+                .frame(width: diameter, height: diameter)
                 .background(Circle().fill(.quaternary))
                 .overlay(Circle().strokeBorder(.secondary, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])))
                 .contentShape(Circle())
@@ -162,14 +245,14 @@ struct PlayControl: View {
         Button(action: model.togglePlay) {
             Image(systemName: model.narrator.isSpeaking ? "pause.fill" : "play.fill")
                 .font(.title3)
-                .foregroundStyle(.white)
-                .frame(width: Self.diameter, height: Self.diameter)
-                .background(Circle().fill(.tint))
+                // An empty page shows a plain disabled control, not a faded blue one.
+                .foregroundStyle(model.hasText ? AnyShapeStyle(.white) : AnyShapeStyle(.tertiary))
+                .frame(width: diameter, height: diameter)
+                .background(Circle().fill(model.hasText ? AnyShapeStyle(.tint) : AnyShapeStyle(.quaternary)))
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .disabled(!model.hasText)
-        .opacity(model.hasText ? 1.0 : 0.4)
         .accessibilityLabel(model.narrator.isSpeaking ? "Pause" : model.narrator.state == .paused ? "Resume" : "Read aloud in French")
     }
 }

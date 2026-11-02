@@ -194,6 +194,15 @@ final class EditorModelTests: XCTestCase {
         XCTAssertFalse(model.visibleIssues.contains { $0.kind == .meaning })
     }
 
+    // Try an example shows every level: errors, a warning, and a suggestion.
+    func testExampleShowsEveryLevel() throws {
+        let model = try makeModel()
+        model.showsSuggestions = true
+        model.loadExample()
+        let severities = Set(model.visibleIssues.map(\.severity))
+        XCTAssertEqual(severities, [.error, .warning, .suggestion])
+    }
+
     // Try an example's mistakes aren't the learner's: fixing them counts nothing until New starts a blank page.
     func testExampleIsNotCounted() throws {
         let model = try makeModel()

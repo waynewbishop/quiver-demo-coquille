@@ -50,6 +50,23 @@ struct EditorScreen: View {
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Appearance.storageKey) private var appearance: String?
+    #if !os(macOS)
+    /// Compact on iPhone, where the editor gets a navigation bar instead of the top bar.
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Compact in iPhone landscape, where height is what runs short.
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    /// Whether the editor uses the iPhone layout: on every iPhone, including the larger
+    /// ones that report a regular width in landscape, and in narrow iPad windows.
+    private var usesPhoneLayout: Bool {
+        horizontalSizeClass == .compact || UIDevice.current.userInterfaceIdiom == .phone
+    }
+
+    /// Whether the iPhone is in landscape, with the English and the issue card beside the French.
+    private var isLandscapePhone: Bool {
+        usesPhoneLayout && verticalSizeClass == .compact
+    }
+    #endif
     /// The Show suggestions setting, kept between launches and mirrored into the model.
     @AppStorage("showsSuggestions") private var showsSuggestions = true
 
@@ -80,6 +97,7 @@ struct EditorScreen: View {
                 defaultFilename: exporting?.name,
                 onCompletion: exported
             )
+            #if os(macOS)
             .confirmationDialog(saveQuestion, isPresented: asksToSave, titleVisibility: .visible, presenting: pendingMove) { move in
                 Button("Save") { save(then: move) }
                 Button("Don't Save", role: .destructive) { carryOut(move) }
@@ -87,6 +105,17 @@ struct EditorScreen: View {
             } message: { _ in
                 Text("Your changes will be lost if you don't save them.")
             }
+            #else
+            // An alert, since the question can come from a menu or the journal sheet,
+            // where a confirmation dialog floats as a popover without its Cancel button.
+            .alert(saveQuestion, isPresented: asksToSave, presenting: pendingMove) { move in
+                Button("Save") { save(then: move) }
+                Button("Don't Save", role: .destructive) { carryOut(move) }
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("Your changes will be lost if you don't save them.")
+            }
+            #endif
             .alert(deleteQuestion, isPresented: confirmsDelete, presenting: pendingDelete) { url in
                 Button("Delete", role: .destructive) { delete(url) }
                 Button("Cancel", role: .cancel) {}
@@ -184,14 +213,7 @@ struct EditorScreen: View {
                 ProgressSheet(store: model.stats)
                     .tint(.brand)
             }
-            // A side panel on the Mac and iPad; on iPhone a half-height sheet the editor stays usable under.
-            .inspector(isPresented: $showsPhrasebook) {
-                PhrasebookView(model: model)
-                    .tint(.brand)
-                    .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
-                    .presentationDetents([.medium, .large])
-                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-            }
+            .modifier(PhrasebookPresentation(isPresented: $showsPhrasebook, model: model))
     }
 
     // MARK: - Saving and moving between writing
@@ -505,22 +527,6 @@ struct EditorScreen: View {
         }
     }
 
-    /// The text to title: the French once it's linted with no errors, otherwise `nil`.
-    private var titleSource: String? {
-        model.isLintCurrent && !model.isLocked && model.hasText ? model.plainText : nil
-    }
-
-    /// Names the story after a pause in typing; an empty editor goes back to the app's name.
-    private func retitle() async {
-        guard let text = titleSource else {
-            if !model.hasText { storyTitle = nil }
-            return
-        }
-        try? await Task.sleep(for: .seconds(2))
-        guard !Task.isCancelled, let title = await StoryTitler.title(for: text), !Task.isCancelled else { return }
-        storyTitle = title
-    }
-
     /// The French pane: its header, the editor, and the open issue's card floating over it.
     private var frenchPane: some View {
         VStack(spacing: 0) {
@@ -554,9 +560,96 @@ struct EditorScreen: View {
         }
     }
     #else
-    /// The iPhone and iPad layout: a top bar, the editor with English below or beside
-    /// it, the open issue's card, and the bottom bar.
+    /// The navigation-bar layout on iPhone, and the top-bar layout on iPad.
+    @ViewBuilder
     private var layout: some View {
+        if usesPhoneLayout {
+            compactLayout
+        } else {
+            regularLayout
+        }
+    }
+
+    /// The iPhone layout: the journal, phrasebook and More menu in a navigation bar
+    /// titled with the story's name, the editor with English below it, the open issue's
+    /// card, and status, English and play along the bottom.
+    private var compactLayout: some View {
+        NavigationStack {
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    if isLandscapePhone {
+                        landscapePanes(width: geometry.size.width)
+                    } else {
+                        portraitPanes(height: geometry.size.height)
+                    }
+
+                    CompactBottomBar(
+                        model: model,
+                        showsIssueList: $showsIssueList,
+                        isEditing: editorIsFocused,
+                        isShort: isLandscapePhone,
+                        dismissKeyboard: { editorIsFocused = false },
+                        jumpToFirstError: jumpToFirstError
+                    )
+                }
+            }
+            .navigationTitle(documentName)
+            .navigationSubtitle(documentStatus)
+            .navigationBarTitleDisplayMode(.inline)
+            // In landscape the keyboard leaves room for only a line or two, so the
+            // navigation bar steps aside while typing; hiding the keyboard brings it back.
+            .toolbarVisibility(isLandscapePhone && editorIsFocused ? .hidden : .automatic, for: .navigationBar)
+            .animation(.snappy(duration: 0.2), value: editorIsFocused)
+            .toolbar {
+                CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, perform: handle)
+            }
+            .task(id: titleSource) { await retitle() }
+        }
+    }
+
+    /// iPhone portrait: the French, the English below it, then the open issue's card.
+    @ViewBuilder
+    private func portraitPanes(height: CGFloat) -> some View {
+        editor
+        if model.isEnglishOn {
+            Divider()
+            EnglishPane(model: model, showsHeaderBar: false)
+                .frame(maxHeight: height * 0.3)
+        }
+
+        if let issue = model.selectedIssue {
+            IssueCard(issue: issue, model: model)
+                .id(issue.id)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    /// iPhone landscape: the French on the left, and on the right the open issue's card,
+    /// or the English when no card is open, so neither ever covers the text.
+    private func landscapePanes(width: CGFloat) -> some View {
+        HStack(spacing: 0) {
+            editor
+            if let issue = model.selectedIssue {
+                ScrollView {
+                    IssueCard(issue: issue, model: model)
+                        .id(issue.id)
+                        .padding(12)
+                }
+                .frame(width: min(460, width * 0.5))
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            } else if model.isEnglishOn {
+                Divider()
+                EnglishPane(model: model, showsHeaderBar: true)
+                    .frame(width: width * 0.4)
+            }
+        }
+    }
+
+    /// The iPad layout: a top bar, the editor with English below or beside it, the
+    /// open issue's card, and the bottom bar.
+    private var regularLayout: some View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
@@ -596,6 +689,22 @@ struct EditorScreen: View {
         }
     }
     #endif
+
+    /// The text to title: the French once it's linted with no errors, otherwise `nil`.
+    private var titleSource: String? {
+        model.isLintCurrent && !model.isLocked && model.hasText ? model.plainText : nil
+    }
+
+    /// Names the story after a pause in typing; an empty editor goes back to the app's name.
+    private func retitle() async {
+        guard let text = titleSource else {
+            if !model.hasText { storyTitle = nil }
+            return
+        }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled, let title = await StoryTitler.title(for: text), !Task.isCancelled else { return }
+        storyTitle = title
+    }
 
     /// Focuses the editor and opens the first error, for the locked play button on iPhone and iPad.
     private func jumpToFirstError() {
@@ -643,11 +752,7 @@ struct EditorScreen: View {
                             .foregroundStyle(.tertiary)
                             .allowsHitTesting(false)
                         if model.loadFailure == nil {
-                            HStack(spacing: 12) {
-                                Button("Start today's entry", systemImage: "calendar") { move(.todaysEntry) }
-                                Button("Try an example", systemImage: "text.badge.checkmark") { move(.example) }
-                            }
-                            .buttonStyle(.bordered)
+                            starterButtons
                         }
                     }
                     .padding(.horizontal, 25)
@@ -658,6 +763,85 @@ struct EditorScreen: View {
             .onChange(of: model.selection) { model.selectionDidChange() }
             .onChange(of: model.narrator.spokenRange) { model.spokenWordDidChange() }
             .onChange(of: model.narrator.state) { model.spokenWordDidChange() }
+    }
+}
+
+extension EditorScreen {
+
+    /// Start today's entry and Try an example, side by side, or stacked at one width on iPhone.
+    @ViewBuilder
+    fileprivate var starterButtons: some View {
+        #if os(macOS)
+        sideBySideStarterButtons
+        #else
+        // Stacked in iPhone portrait; landscape has the width for a row.
+        if usesPhoneLayout && !isLandscapePhone {
+            VStack(alignment: .leading, spacing: 10) {
+                Button { move(.todaysEntry) } label: {
+                    Label("Start today's entry", systemImage: "calendar")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Button { move(.example) } label: {
+                    Label("Try an example", systemImage: "text.badge.checkmark")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .buttonStyle(.bordered)
+            // Both buttons take the wider one's width.
+            .fixedSize(horizontal: true, vertical: false)
+        } else {
+            sideBySideStarterButtons
+        }
+        #endif
+    }
+
+    /// The two starter buttons in a row, as on the Mac and iPad.
+    private var sideBySideStarterButtons: some View {
+        HStack(spacing: 12) {
+            Button("Start today's entry", systemImage: "calendar") { move(.todaysEntry) }
+            Button("Try an example", systemImage: "text.badge.checkmark") { move(.example) }
+        }
+        .buttonStyle(.bordered)
+    }
+}
+
+/// Shows the phrasebook: a side panel on the Mac and iPad, and on iPhone a half-height
+/// sheet the editor stays usable under.
+///
+/// iPhone always gets the sheet. An inspector there reopens on its own when a Pro Max
+/// launches in landscape, where it's a column rather than a sheet, even while closed.
+private struct PhrasebookPresentation: ViewModifier {
+
+    @Binding var isPresented: Bool
+    let model: EditorModel
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        inspector(on: content)
+        #else
+        // The idiom never changes while the app runs, so the editor's identity is stable.
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            content.sheet(isPresented: $isPresented) { phrasebook }
+        } else {
+            inspector(on: content)
+        }
+        #endif
+    }
+
+    /// The phrasebook as an inspector.
+    private func inspector(on content: Content) -> some View {
+        content.inspector(isPresented: $isPresented) {
+            phrasebook
+                .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
+        }
+    }
+
+    /// The phrasebook with its sheet sizes, which only apply where it's a sheet.
+    private var phrasebook: some View {
+        PhrasebookView(model: model)
+            .tint(.brand)
+            .presentationDetents([.medium, .large])
+            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
     }
 }
 

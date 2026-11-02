@@ -30,7 +30,7 @@
     "example": "The adjective must agree with tables, which is feminine and plural."
   },
   "spelling": {
-    "hint": "{word} isn't in the French dictionary.",
+    "hint": "{word} isn't in the French dictionary, but a word close to it is. Look again at {where}.",
     "template": "{word} isn't in the French dictionary. Did you mean {suggestion}?",
     "example": "gentile isn't in the French dictionary. Did you mean gentille?"
   },

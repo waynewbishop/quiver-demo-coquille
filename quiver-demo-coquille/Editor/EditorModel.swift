@@ -404,8 +404,10 @@ final class EditorModel {
         }
     }
 
-    /// The design's sample paragraph, with one mistake for each kind of check.
-    static let example = "Hier, je suis allé au marché avec ma sœur. Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentile, et la pain sentait bon."
+    /// The design's sample paragraph, with one mistake for each kind of check and one
+    /// issue at each level: errors, a warning ("elle vient plus", missing its ne), and
+    /// a suggestion for an English pattern that's correct but unnatural ("c'était chaud").
+    static let example = "Hier, je suis allé au marché avec ma sœur. C'était chaud. Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentile, et la pain sentait bon. Ma sœur adore ce marché, mais elle vient plus."
 
     /// The example's first sentence, which has no mistakes, so fixing the others never changes it.
     /// While it's in the text, the editor is still holding the example.

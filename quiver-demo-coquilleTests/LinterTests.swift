@@ -48,6 +48,24 @@ final class LinterTests: XCTestCase {
         XCTAssertEqual(issues.first?.reason, "gentile isn't in the French dictionary. Did you mean gentille?")
     }
 
+    // The spelling hint says where to look, but keeps the fix for Show fix.
+    func testSpellingHintPointsWithoutGivingFix() throws {
+        let text = "Elle est gentile."
+        let linter = try linter(reporting: [Misspelling(offset: 9, word: "gentile", guesses: ["gentil", "gentille"])])
+        let hint = try XCTUnwrap(linter.lint(text).first?.hint)
+        XCTAssertEqual(hint, "gentile isn't in the French dictionary, but a word close to it is. Look again at the ending.")
+        XCTAssertFalse(hint.contains("gentille"))
+    }
+
+    // The part of a typo to rework: its accents, start, middle or ending.
+    func testChangedPartOfTypo() {
+        XCTAssertEqual(OrthographicFilter.changedPart(of: "tres", toReach: "très"), "the accents")
+        XCTAssertEqual(OrthographicFilter.changedPart(of: "etait", toReach: "était"), "the accents")
+        XCTAssertEqual(OrthographicFilter.changedPart(of: "gentile", toReach: "gentille"), "the ending")
+        XCTAssertEqual(OrthographicFilter.changedPart(of: "bomme", toReach: "pomme"), "the start")
+        XCTAssertEqual(OrthographicFilter.changedPart(of: "maizon", toReach: "maison"), "the middle")
+    }
+
     // A word Lexique knows is never reported as misspelled, whatever the system says.
     // English guesses from the system spellchecker are never offered.
     func testSpellingDropsGuessesOutsideTheLexicon() throws {

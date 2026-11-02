@@ -29,6 +29,48 @@ struct SaveEntrySheet: View {
     @FocusState private var titleIsFocused: Bool
 
     var body: some View {
+        #if os(macOS)
+        macBody
+        #else
+        phoneBody
+        #endif
+    }
+
+    #if !os(macOS)
+    /// iPhone and iPad: a titled form with Cancel and Save in the navigation bar.
+    private var phoneBody: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Title (optional)", text: $title)
+                        .focused($titleIsFocused)
+                        .submitLabel(.done)
+                        .onSubmit { save(title) }
+                } footer: {
+                    Text("Saved as “\(proposedName(title)).txt”")
+                }
+            }
+            .navigationTitle(isNewEntry ? "Save as New Entry" : "Save to Your Journal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", role: .cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save(title) }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .onAppear {
+            title = suggestedTitle
+            titleIsFocused = true
+        }
+    }
+    #endif
+
+    /// The Mac sheet: the title field with Cancel and Save beneath it.
+    private var macBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(isNewEntry ? "Save as New Entry" : "Save to Your Journal")
                 .font(.headline)

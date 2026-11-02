@@ -51,7 +51,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .articleGenderPredicted: ["noun", "gender", "reason", "article"]
         case .contraction: ["preposition", "article", "contraction"]
         case .agreementGender, .agreementNumber, .agreementGenderAndNumber: ["noun", "gender", "number"]
-        case .spelling: ["word", "suggestion"]
+        case .spelling: ["word", "suggestion", "where"]
         case .unknownWord: ["word"]
         case .lookAlike, .wordChoice, .preposition: ["note", "fix"]
         case .placePreposition: ["place", "reason", "fix"]
