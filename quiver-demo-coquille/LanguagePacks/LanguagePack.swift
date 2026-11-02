@@ -35,6 +35,8 @@ nonisolated struct LanguagePack: Sendable {
     let grammar: any Grammar
     /// The trained gender model, or `nil` when no `fr.gender-model.json` is bundled yet.
     let genderModel: EndingGenderModel?
+    /// The trained article-or-pronoun model, or `nil` when no `fr.article-model.json` is bundled.
+    let articleModel: ArticleOrPronounModel?
     /// The phrasebook, in the order `fr.phrases.json` lists it, or empty if that file won't load.
     let phrases: [Phrase]
 
@@ -47,6 +49,7 @@ nonisolated struct LanguagePack: Sendable {
         let idioms = try JSONDecoder().decode([Idiom].self, from: Data(contentsOf: url(of: "fr.idioms", in: bundle)))
         let lookAlikes = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.lookalikes", in: bundle)))
         let wordChoices = try JSONDecoder().decode([PhraseFix].self, from: Data(contentsOf: url(of: "fr.wordchoice", in: bundle)))
+        let meaningChecks = try JSONDecoder().decode([MeaningCheck].self, from: Data(contentsOf: url(of: "fr.meanings", in: bundle)))
         // The phrasebook is extra content: if its file is missing or broken, the editor and
         // linter still load, with an empty phrasebook. The tests require the bundled one to decode.
         let phrases = bundle.url(forResource: "fr.phrases", withExtension: "json").flatMap {
@@ -56,6 +59,14 @@ nonisolated struct LanguagePack: Sendable {
         // The model is optional: until it is trained, unknown nouns simply go unchecked.
         let genderModel = try bundle.url(forResource: "fr.gender-model", withExtension: "json").map {
             try JSONDecoder().decode(EndingGenderModel.self, from: Data(contentsOf: $0))
+        }
+        // Also optional: without it, et and est go unchecked.
+        let etOrEstModel = try bundle.url(forResource: "fr.et-est-model", withExtension: "json").map {
+            try JSONDecoder().decode(EtOrEstModel.self, from: Data(contentsOf: $0))
+        }
+        // Also optional: without it, the hand rule alone decides whether le or la is a pronoun.
+        let articleModel = try bundle.url(forResource: "fr.article-model", withExtension: "json").map {
+            try JSONDecoder().decode(ArticleOrPronounModel.self, from: Data(contentsOf: $0))
         }
 
         return LanguagePack(
@@ -70,9 +81,13 @@ nonisolated struct LanguagePack: Sendable {
                 lookAlikes: lookAlikes,
                 wordChoices: wordChoices,
                 explanations: explanations,
-                genderPredictor: genderModel
+                genderPredictor: genderModel,
+                articleModel: articleModel,
+                meaningChecks: meaningChecks,
+                etOrEstModel: etOrEstModel
             ),
             genderModel: genderModel,
+            articleModel: articleModel,
             phrases: phrases
         )
     }

@@ -67,6 +67,10 @@ struct IssueCard: View {
                 .font(.plexSans(14, relativeTo: .subheadline))
                 .fixedSize(horizontal: false, vertical: true)
 
+            if !issue.choices.isEmpty {
+                choiceList
+            }
+
             HStack(spacing: 12) {
                 Text(issue.source)
                     .font(.plexSans(12, relativeTo: .caption))
@@ -90,6 +94,44 @@ struct IssueCard: View {
         .background(.background, in: RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.separator))
         .shadow(color: .black.opacity(0.12), radius: 14, y: 6)
+    }
+
+    /// The wordings to pick between, each with its meaning. The learner's own wording
+    /// is marked Keep; any other replaces it.
+    private var choiceList: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(issue.choices.enumerated()), id: \.offset) { position, choice in
+                if position > 0 {
+                    Divider()
+                }
+                Button {
+                    model.choose(choice, for: issue)
+                } label: {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(choice.text)
+                                .font(.plexMono(16, weight: .medium, relativeTo: .body))
+                            Text(choice.meaning)
+                                .font(.plexSans(13, relativeTo: .footnote))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 8)
+                        Text(issue.isOriginal(choice) ? "Keep" : "Use this")
+                            .font(.plexSans(13, relativeTo: .footnote))
+                            .foregroundStyle(.tint)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(choice.text): \(choice.meaning)")
+                .accessibilityHint(issue.isOriginal(choice) ? "Keeps your wording" : "Replaces your wording")
+            }
+        }
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
     }
 }
 

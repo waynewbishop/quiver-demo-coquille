@@ -252,7 +252,10 @@ final class EditorModel {
     private func lint(applied: Issue?) {
         guard let linter else { return }
         let plain = plainText
-        let previousErrors = visibleIssues.filter { ($0.severity == .error || $0.replacement == nil) && $0 != applied }
+        // A question with choices has no single fix, so changing its words isn't fixing an error.
+        let previousErrors = visibleIssues.filter {
+            ($0.severity == .error || ($0.replacement == nil && $0.choices.isEmpty)) && $0 != applied
+        }
         let previousText = lintedText
         observedText = plain
         issues = linter.lint(plain)
@@ -369,6 +372,19 @@ final class EditorModel {
         if issue.severity == .error, !isRehearsal {
             stats.recordFix(byLearner: false, issue: issue, in: before)
         }
+        lint(applied: issue)
+        selectNext(after: issue.offset)
+    }
+
+    /// Answers a "did you mean" card. Keeping the learner's own wording hides the question
+    /// wherever it appears; another choice replaces the words and relints.
+    func choose(_ choice: Choice, for issue: Issue) {
+        guard !issue.isOriginal(choice) else {
+            ignore(issue)
+            return
+        }
+        guard plainText == lintedText, let range = attributedRange(for: issue.range) else { return }
+        text.replaceSubrange(range, with: AttributedString(choice.text))
         lint(applied: issue)
         selectNext(after: issue.offset)
     }

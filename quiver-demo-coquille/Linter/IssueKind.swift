@@ -29,6 +29,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case wordChoice
     case negation
     case idiom
+    case meaning
+    case etOrEst
 
     /// The short uppercase label shown at the top of an issue card.
     var label: String {
@@ -47,6 +49,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .wordChoice: "WORD CHOICE"
         case .negation: "NEGATION"
         case .idiom: "IDIOM"
+        case .meaning: "DID YOU MEAN"
+        case .etOrEst: "ET OR EST"
         }
     }
 
@@ -67,6 +71,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .wordChoice: "Word choice (j'ai faim)"
         case .negation: "Negation (ne… plus)"
         case .idiom: "Idioms"
+        case .meaning: "Meaning (pas encore or plus)"
+        case .etOrEst: "Et or est (il est grand)"
         }
     }
 }

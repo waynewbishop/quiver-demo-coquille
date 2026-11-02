@@ -30,6 +30,28 @@ nonisolated struct FrenchGrammar: Grammar {
     let explanations: ExplanationTemplates
     /// Predicts gender for nouns missing from the lexicon; `nil` until a trained model ships.
     let genderPredictor: (any GenderPredictor)?
+    /// Decides whether le, la, les or l' is an article or a pronoun from the words
+    /// around it; `nil` leaves the decision to the hand rule alone.
+    var articleModel: ArticleOrPronounModel? = nil
+    /// Correct phrases whose meaning English speakers often mix up, from `fr.meanings.json`.
+    var meaningChecks: [MeaningCheck] = []
+    /// Decides whether et or est belongs from the words around it; `nil` leaves both unchecked.
+    var etOrEstModel: EtOrEstModel? = nil
+
+    /// How likely the other word must be before et or est is called an error.
+    static let etOrEstCertainty = 0.95
+    /// How likely the other word must be before the learner is asked which they meant.
+    ///
+    /// Asking whenever the model is unsure would question most correct et and est. At
+    /// this cutoff the Notebook measured, on held-out treebank text, questions on 3.9%
+    /// of correct et and est and errors on 0.6%, while a swapped word is caught as an
+    /// error 41.3% of the time and asked about 39.5%. The phrasebook's 161 et and est
+    /// raise nothing.
+    static let etOrEstQuestion = 0.8
+
+    /// How sure the article model must be that a word is an article before a rule
+    /// treats it as one. Below this the word may be a pronoun, so the rule stays silent.
+    static let articleCertainty = 0.95
 
     /// The probability a model guess needs before it becomes a warning.
     ///
@@ -45,7 +67,13 @@ nonisolated struct FrenchGrammar: Grammar {
     /// The order matters: when two issues of the same severity cover the same words,
     /// the resolution matrix keeps the one from the earlier rule.
     var rules: [GrammarRule] {
-        [
+        // Each phrase list becomes a word trie once, when the pipeline is built, so a
+        // lint pass walks the text once per list instead of trying every phrase.
+        let lookAlikeTrie = PhraseTrie(phrases: lookAlikes.map { Self.words(of: $0.phrase) })
+        let wordChoiceTrie = PhraseTrie(phrases: wordChoices.map { Self.words(of: $0.phrase) })
+        let idiomTrie = PhraseTrie(phrases: idioms.map { Self.words(of: $0.phrase) })
+        let meaningTrie = PhraseTrie(phrases: meaningChecks.map { Self.words(of: $0.phrase) })
+        return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
                 articleGenderIssues(in: $0)
             },
@@ -77,16 +105,22 @@ nonisolated struct FrenchGrammar: Grammar {
                 agreementIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.lookAlike", layer: .orthography, targetLevel: .a1) {
-                phraseFixIssues(in: $0, from: lookAlikes, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
+                phraseFixIssues(in: $0, from: lookAlikes, trie: lookAlikeTrie, kind: .lookAlike, explanation: .lookAlike, source: "Look-alike list")
             },
             GrammarRule(identifier: "grammar.wordChoice", layer: .contextualSemantics, targetLevel: .a2) {
-                phraseFixIssues(in: $0, from: wordChoices, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
+                phraseFixIssues(in: $0, from: wordChoices, trie: wordChoiceTrie, kind: .wordChoice, explanation: .wordChoice, source: "Word-choice list")
             },
             GrammarRule(identifier: "grammar.negation", layer: .relationalGrammar, targetLevel: .a2) {
                 negationIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.idiom", layer: .contextualSemantics, targetLevel: .b2) {
-                idiomIssues(in: $0)
+                idiomIssues(in: $0, trie: idiomTrie)
+            },
+            GrammarRule(identifier: "grammar.meaning", layer: .contextualSemantics, targetLevel: .a2) {
+                meaningIssues(in: $0, trie: meaningTrie)
+            },
+            GrammarRule(identifier: "grammar.etOrEst", layer: .orthography, targetLevel: .a1) {
+                etOrEstIssues(in: $0)
             }
         ]
     }
@@ -233,14 +267,80 @@ nonisolated struct FrenchGrammar: Grammar {
         }
     }
 
-    /// Whether le/la at `index` is likely an object pronoun before a verb, as in
-    /// "je le porte" or "pour la voir", rather than an article.
+    /// Whether le/la at `index` may be an object pronoun, as in "je le porte" or
+    /// "pour la voir", so that no rule should treat it as an article.
+    ///
+    /// The hand rule's pronoun verdict always stands. With a model, an article
+    /// also needs the model to be sure of it, so "qui le porte ?" stays silent
+    /// where the hand rule alone would call "le porte" a gender error.
     private func isPronounPosition(of tokens: [Token], articleAt index: Int) -> Bool {
+        if handRuleSaysPronoun(tokens, at: index) { return true }
+        let word = tokens[index].normalized
+        guard let articleModel, articleModel.decides(word) else { return false }
+        let context = modelContext(of: tokens, at: index)
+        // An object pronoun follows its subject, so a sentence never opens with one:
+        // the three training treebanks start 4,604 sentences with le, la, les or l',
+        // every one an article. The model is unsure of "Le voiture est rouge" only
+        // because Lexique also lists voiture as a form of voiturer.
+        guard context.previous != nil else { return false }
+        let pronoun = articleModel.pronounProbability(
+            of: word, previous: context.previous, next: context.next, afterNext: context.afterNext, lexicon: lexicon
+        )
+        return pronoun > 1.0 - Self.articleCertainty
+    }
+
+    /// The hand rule: le or la before a verb is a pronoun after a subject or object
+    /// pronoun, or after a preposition when the verb is an infinitive.
+    private func handRuleSaysPronoun(_ tokens: [Token], at index: Int) -> Bool {
         let word = tokens[index + 1].normalized
         guard lexicon.isVerb(word), index > 0 else { return false }
         let previous = tokens[index - 1].normalized
         if Self.pronounContext.contains(previous) { return true }
         return isInfinitive(word) && Self.infinitivePrepositions.contains(previous)
+    }
+
+    /// Returns the words around `index` as the article model saw them in training,
+    /// where punctuation is a word of its own and a sentence starts with nothing before it.
+    private func modelContext(of tokens: [Token], at index: Int) -> (previous: String?, next: String?, afterNext: String?) {
+        var previous: String?
+        if index > 0 {
+            let before = tokens[index - 1]
+            switch Self.mark(in: before.gap) {
+            case .none: previous = before.normalized
+            case .some(let mark): previous = Self.sentenceEnds.contains(mark) || mark == "\n" ? nil : mark
+            }
+        }
+        let (next, nextIsMark) = neighbour(after: index, in: tokens)
+        var afterNext: String?
+        if nextIsMark {
+            afterNext = index + 1 < tokens.count ? tokens[index + 1].normalized : nil
+        } else if next != nil {
+            afterNext = neighbour(after: index + 1, in: tokens).word
+        }
+        return (previous, next, afterNext)
+    }
+
+    /// Returns what follows the token at `index`: a punctuation mark in its gap, the
+    /// next word, or `nil` at a line break or the end of the text.
+    private func neighbour(after index: Int, in tokens: [Token]) -> (word: String?, isMark: Bool) {
+        switch Self.mark(in: tokens[index].gap) {
+        case .some("\n"): return (nil, false)
+        case .some(let mark): return (mark, true)
+        case .none: return (index + 1 < tokens.count ? tokens[index + 1].normalized : nil, false)
+        }
+    }
+
+    /// Punctuation that ends a sentence, after which the model sees nothing before a word.
+    private static let sentenceEnds: Set<String> = [".", "!", "?", "…"]
+
+    /// Returns the first mark in a gap, "\n" for a line break, or `nil` when only spaces separate the words.
+    private static func mark(in gap: String) -> String? {
+        for character in gap {
+            if character.isNewline { return "\n" }
+            if character.isWhitespace { continue }
+            return String(character)
+        }
+        return nil
     }
 
     /// Whether a word is a verb form with an infinitive ending, such as faire or voir.
@@ -569,23 +669,34 @@ nonisolated struct FrenchGrammar: Grammar {
         "je": (nil, .singular), "j'": (nil, .singular), "tu": (nil, .singular), "nous": (nil, .plural)
     ]
 
-    /// Flags a past participle after être that doesn't agree with its subject pronoun:
-    /// "elles sont allé" → "allées", "elle est fatigué" → "fatiguée".
+    /// The number each third-person form of être marks, for checking a noun subject.
+    private static let etreNumber: [String: GrammaticalNumber] = [
+        "est": .singular, "était": .singular, "sont": .plural, "étaient": .plural
+    ]
+
+    /// Words that put a noun inside a phrase rather than make it the subject, as in
+    /// "le chat de ma sœur est arrivé", where sœur isn't what arrived.
+    private static let prepositions: Set<String> = [
+        "de", "d'", "à", "en", "pour", "avec", "sans", "sur", "sous", "dans", "par",
+        "chez", "entre", "vers", "contre", "après", "avant", "depuis", "pendant"
+    ]
+
+    /// Flags a past participle after être that doesn't agree with its subject:
+    /// "elles sont allé" → "allées", "la fille est arrivé" → "arrivée".
     ///
-    /// Only a subject pronoun directly followed by être and the participle is judged, so
-    /// "elle s'est lavé les mains" and "elle n'est pas allée" are left alone. Where the
-    /// subject doesn't settle the gender (je, tu, nous), the learner's own gender is kept.
+    /// The subject is a pronoun right before être, or a determiner and a noun right
+    /// before it, so "elle s'est lavé les mains" and "elle n'est pas allée" are left
+    /// alone. Where the subject doesn't settle the gender (je, tu, nous, les enfants),
+    /// the learner's own gender is kept.
     private func participleWithEtreIssues(in tokens: [Token]) -> [Issue] {
         var issues: [Issue] = []
         guard tokens.count >= 3 else { return issues }
-        for index in 0..<(tokens.count - 2) {
-            let subject = tokens[index]
-            let auxiliary = tokens[index + 1]
-            let participle = tokens[index + 2]
-            guard let agreement = Self.etreSubjectAgreement[subject.normalized],
-                  subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
-                  Self.etreForms.contains(auxiliary.normalized),
-                  !isCoordinated(tokens, subjectAt: index) else { continue }
+        for index in 1..<(tokens.count - 1) {
+            let auxiliary = tokens[index]
+            let participle = tokens[index + 1]
+            guard Self.etreForms.contains(auxiliary.normalized), auxiliary.isAdjacentToNext,
+                  let subject = etreSubject(before: index, in: tokens) else { continue }
+            let agreement = subject.agreement
             let readings = lexicon.participles(participle.normalized)
             guard let verb = readings.first?.verb, readings.allSatisfy({ $0.verb == verb }) else { continue }
 
@@ -601,13 +712,45 @@ nonisolated struct FrenchGrammar: Grammar {
             guard let fix = lexicon.participle(of: verb, gender: gender, number: agreement.number),
                   fix != participle.normalized else { continue }
             issues.append(issue(
-                .participle, .error, from: index + 2, through: index + 2, in: tokens,
+                .participle, .error, from: index + 1, through: index + 1, in: tokens,
                 replacement: matchingCase(of: participle.text, fix),
-                explanation: explanations.render(.participleWithEtre, ["subject": subject.normalized == "j'" ? "je" : subject.normalized, "fix": fix]),
+                explanation: explanations.render(.participleWithEtre, ["subject": subject.name, "fix": fix]),
                 source: "Participle rule · Lexique"
             ))
         }
         return issues
+    }
+
+    /// Returns the subject of the être form at `index` and what it settles about the
+    /// participle, or nil when the words before it aren't a subject the rule can read.
+    private func etreSubject(
+        before index: Int,
+        in tokens: [Token]
+    ) -> (name: String, agreement: (gender: Gender?, number: GrammaticalNumber))? {
+        // A subject pronoun right before être: "elles sont".
+        let pronoun = tokens[index - 1]
+        if let agreement = Self.etreSubjectAgreement[pronoun.normalized] {
+            guard pronoun.isAdjacentToNext, !isCoordinated(tokens, subjectAt: index - 1) else { return nil }
+            return (pronoun.normalized == "j'" ? "je" : pronoun.normalized, agreement)
+        }
+
+        // A determiner and a noun right before être: "la fille est", "les enfants sont".
+        guard index >= 2, let number = Self.etreNumber[tokens[index].normalized] else { return nil }
+        let determiner = tokens[index - 2]
+        let noun = tokens[index - 1]
+        guard determiner.isAdjacentToNext, noun.isAdjacentToNext,
+              !["du", "au", "aux"].contains(determiner.normalized),
+              let marked = Self.determiners[determiner.normalized],
+              let entry = lexicon.noun(noun.normalized),
+              !isCoordinated(tokens, subjectAt: index - 2) else { return nil }
+        // "de la fête sont" puts the noun inside a phrase; "la fête sont" disagrees in number.
+        if index >= 3, tokens[index - 3].isAdjacentToNext, Self.prepositions.contains(tokens[index - 3].normalized) { return nil }
+        guard marked.number == nil || marked.number == number,
+              entry.number == nil || entry.number == number else { return nil }
+        // A determiner and noun that disagree on gender are the gender rule's to fix first.
+        if let markedGender = marked.gender, let nounGender = entry.gender, markedGender != nounGender { return nil }
+        let name = determiner.normalized + (determiner.normalized.hasSuffix("'") ? "" : " ") + noun.normalized
+        return (name, (marked.gender ?? entry.gender, number))
     }
 
     // MARK: - Articles for things in general
@@ -780,82 +923,182 @@ nonisolated struct FrenchGrammar: Grammar {
     private func phraseFixIssues(
         in tokens: [Token],
         from fixes: [PhraseFix],
+        trie: PhraseTrie,
         kind: IssueKind,
         explanation key: ExplanationKey,
         source: String
     ) -> [Issue] {
-        var issues: [Issue] = []
-        for fix in fixes {
-            let phrase = FrenchTokenizer.tokens(in: fix.phrase).map(\.normalized)
-            let starts = occurrences(
-                of: phrase, in: tokens,
+        trie.matches(in: tokens).compactMap { match in
+            let fix = fixes[match.entry]
+            guard allowsMatch(
+                match, in: tokens,
                 unlessAfter: fix.unlessAfter, onlyAfter: fix.onlyAfter,
                 unlessBefore: fix.unlessBefore, onlyAtClauseEnd: fix.onlyAtClauseEnd == true
+            ) else { return nil }
+            return issue(
+                kind, .error, from: match.start, through: match.start + match.length - 1, in: tokens,
+                replacement: matchingCase(of: tokens[match.start].text, fix.fix),
+                explanation: explanations.render(key, ["note": fix.note, "fix": fix.fix]),
+                source: source
             )
-            for start in starts {
-                issues.append(issue(
-                    kind, .error, from: start, through: start + phrase.count - 1, in: tokens,
-                    replacement: matchingCase(of: tokens[start].text, fix.fix),
-                    explanation: explanations.render(key, ["note": fix.note, "fix": fix.fix]),
-                    source: source
-                ))
-            }
         }
-        return issues
     }
 
-    /// Returns where `phrase` starts in `tokens`, with its words adjacent, skipping
-    /// matches whose neighbouring words make it correct French.
-    private func occurrences(
-        of phrase: [String],
+    /// Splits a listed phrase into the normalized words the tokenizer produces for it.
+    private static func words(of phrase: String) -> [String] {
+        FrenchTokenizer.tokens(in: phrase).map(\.normalized)
+    }
+
+    /// Whether a trie match stands, given the words around it: some listed phrases are
+    /// correct French after or before particular words.
+    private func allowsMatch(
+        _ match: PhraseTrie.Match,
         in tokens: [Token],
         unlessAfter: [String]?,
         onlyAfter: [String]?,
         unlessBefore: [String]?,
         onlyAtClauseEnd: Bool
-    ) -> [Int] {
-        guard !phrase.isEmpty, tokens.count >= phrase.count else { return [] }
-        return (0...(tokens.count - phrase.count)).filter { start in
-            let end = start + phrase.count
-            let window = tokens[start..<end]
-            guard zip(window, phrase).allSatisfy({ $0.normalized == $1 }),
-                  window.dropLast().allSatisfy(\.isAdjacentToNext) else { return false }
-            let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
-            let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
-            // "il cava" is the verb caver, which is correct French.
-            if let before, unlessAfter?.contains(before) == true { return false }
-            // "a fait une décision" takes pris; "il fait une décision" takes prend.
-            if let onlyAfter, !onlyAfter.contains(before ?? "") { return false }
-            // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
-            if let after, unlessBefore?.contains(after) == true { return false }
-            // "et tu ?" is wrong; "et tu vas bien" is correct French.
-            if onlyAtClauseEnd, end < tokens.count, !tokens[end - 1].endsClause { return false }
-            return true
-        }
+    ) -> Bool {
+        let start = match.start
+        let end = start + match.length
+        let before = start > 0 && tokens[start - 1].isAdjacentToNext ? tokens[start - 1].normalized : nil
+        let after = end < tokens.count && tokens[end - 1].isAdjacentToNext ? tokens[end].normalized : nil
+        // "il cava" is the verb caver, which is correct French.
+        if let before, unlessAfter?.contains(before) == true { return false }
+        // "a fait une décision" takes pris; "il fait une décision" takes prend.
+        if let onlyAfter, !onlyAfter.contains(before ?? "") { return false }
+        // "Pierre cava un trou": caver takes an object, so the phrase is correct here.
+        if let after, unlessBefore?.contains(after) == true { return false }
+        // "et tu ?" is wrong; "et tu vas bien" is correct French.
+        if onlyAtClauseEnd, end < tokens.count, !tokens[end - 1].endsClause { return false }
+        return true
     }
 
     // MARK: - Idioms
 
     /// Suggests the more natural wording for phrases in the idiom list.
-    private func idiomIssues(in tokens: [Token]) -> [Issue] {
-        var issues: [Issue] = []
-        for idiom in idioms {
-            let phrase = FrenchTokenizer.tokens(in: idiom.phrase).map(\.normalized)
-            let starts = occurrences(
-                of: phrase, in: tokens,
+    private func idiomIssues(in tokens: [Token], trie: PhraseTrie) -> [Issue] {
+        trie.matches(in: tokens).compactMap { match in
+            let idiom = idioms[match.entry]
+            guard allowsMatch(
+                match, in: tokens,
                 unlessAfter: idiom.unlessAfter, onlyAfter: idiom.onlyAfter,
                 unlessBefore: idiom.unlessBefore, onlyAtClauseEnd: false
+            ) else { return nil }
+            return issue(
+                .idiom, .suggestion, from: match.start, through: match.start + match.length - 1, in: tokens,
+                replacement: matchingCase(of: tokens[match.start].text, idiom.suggestion),
+                explanation: explanations.render(.idiom, ["suggestion": idiom.suggestion, "note": idiom.note]),
+                source: "Idiom list"
             )
-            for start in starts {
+        }
+    }
+
+    // MARK: - Meaning
+
+    /// Asks which wording the learner meant for correct phrases that English speakers
+    /// often mix up, such as "pas encore" for "plus". A suggestion with choices, never
+    /// an error, because only the learner knows what they meant.
+    private func meaningIssues(in tokens: [Token], trie: PhraseTrie) -> [Issue] {
+        trie.matches(in: tokens).compactMap { match in
+            let check = meaningChecks[match.entry]
+            let end = match.start + match.length
+            if check.unlessBeforeParticiple == true, end < tokens.count, tokens[end - 1].isAdjacentToNext,
+               !lexicon.participles(tokens[end].normalized).isEmpty {
+                return nil
+            }
+            let first = tokens[match.start].text
+            var flagged = issue(
+                .meaning, .suggestion, from: match.start, through: match.start + match.length - 1, in: tokens,
+                replacement: nil,
+                explanation: explanations.render(.meaning, ["note": check.note]),
+                source: "Meaning list"
+            )
+            flagged.choices = check.choices.map { Choice(text: matchingCase(of: first, $0.text), meaning: $0.meaning) }
+            return flagged
+        }
+    }
+
+    // MARK: - Et or est
+
+    /// What each word means, shown when the learner is asked which one they meant.
+    private static let etOrEstMeanings = ["et": "and: joins two things", "est": "is: as in il est grand"]
+
+    /// Flags et written for est, or est for et, using the Quiver model. When the other
+    /// word is almost certain it's an error with a fix; when the model only leans
+    /// toward it, the learner is asked which word they meant.
+    private func etOrEstIssues(in tokens: [Token]) -> [Issue] {
+        guard let etOrEstModel else { return [] }
+        let stream = modelSentences(of: tokens)
+        var issues: [Issue] = []
+        for (index, token) in tokens.enumerated() {
+            let written = token.normalized
+            guard written == "et" || written == "est" else { continue }
+            let other = written == "et" ? "est" : "et"
+            let place = stream.places[index]
+            let words = stream.sentences[place.sentence]
+            let word = { (offset: Int) -> String? in
+                words.indices.contains(place.index + offset) ? words[place.index + offset] : nil
+            }
+            let context = EtOrEstModel.Context(
+                earlier: Array(words[..<place.index]),
+                clauseStartsTwoBefore: word(-3).map(EtOrEstModel.isMark) ?? true,
+                beforePrevious: word(-2),
+                previous: word(-1),
+                next: word(1),
+                afterNext: word(2)
+            )
+            if written == "est", etOrEstModel.isOpenQuestion(context, lexicon: lexicon) { continue }
+            let est = etOrEstModel.estProbability(context, lexicon: lexicon)
+            let otherLikelihood = other == "est" ? est : 1 - est
+            let fix = matchingCase(of: token.text, other)
+            if otherLikelihood >= Self.etOrEstCertainty, !etOrEstModel.canOnlyAsk(context, lexicon: lexicon) {
                 issues.append(issue(
-                    .idiom, .suggestion, from: start, through: start + phrase.count - 1, in: tokens,
-                    replacement: matchingCase(of: tokens[start].text, idiom.suggestion),
-                    explanation: explanations.render(.idiom, ["suggestion": idiom.suggestion, "note": idiom.note]),
-                    source: "Idiom list"
+                    .etOrEst, .error, from: index, through: index, in: tokens,
+                    replacement: fix,
+                    explanation: explanations.render(.etOrEst, ["fix": other]),
+                    source: "Quiver prediction · words around it"
                 ))
+            } else if otherLikelihood >= Self.etOrEstQuestion {
+                var question = issue(
+                    .meaning, .suggestion, from: index, through: index, in: tokens,
+                    replacement: nil,
+                    explanation: explanations.render(.meaning, ["note": "Et means and; est means is."]),
+                    source: "Quiver prediction · words around it"
+                )
+                question.choices = [token.text, fix].map { Choice(text: $0, meaning: Self.etOrEstMeanings[$0.lowercased()] ?? "") }
+                issues.append(question)
             }
         }
         return issues
+    }
+
+    /// Splits the text into sentences of words as the treebank models saw them in
+    /// training: punctuation is a word of its own, a sentence keeps its closing mark,
+    /// and a line break ends a sentence. Returns where each token landed.
+    private func modelSentences(of tokens: [Token]) -> (sentences: [[String]], places: [(sentence: Int, index: Int)]) {
+        var sentences: [[String]] = []
+        var places: [(sentence: Int, index: Int)] = []
+        var current: [String] = []
+        for token in tokens {
+            places.append((sentences.count, current.count))
+            current.append(token.normalized)
+            switch Self.mark(in: token.gap) {
+            case .none:
+                continue
+            case .some("\n"):
+                sentences.append(current)
+                current = []
+            case .some(let mark):
+                current.append(mark)
+                if Self.sentenceEnds.contains(mark) {
+                    sentences.append(current)
+                    current = []
+                }
+            }
+        }
+        sentences.append(current)
+        return (sentences, places)
     }
 
     // MARK: - Helpers
@@ -867,7 +1110,7 @@ nonisolated struct FrenchGrammar: Grammar {
         from first: Int,
         through last: Int,
         in tokens: [Token],
-        replacement: String,
+        replacement: String?,
         explanation: Explanation,
         source: String
     ) -> Issue {

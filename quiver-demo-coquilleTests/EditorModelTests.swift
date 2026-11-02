@@ -169,6 +169,31 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(narrator.state, .idle)
     }
 
+    // Picking the other wording on a "did you mean" card replaces the words.
+    func testChoosingAnotherWordingReplacesIt() throws {
+        let model = try makeModel()
+        type("Je ne mange pas encore de viande.", into: model)
+        model.lintNow()
+        let issue = try XCTUnwrap(model.visibleIssues.first { $0.kind == .meaning })
+        let plus = try XCTUnwrap(issue.choices.first { !issue.isOriginal($0) })
+        model.choose(plus, for: issue)
+        XCTAssertEqual(String(model.text.characters), "Je ne mange plus de viande.")
+        XCTAssertFalse(model.visibleIssues.contains { $0.kind == .meaning })
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+    }
+
+    // Keeping the learner's own wording closes the question without changing the text.
+    func testKeepingTheOwnWordingHidesTheQuestion() throws {
+        let model = try makeModel()
+        type("Je ne mange pas encore de viande.", into: model)
+        model.lintNow()
+        let issue = try XCTUnwrap(model.visibleIssues.first { $0.kind == .meaning })
+        let own = try XCTUnwrap(issue.choices.first { issue.isOriginal($0) })
+        model.choose(own, for: issue)
+        XCTAssertEqual(String(model.text.characters), "Je ne mange pas encore de viande.")
+        XCTAssertFalse(model.visibleIssues.contains { $0.kind == .meaning })
+    }
+
     // Try an example's mistakes aren't the learner's: fixing them counts nothing until New starts a blank page.
     func testExampleIsNotCounted() throws {
         let model = try makeModel()

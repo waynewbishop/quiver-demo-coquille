@@ -44,6 +44,21 @@ nonisolated struct Idiom: Codable, Equatable, Sendable {
     let note: String
 }
 
+/// Correct French that says something different from what English speakers often mean,
+/// from `fr.meanings.json`. The learner is asked which wording they meant rather than
+/// told they are wrong, as with "pas encore" (not yet) and "plus" (no longer).
+nonisolated struct MeaningCheck: Codable, Equatable, Sendable {
+    /// The words as the learner writes them, such as "pas encore".
+    let phrase: String
+    /// Every wording to offer, the phrase itself included, each with its meaning.
+    let choices: [Choice]
+    /// Whether to stay silent when a past participle follows, as in "je n'ai pas encore
+    /// fini", where only "not yet" makes sense and the question would be noise.
+    var unlessBeforeParticiple: Bool? = nil
+    /// Why the wordings differ, shown on the card.
+    let note: String
+}
+
 /// A phrase that is wrong wherever it appears, apart from listed exceptions, and its
 /// fix: look-alikes such as "comment cava" from `fr.lookalikes.json`, and English
 /// patterns such as "je suis faim" from `fr.wordchoice.json`.

@@ -63,6 +63,48 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Je viens pour la voir."), [])
     }
 
+    // MARK: - Article or pronoun model
+
+    // The bundled model rebuilds the Notebook's features exactly: these are the
+    // probabilities the training script printed for its trap sentences.
+    func testArticleModelMatchesTheNotebook() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let model = try XCTUnwrap(pack.articleModel, "fr.article-model.json should be bundled")
+        let cases: [(word: String, previous: String?, next: String?, afterNext: String?, pronoun: Double)] = [
+            ("le", "je", "porte", ".", 0.64),
+            ("la", "il", "porte", "tous", 0.22),
+            ("le", "qui", "porte", "?", 0.12),
+            ("le", "ouvre", "porte", ".", 0.02),
+            ("la", "a", "grippe", ".", 0.01),
+            ("l'", "je", "ai", "vu", 1.00),
+            ("la", "allons", "visiter", ".", 0.71)
+        ]
+        for item in cases {
+            let pronoun = model.pronounProbability(
+                of: item.word, previous: item.previous, next: item.next, afterNext: item.afterNext, lexicon: pack.lexicon
+            )
+            XCTAssertEqual(pronoun, item.pronoun, accuracy: 0.005, "\(item.previous ?? "") \(item.word) \(item.next ?? "")")
+        }
+    }
+
+    // A pronoun the hand rule misses, before a word that is also a noun of the other
+    // gender: alone, the hand rule calls "le porte" a gender error; the model keeps it silent.
+    func testArticleModelSilencesPronounsTheHandRuleMisses() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let handRuleOnly = FrenchGrammar(lexicon: pack.lexicon, idioms: [], lookAlikes: [], wordChoices: [], explanations: pack.explanations, genderPredictor: pack.genderModel)
+        XCTAssertEqual(handRuleOnly.check("Qui le porte ?").map(\.original), ["le porte"])
+
+        XCTAssertEqual(try fixes("Qui le porte ?"), [])
+        XCTAssertEqual(try fixes("Ça le marque."), [])
+    }
+
+    // When the model is sure the word is an article, a real gender error still fires.
+    func testArticleModelKeepsRealGenderErrors() throws {
+        XCTAssertEqual(try fixes("Il ouvre le porte."), ["le porte → la porte"])
+        XCTAssertEqual(try fixes("Hier, il ouvre le porte."), ["le porte → la porte"])
+        XCTAssertEqual(try fixes("Je ferme la porte."), [])
+    }
+
     // A noun Lexique lists with both genders is never flagged.
     func testAmbiguousGenderIsSkipped() throws {
         XCTAssertEqual(try fixes("Le livre coûte une livre."), [])
@@ -162,7 +204,7 @@ final class FrenchGrammarTests: XCTestCase {
     // MARK: - Regression corpora
 
     /// Correct French that must raise nothing. Add every false positive found here.
-    private static let correctFrench = [
+    static let correctFrench = [
         // Caver, "to dig," in the passé simple.
         "Pierre cava un trou.",
         "Il cava un trou.",
@@ -401,6 +443,117 @@ final class FrenchGrammarTests: XCTestCase {
             let fixed = text.replacingCharacters(in: start..<end, with: replacement)
             XCTAssertEqual(try fixes(fixed), [], fixed)
         }
+    }
+
+    // MARK: - Participles after a noun subject
+
+    // A determiner and noun before être settle the participle, as a pronoun does.
+    func testParticipleAgreesWithNounSubject() throws {
+        XCTAssertEqual(try fixes("La fille est arrivé."), ["arrivé → arrivée"])
+        XCTAssertEqual(try fixes("Les enfants sont parti."), ["parti → partis"])
+        XCTAssertEqual(try fixes("Le train est arrivée."), ["arrivée → arrivé"])
+        XCTAssertEqual(try fixes("L'actrice est né à Lyon."), ["né → née"])
+        let issue = try XCTUnwrap(grammar().check("Ma sœur est venu.").first)
+        XCTAssertEqual(issue.hint, "With être, the past participle agrees with ma sœur.")
+    }
+
+    // A noun inside a phrase isn't the subject, and a first name's gender is unknown.
+    func testParticipleIgnoresNounsThatArentTheSubject() throws {
+        XCTAssertEqual(try fixes("Le chat de ma sœur est arrivé."), [])
+        XCTAssertEqual(try fixes("Les photos de la fête sont arrivées."), [])
+        XCTAssertEqual(try fixes("Mes amies sont venues."), [])
+        XCTAssertEqual(try fixes("Marie est arrivé."), [])
+    }
+
+    // MARK: - Meaning
+
+    // Correct French that English speakers often mean differently asks rather than corrects.
+    func testMeaningAsksWhichWordingWasMeant() throws {
+        let issue = try XCTUnwrap(grammar().check("Je ne mange pas encore de viande.").first)
+        XCTAssertEqual(issue.kind, .meaning)
+        XCTAssertEqual(issue.severity, .suggestion)
+        XCTAssertEqual(issue.original, "pas encore")
+        XCTAssertNil(issue.replacement)
+        XCTAssertEqual(issue.choices.map(\.text), ["pas encore", "plus"])
+        XCTAssertTrue(issue.isOriginal(issue.choices[0]))
+        XCTAssertFalse(issue.isOriginal(issue.choices[1]))
+    }
+
+    // Before a past participle only "not yet" makes sense, so nothing is asked.
+    func testMeaningStaysSilentBeforeAParticiple() throws {
+        XCTAssertEqual(try fixes("Je n'ai pas encore fini mes devoirs."), [])
+    }
+
+    // The choices take the capital of the words they would replace.
+    func testMeaningChoicesMatchCase() throws {
+        let issue = try XCTUnwrap(grammar().check("Pas encore, merci.").first)
+        XCTAssertEqual(issue.choices.map(\.text), ["Pas encore", "Plus"])
+    }
+
+    // MARK: - Et or est
+
+    /// Returns the bundled et-or-est model, failing the test if it didn't load.
+    private func etOrEstModel() throws -> EtOrEstModel {
+        let grammar = try XCTUnwrap(Self.pack?.grammar as? FrenchGrammar)
+        return try XCTUnwrap(grammar.etOrEstModel, "fr.et-est-model.json failed to load")
+    }
+
+    // The app builds the same features as the Notebook script, so it reproduces the
+    // probabilities the script printed for its learner sentences.
+    func testEtOrEstModelMatchesTheNotebook() throws {
+        let model = try etOrEstModel()
+        let lexicon = try XCTUnwrap(Self.pack).lexicon
+        let cases: [(context: EtOrEstModel.Context, est: Double)] = [
+            (.init(earlier: ["il"], clauseStartsTwoBefore: true, beforePrevious: nil, previous: "il", next: "grand", afterNext: "."), 0.9928),
+            (.init(earlier: ["la", "maison"], clauseStartsTwoBefore: true, beforePrevious: "la", previous: "maison", next: "belle", afterNext: "."), 0.8984),
+            (.init(earlier: ["paul"], clauseStartsTwoBefore: true, beforePrevious: nil, previous: "paul", next: "marie", afterNext: "sont"), 0.0356),
+            (.init(earlier: ["j'", "aime", "le", "pain"], clauseStartsTwoBefore: false, beforePrevious: "le", previous: "pain", next: "le", afterNext: "fromage"), 0.0200),
+            (.init(earlier: ["il"], clauseStartsTwoBefore: true, beforePrevious: nil, previous: "il", next: "fatigué", afterNext: "et"), 0.9995)
+        ]
+        for (context, expected) in cases {
+            XCTAssertEqual(model.estProbability(context, lexicon: lexicon), expected, accuracy: 0.005, "\(context)")
+        }
+    }
+
+    // A sure verdict is an error with a fix, in either direction.
+    func testEtOrEstErrors() throws {
+        XCTAssertEqual(try fixes("Il et grand."), ["et → est"])
+        XCTAssertEqual(try fixes("Elle et partie hier."), ["et → est"])
+        XCTAssertEqual(try fixes("Paul est Marie sont amis."), ["est → et"])
+        let issue = try XCTUnwrap(grammar().check("Il et grand.").first)
+        XCTAssertEqual(issue.kind, .etOrEst)
+        XCTAssertEqual(issue.severity, .error)
+    }
+
+    // When the model only leans toward the other word, the learner is asked.
+    func testEtOrEstAsksWhenUnsure() throws {
+        let issue = try XCTUnwrap(grammar().check("La maison et belle.").first)
+        XCTAssertEqual(issue.kind, .meaning)
+        XCTAssertEqual(issue.severity, .suggestion)
+        XCTAssertEqual(issue.choices.map(\.text), ["et", "est"])
+    }
+
+    // With a noun before and a determiner after, either word can be right, so a sure
+    // model still only asks: "un chat et un chien", "le chat est un animal".
+    func testEtOrEstOnlyAsksBetweenNounPhrases() throws {
+        let issue = try XCTUnwrap(grammar().check("Un chat et un chien.").first)
+        XCTAssertEqual(issue.kind, .meaning)
+        XCTAssertEqual(issue.choices.map(\.text), ["et", "est"])
+        XCTAssertEqual(try fixes("Le chat est un animal."), [])
+    }
+
+    // In a question that hasn't had its verb yet, a written est is always left alone.
+    func testEtOrEstLeavesOpenQuestionsAlone() throws {
+        XCTAssertEqual(try fixes("À quelle heure est le départ ?"), [])
+        XCTAssertEqual(try fixes("Quel est ton avis ?"), [])
+    }
+
+    // The right word stays silent, including where the model is unsure.
+    func testEtOrEstSilentOnCorrectFrench() throws {
+        XCTAssertEqual(try fixes("Il est grand."), [])
+        XCTAssertEqual(try fixes("Il est fatigué et triste."), [])
+        XCTAssertEqual(try fixes("Le chat et le chien dorment."), [])
+        XCTAssertEqual(try fixes("Toi et moi."), [])
     }
 
     // MARK: - Look-alikes

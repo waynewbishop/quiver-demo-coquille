@@ -35,6 +35,10 @@ nonisolated struct Issue: Identifiable, Equatable, Sendable {
     let hint: String
     /// Where the verdict came from, such as "Lexique · known noun".
     let source: String
+    /// The wordings to choose between when the text is correct French that may not say
+    /// what the learner meant, such as "pas encore" (not yet) or "plus" (no longer).
+    /// Empty for every other issue, which has one fix or none.
+    var choices: [Choice] = []
 
     /// The flagged span as a range of character offsets.
     var range: Range<Int> {
@@ -50,4 +54,17 @@ nonisolated struct Issue: Identifiable, Equatable, Sendable {
     var id: String {
         "\(offset)|\(ignoreKey)"
     }
+
+    /// Whether `choice` is the wording the learner already wrote.
+    func isOriginal(_ choice: Choice) -> Bool {
+        choice.text.lowercased() == original.lowercased()
+    }
+}
+
+/// One wording a learner can pick on a "did you mean" card, with what it means.
+nonisolated struct Choice: Codable, Equatable, Sendable {
+    /// The French, such as "plus".
+    let text: String
+    /// What it means, in a few words of English, such as "no longer: you used to".
+    let meaning: String
 }

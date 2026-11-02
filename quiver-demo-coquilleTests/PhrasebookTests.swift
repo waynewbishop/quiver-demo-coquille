@@ -26,7 +26,8 @@ final class PhrasebookTests: XCTestCase {
 
     // MARK: - The bundled phrases
 
-    // A phrase the learner copies must never be flagged once they type it.
+    // A phrase the learner copies must never be flagged once they type it: no error,
+    // suggestion or question of any kind. The phrasebook is the golden French learners copy.
     func testEveryPhraseLintsClean() throws {
         let pack = try pack()
         for phrase in pack.phrases {
