@@ -38,6 +38,11 @@
     "template": "{word} isn't in the French dictionary, and there's no close match to suggest.",
     "example": "Ahdourdui isn't in the French dictionary, and there's no close match to suggest."
   },
+  "runTogether": {
+    "hint": "{word} reads as two words run together. Look for where the space or apostrophe goes.",
+    "template": "{word} is two words run together: {fix}.",
+    "example": "mecouche is two words run together: me couche."
+  },
   "lookAlike": {
     "hint": "{note}",
     "template": "{note} It should be {fix}.",

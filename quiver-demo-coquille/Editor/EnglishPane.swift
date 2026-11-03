@@ -23,6 +23,8 @@ struct EnglishPane: View {
     let model: EditorModel
     /// Whether to draw the header as a bar, as in the side-by-side layout.
     let showsHeaderBar: Bool
+    /// The learner's text size, from the View menu.
+    @AppStorage(FontSize.storageKey) private var fontSize = FontSize.standard
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -56,8 +58,8 @@ struct EnglishPane: View {
                 ProgressView()
             case .translated(let english):
                 Text(english)
-                    .font(.plexSans(Typography.englishSize, relativeTo: .body))
-                    .lineSpacing(Typography.englishLineSpacing)
+                    .font(.plexSans(fontSize.englishSize, relativeTo: .body))
+                    .lineSpacing(fontSize.englishLineSpacing)
                     .foregroundStyle(.primary.opacity(0.85))
                     .textSelection(.enabled)
             case .unavailable(let message):

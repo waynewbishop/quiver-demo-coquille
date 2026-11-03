@@ -23,6 +23,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case agreementGenderAndNumber
     case spelling
     case unknownWord
+    case runTogether
     case lookAlike
     case wordChoice
     case negation
@@ -58,6 +59,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .agreementGender, .agreementNumber, .agreementGenderAndNumber: ["noun", "gender", "number"]
         case .spelling: ["word", "suggestion", "where"]
         case .unknownWord: ["word"]
+        case .runTogether: ["word", "fix"]
         case .lookAlike, .wordChoice, .preposition: ["note", "fix"]
         case .placePreposition: ["place", "reason", "fix"]
         case .negation: ["corrected"]

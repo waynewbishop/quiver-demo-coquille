@@ -320,6 +320,12 @@
       "note": "ça takes the il form of the verb, and vas is the tu form."
     },
     {
+      "fix": "il y a",
+      "kind": "lookAlike",
+      "match": "ilya",
+      "note": "ilya runs three words together, and y stands on its own."
+    },
+    {
       "fix": "@avoir $avoirNoun",
       "kind": "wordChoice",
       "match": "@être $avoirNoun",

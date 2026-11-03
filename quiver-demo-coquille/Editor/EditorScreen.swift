@@ -69,6 +69,8 @@ struct EditorScreen: View {
     #endif
     /// The Show suggestions setting, kept between launches and mirrored into the model.
     @AppStorage("showsSuggestions") private var showsSuggestions = true
+    /// The learner's text size, from the View menu.
+    @AppStorage(FontSize.storageKey) private var fontSize = FontSize.standard
 
     #if os(macOS)
     /// The English pane's share of the window, kept between launches.
@@ -732,8 +734,12 @@ struct EditorScreen: View {
     /// The French editor, with a placeholder when it is empty.
     private var editor: some View {
         TextEditor(text: $model.text, selection: $model.selection)
-            .font(.plexMono(Typography.frenchSize, relativeTo: .title3))
-            .lineSpacing(Typography.frenchLineSpacing)
+            .font(.plexMono(fontSize.frenchSize, relativeTo: .title3))
+            .lineSpacing(fontSize.frenchLineSpacing)
+            // The text view keeps the font its existing text was drawn in, so a new size
+            // would only reach text typed afterwards. Rebuilding the editor redraws all of it;
+            // the text and selection live in the model, so neither is lost.
+            .id(fontSize)
             .scrollContentBackground(.hidden)
             // The learner's own mistakes are the point: never let the keyboard fix them,
             // nor Writing Tools' Proofread or Rewrite, whose fixes would never be the learner's.
@@ -755,7 +761,7 @@ struct EditorScreen: View {
                 if !model.hasText {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(model.loadFailure ?? "Écrivez en français…")
-                            .font(.plexMono(Typography.frenchSize, relativeTo: .title3))
+                            .font(.plexMono(fontSize.frenchSize, relativeTo: .title3))
                             .foregroundStyle(.tertiary)
                             .allowsHitTesting(false)
                         if model.loadFailure == nil {

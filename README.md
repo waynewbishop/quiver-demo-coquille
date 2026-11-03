@@ -56,6 +56,7 @@ Nous avons acheté une fromage et des pommes rouge.
 |---|---|---|---|
 | Spelling | gentile → gentille | Error | System spellchecker, guesses ranked by Quiver |
 | Unknown words | Ahdourdui, with no fix offered | Warning | System spellchecker, no French guess |
+| Run-together words | jesuis → je suis, jaime → j'aime | Warning | System spellchecker, split by Lexique |
 | Article gender | une fromage → un fromage | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Elision | je aime → j'aime, au école → à l'école | Error | Elision rule |
