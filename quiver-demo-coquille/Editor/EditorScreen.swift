@@ -301,6 +301,7 @@ struct EditorScreen: View {
         case .importFile:
             showsImporter = true
         case .example:
+            editorIsFocused = false
             model.loadExample()
         }
         if case .open = move { showsEntries = false }
@@ -603,6 +604,11 @@ struct EditorScreen: View {
             .toolbar {
                 CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, perform: handle)
             }
+            // Going back to the French brings the keyboard up, so the phrasebook sheet
+            // steps down rather than sharing the screen with it.
+            .onChange(of: editorIsFocused) {
+                if editorIsFocused { showsPhrasebook = false }
+            }
             .task(id: titleSource) { await retitle() }
         }
     }
@@ -690,15 +696,15 @@ struct EditorScreen: View {
     }
     #endif
 
-    /// The text to title: the French once it's linted with no errors, otherwise `nil`.
+    /// The text to title: the French, without the notes, once it's linted with no errors, otherwise `nil`.
     private var titleSource: String? {
-        model.isLintCurrent && !model.isLocked && model.hasText ? model.plainText : nil
+        model.isLintCurrent && !model.isLocked && model.hasFrench ? Notes.removed(model.plainText) : nil
     }
 
-    /// Names the story after a pause in typing; an empty editor goes back to the app's name.
+    /// Names the story after a pause in typing; an editor with no French goes back to the app's name.
     private func retitle() async {
         guard let text = titleSource else {
-            if !model.hasText { storyTitle = nil }
+            if !model.hasFrench { storyTitle = nil }
             return
         }
         try? await Task.sleep(for: .seconds(2))
@@ -739,7 +745,8 @@ struct EditorScreen: View {
             // long press that selects text.
             .contextMenu { editorMenuItems }
             #endif
-            // Pasted text keeps only Coquille's own styling, never the source's fonts or colors.
+            // Pasted text keeps only Coquille's own styling, never the source's fonts; a
+            // pasted color lasts only until the next edit, which recolors every note.
             .attributedTextFormattingDefinition(EditorAttributes.self)
             .focused($editorIsFocused)
             .padding(.horizontal, 20)
@@ -845,10 +852,12 @@ private struct PhrasebookPresentation: ViewModifier {
     }
 }
 
-/// The only attributes the French editor accepts: the issue underlines and the highlights.
+/// The only attributes the French editor accepts: the issue underlines, the highlights,
+/// and the grey of the learner's notes.
 struct EditorAttributes: AttributeScope {
     let underlineStyle: AttributeScopes.SwiftUIAttributes.UnderlineStyleAttribute
     let backgroundColor: AttributeScopes.SwiftUIAttributes.BackgroundColorAttribute
+    let foregroundColor: AttributeScopes.SwiftUIAttributes.ForegroundColorAttribute
 }
 
 /// A pane's small uppercase label, such as "FRANÇAIS" or "ENGLISH · ON-DEVICE".

@@ -38,9 +38,10 @@ final class Journal {
 
         var id: URL { url }
 
-        /// The first line worth showing in a list, skipping a new entry's date line.
+        /// The first line of French worth showing in a list, skipping the notes and a new
+        /// entry's date line, so every entry isn't previewed by the same guide note.
         var preview: String {
-            let lines = text.split(whereSeparator: \.isNewline)
+            let lines = Notes.removed(text).split(whereSeparator: \.isNewline)
                 .map { $0.trimmingCharacters(in: .whitespaces) }
                 .filter { !$0.isEmpty }
             let body = lines.first.map(Journal.isDateLine) == true ? lines.dropFirst() : lines[...]

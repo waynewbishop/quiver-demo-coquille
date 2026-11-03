@@ -38,7 +38,7 @@ final class LinguisticFilterTests: XCTestCase {
         let filters = try linter().filters
         XCTAssertEqual(filters.map(\.identifier), [
             "orthography.spelling",
-            "grammar.gender", "grammar.gender.predicted", "grammar.contraction", "grammar.accent",
+            "grammar.gender", "grammar.gender.predicted", "grammar.contraction", "grammar.elision", "grammar.accent",
             "grammar.auxiliary", "grammar.conjugation", "grammar.siClause", "grammar.participle",
             "grammar.article", "grammar.agreement", "grammar.lookAlike", "grammar.wordChoice",
             "grammar.negation", "grammar.idiom", "grammar.meaning", "grammar.etOrEst",

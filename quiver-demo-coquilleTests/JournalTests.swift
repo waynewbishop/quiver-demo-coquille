@@ -105,4 +105,13 @@ final class JournalTests: XCTestCase {
         try journal.createEntry(text: "Le 31 octobre 2026\n\nIl fait beau.\nJe suis à Paris.", on: try day(10, 31))
         XCTAssertEqual(journal.entries.first?.preview, "Il fait beau.")
     }
+
+    // A list preview skips the notes too, so a new entry's guide never stands in for its French.
+    func testPreviewSkipsNotes() throws {
+        let journal = try makeJournal()
+        let header = EditorModel.entryHeader(for: try day(11, 2)).text
+        let text = header.replacingOccurrences(of: "Il fait \n", with: "Il fait froid. // cold\n")
+        try journal.createEntry(text: text, on: try day(11, 2))
+        XCTAssertEqual(journal.entries.first?.preview, "Il fait froid.")
+    }
 }

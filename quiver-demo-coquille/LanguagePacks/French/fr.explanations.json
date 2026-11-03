@@ -137,5 +137,30 @@
     "hint": "{place} is {reason}.",
     "template": "{place} is {reason}, so French says {fix}.",
     "example": "Canada is a masculine country, so French says au Canada."
+  },
+  "elision": {
+    "hint": "Before a vowel sound, {word} drops its last letter.",
+    "template": "Before a vowel sound, {word} drops its last letter and takes an apostrophe: {fix}.",
+    "example": "Before a vowel sound, je drops its last letter and takes an apostrophe: j'aime."
+  },
+  "elisionContraction": {
+    "hint": "{word} only comes before a consonant.",
+    "template": "{word} only comes before a consonant. Before a vowel sound, French writes {fix}.",
+    "example": "au only comes before a consonant. Before a vowel sound, French writes à l'école."
+  },
+  "possessiveGender": {
+    "hint": "{noun} is {gender}.",
+    "template": "{noun} is {gender}, so the possessive is {fix}.",
+    "example": "mère is feminine, so the possessive is ma mère."
+  },
+  "possessiveBeforeVowel": {
+    "hint": "Before a vowel sound, ma, ta and sa change form.",
+    "template": "Before a vowel sound, ma, ta and sa become mon, ton and son, even for a feminine noun: {fix}.",
+    "example": "Before a vowel sound, ma, ta and sa become mon, ton and son, even for a feminine noun: mon amie."
+  },
+  "reflexiveAuxiliary": {
+    "hint": "A reflexive verb, with se, takes a different helper verb in the past.",
+    "template": "A reflexive verb, with se, always takes être in the past: {fix}.",
+    "example": "A reflexive verb, with se, always takes être in the past: il s'est trompé."
   }
 }

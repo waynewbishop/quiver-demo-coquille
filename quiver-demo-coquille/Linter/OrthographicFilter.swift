@@ -29,11 +29,14 @@ struct OrthographicFilter: LinguisticFilter {
     /// returns English words, so "fro" would otherwise become "from". A misspelling
     /// with no French guess is still underlined, as a warning with no fix: seeing the
     /// mistake comes first, and a name the system doesn't know never blocks play.
+    ///
+    /// The system checks an elided word whole, so "l'apres-midi" comes back with the
+    /// guess "l'après-midi". The lexicon has neither the article nor every compound, so
+    /// words are looked up as `knows(_:)` and `isFrenchGuess(_:)` describe.
     func evaluate(_ context: LintContext) -> [Issue] {
         spellChecker.misspellings(in: context.text).compactMap { misspelling in
-            let normalized = FrenchTokenizer.normalize(misspelling.word)
-            guard !lexicon.contains(normalized) else { return nil }
-            let frenchGuesses = misspelling.guesses.filter { lexicon.contains(FrenchTokenizer.normalize($0)) }
+            guard !knows(misspelling.word) else { return nil }
+            let frenchGuesses = misspelling.guesses.filter(isFrenchGuess)
             // Quiver ranks the French guesses by letter-pair similarity to the typo.
             guard let best = SuggestionRanker.ranked(frenchGuesses, for: misspelling.word).first else {
                 return unknownWordIssue(misspelling)
@@ -89,6 +92,37 @@ struct OrthographicFilter: LinguisticFilter {
         } else {
             return "the middle"
         }
+    }
+
+    /// The articles and pronouns French elides before a vowel, as in l'école and jusqu'ici.
+    static let elisions: Set<String> = [
+        "l", "d", "j", "m", "t", "s", "n", "c", "qu", "jusqu", "lorsqu", "puisqu", "quoiqu"
+    ]
+
+    /// `word`, lowercased, with any elided article or pronoun in front set aside: "L'école" becomes "école".
+    static func withoutElision(_ word: String) -> String {
+        let normalized = FrenchTokenizer.normalize(word)
+        guard let apostrophe = normalized.firstIndex(of: "'") else { return normalized }
+        let rest = normalized[normalized.index(after: apostrophe)...]
+        guard elisions.contains(String(normalized[..<apostrophe])), !rest.isEmpty else { return normalized }
+        return String(rest)
+    }
+
+    /// Whether the lexicon knows `word` as written or once its elision is set aside.
+    private func knows(_ word: String) -> Bool {
+        lexicon.contains(FrenchTokenizer.normalize(word)) || lexicon.contains(Self.withoutElision(word))
+    }
+
+    /// Whether a system guess is French: a word the lexicon knows, or a compound whose
+    /// every part it knows, as in après-midi, which Lexique leaves out.
+    ///
+    /// Compounds are accepted part by part only as guesses, which the system already
+    /// knows as words; a typed compound is still checked whole.
+    private func isFrenchGuess(_ guess: String) -> Bool {
+        if knows(guess) { return true }
+        let parts = Self.withoutElision(guess).split(separator: "-")
+        guard parts.count > 1 else { return false }
+        return parts.allSatisfy { lexicon.contains(String($0)) }
     }
 
     /// A misspelling with no French guess: the word is flagged and the learner finds the fix.

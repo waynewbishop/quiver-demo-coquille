@@ -92,6 +92,37 @@ final class LinterTests: XCTestCase {
         XCTAssertEqual(linter.lint("boulangère").count, 0)
     }
 
+    // The system checks an elided compound whole; its guesses, as the Mac returns them,
+    // keep the article, and après-midi isn't in Lexique, yet the accent fix is offered.
+    func testElidedCompoundGetsItsAccentFix() throws {
+        let guesses = ["L'après-midi", "L'âpres-midi", "L'aptes-midi", "L'pares-midi", "L'aires-midi", "L'acres-midi"]
+        let linter = try linter(reporting: [Misspelling(offset: 0, word: "L'apres-midi", guesses: guesses)])
+        let issue = try XCTUnwrap(linter.lint("L'apres-midi, je lis.").first)
+        XCTAssertEqual(issue.severity, .error)
+        XCTAssertEqual(issue.replacement, "L'après-midi")
+        XCTAssertTrue(issue.hint.contains("the accents"))
+    }
+
+    // An elided word whose guess the lexicon knows once the article is set aside gets its fix.
+    func testElidedWordGetsItsFix() throws {
+        let linter = try linter(reporting: [Misspelling(offset: 4, word: "l'ecole", guesses: ["l'école", "l'écolo"])])
+        XCTAssertEqual(linter.lint("Va à l'ecole.").map(\.replacement), ["l'école"])
+    }
+
+    // A word the lexicon knows behind its elision is never misspelled, with either apostrophe.
+    func testElidedLexiconWordIsNotMisspelled() throws {
+        let linter = try linter(reporting: [Misspelling(offset: 0, word: "L’école", guesses: [])])
+        XCTAssertEqual(linter.lint("L’école est grande.").count, 0)
+        XCTAssertEqual(OrthographicFilter.withoutElision("Jusqu'ici"), "ici")
+        XCTAssertEqual(OrthographicFilter.withoutElision("aujourd'hui"), "aujourd'hui")
+    }
+
+    // A compound guess with any part outside the lexicon, such as an English one, is dropped.
+    func testCompoundGuessNeedsEveryPart() throws {
+        let linter = try linter(reporting: [Misspelling(offset: 0, word: "aprs-midi", guesses: ["after-midi"])])
+        XCTAssertEqual(linter.lint("aprs-midi").map(\.replacement), [nil])
+    }
+
     // Where a spelling and a grammar issue overlap, only one survives.
     func testOverlappingIssuesKeepOne() throws {
         let linter = try linter(reporting: [Misspelling(offset: 3, word: "fromag", guesses: ["fromage"])])

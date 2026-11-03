@@ -153,6 +153,12 @@ final class EditorModel {
         String(text.characters)
     }
 
+    /// The French alone: the text with every note blanked out, each character at the
+    /// same offset as in `plainText`.
+    var frenchText: String {
+        Notes.masked(plainText)
+    }
+
     /// Issues not ignored, and not suggestions when suggestions are hidden.
     var visibleIssues: [Issue] {
         issues.filter { !ignoredKeys.contains($0.ignoreKey) && (showsSuggestions || $0.severity != .suggestion) }
@@ -181,9 +187,14 @@ final class EditorModel {
         !blockingIssues.isEmpty
     }
 
-    /// Whether there is any French to play or translate.
+    /// Whether there is any writing at all, French or notes, to save, export or start over from.
     var hasText: Bool {
         plainText.contains(where: \.isLetter)
+    }
+
+    /// Whether there is any French outside the notes to play or translate.
+    var hasFrench: Bool {
+        frenchText.contains(where: \.isLetter)
     }
 
     /// The issue whose card is open.
@@ -223,6 +234,8 @@ final class EditorModel {
         observedText = plain
         selectedIssueID = nil
         narrator.stop()
+        // Notes turn grey as they're typed, as in an IDE, rather than after the lint.
+        styleNotes()
         lintTask?.cancel()
         lintTask = Task {
             try? await Task.sleep(for: Self.lintDelay)
@@ -266,12 +279,14 @@ final class EditorModel {
         }
         if !isRehearsal {
             // The errors before a rehearsal ended were the example's, so none of them count as fixed.
+            // Stats see the French alone, so a note is never counted as a sentence or
+            // logged as part of one.
             if !wasRehearsal {
                 for fix in typedFixes(of: previousErrors, from: previousText, to: plain) {
-                    stats.recordFix(byLearner: true, issue: fix, in: previousText)
+                    stats.recordFix(byLearner: true, issue: fix, in: Notes.masked(previousText))
                 }
             }
-            stats.record(text: plain, issues: visibleIssues, editingAt: caretOffset())
+            stats.record(text: Notes.masked(plain), issues: visibleIssues, editingAt: caretOffset())
         }
         persist(plain)
         applyStyling()
@@ -548,18 +563,34 @@ final class EditorModel {
         "juillet", "août", "septembre", "octobre", "novembre", "décembre"
     ]
 
+    /// The note above a new entry's date, which also shows the learner that notes exist.
+    static let entryGuide = "// Finish each sentence in French, then keep going. Grey notes are never checked."
+
+    /// A new entry's sentence starters, each with the note that sits on the line above
+    /// it asking what to write about, as a comment sits above the code it describes.
+    private static let entryStarters = [
+        ("// What's the weather like?", "Il fait "),
+        ("// Where are you writing from today?", "Je suis à "),
+        ("// What are you wearing?", "Je porte "),
+        ("// How do you feel, and why?", "Je me sens ")
+    ]
+
     /// Returns a new entry's opening lines and the caret offset after "Il fait ".
     ///
     /// The date line has no full stop, so it never counts as a checked sentence on its
-    /// own, and the first of the month is written "1er", as French dates are.
+    /// own, and the first of the month is written "1er", as French dates are. The notes
+    /// are never checked, so their full stops count as no sentences either.
     static func entryHeader(for date: Date, calendar: Calendar = .current) -> (text: String, caret: Int) {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         let day = parts.day == 1 ? "1er" : "\(parts.day ?? 1)"
         let month = frenchMonths[min(max((parts.month ?? 1) - 1, 0), 11)]
-        let dateLine = "Le \(day) \(month) \(parts.year ?? 2026)\n\n"
-        let weather = "Il fait "
-        let text = dateLine + weather + "\nJe suis à \nJe porte \nJe me sens \n"
-        return (text, dateLine.count + weather.count)
+        // The guide sits above the date, as a header comment opens a file, and a blank
+        // line sets off each note and its starter.
+        let opening = entryGuide + "\nLe \(day) \(month) \(parts.year ?? 2026)\n"
+        let pairs = entryStarters.map { note, starter in "\n" + note + "\n" + starter + "\n" }
+        let text = opening + pairs.joined()
+        let firstStarter = entryStarters[0]
+        return (text, opening.count + 1 + firstStarter.0.count + 1 + firstStarter.1.count)
     }
 
     /// Drops the old text and everything about it: its errors, ignored issues, the card,
@@ -594,8 +625,10 @@ final class EditorModel {
         case .paused:
             narrator.resume()
         case .idle:
-            guard isLintCurrent, !isLocked, hasText else { return }
-            narrator.speak(plainText)
+            // The notes are spaces here, so only the French is read aloud, and the
+            // spoken word's offsets still match the editor.
+            guard isLintCurrent, !isLocked, hasFrench else { return }
+            narrator.speak(frenchText)
         }
     }
 
@@ -627,16 +660,17 @@ final class EditorModel {
     /// Translates the text when English is on and the French is correct.
     private func refreshEnglish() {
         translationTask?.cancel()
-        guard isEnglishOn, !isLocked, hasText, let translator else {
+        guard isEnglishOn, !isLocked, hasFrench, let translator else {
             english = .idle
             return
         }
-        let source = plainText
+        let current = plainText
+        let source = Notes.removed(current)
         english = .translating
         translationTask = Task {
             do {
                 let translated = try await translator.translate(source)
-                guard !Task.isCancelled, source == plainText else { return }
+                guard !Task.isCancelled, current == plainText else { return }
                 english = .translated(translated)
             } catch TranslationUnavailable.notInstalled {
                 english = .unavailable("To see English, download French for on-device translation in Settings.")
@@ -659,19 +693,49 @@ final class EditorModel {
     /// The word being read aloud, as character offsets into the text, or `nil`.
     private var spokenWordRange: Range<Int>? {
         guard narrator.state != .idle, let utf16 = narrator.spokenRange else { return nil }
-        let plain = plainText
-        guard let range = Range(NSRange(location: utf16.lowerBound, length: utf16.count), in: plain) else { return nil }
-        let lower = plain.distance(from: plain.startIndex, to: range.lowerBound)
-        return lower..<(lower + plain[range].count)
+        // The narrator reads `frenchText`, so its UTF-16 offsets are measured there.
+        let spoken = frenchText
+        guard let range = Range(NSRange(location: utf16.lowerBound, length: utf16.count), in: spoken) else { return nil }
+        let lower = spoken.distance(from: spoken.startIndex, to: range.lowerBound)
+        return lower..<(lower + spoken[range].count)
     }
 
-    /// Underlines each visible issue by severity, highlights the open one, and
-    /// highlights the word being read aloud.
+    /// Greys the notes, and only the notes, right away, leaving the issue styling for
+    /// the next lint.
+    ///
+    /// It runs on every edit because typed text takes on the color of the text before
+    /// it: without it, a line typed after a note would stay grey until the lint.
+    private func styleNotes() {
+        var styled = text
+        Self.greyNotes(in: &styled)
+        if styled != text {
+            text = styled
+        }
+    }
+
+    /// Clears every text color in `styled`, then colors each note the secondary grey.
+    private static func greyNotes(in styled: inout AttributedString) {
+        styled.foregroundColor = nil
+        for note in Notes.ranges(in: String(styled.characters)) {
+            let characters = styled.characters
+            guard note.upperBound <= characters.count else { continue }
+            let lower = characters.index(characters.startIndex, offsetBy: note.lowerBound)
+            let upper = characters.index(lower, offsetBy: note.count)
+            styled[lower..<upper].foregroundColor = noteColor
+        }
+    }
+
+    /// The grey of a note: darker than the placeholder's, since the learner reads notes again.
+    private static let noteColor = Color.secondary
+
+    /// Greys the notes, underlines each visible issue by severity, highlights the open
+    /// one, and highlights the word being read aloud.
     private func applyStyling() {
         guard plainText == lintedText else { return }
         var styled = text
         styled.underlineStyle = nil
         styled.backgroundColor = nil
+        Self.greyNotes(in: &styled)
         for issue in visibleIssues {
             guard let range = attributedRange(for: issue.range, in: styled) else { continue }
             styled[range].underlineStyle = Self.underline(for: issue.severity)

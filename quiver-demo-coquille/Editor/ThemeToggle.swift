@@ -40,6 +40,7 @@ struct ThemeToggle: View {
 
     var body: some View {
         Button {
+            hideKeyboard()
             stored = (colorScheme == .dark ? Appearance.light : Appearance.dark).rawValue
         } label: {
             Label(label, systemImage: colorScheme == .dark ? "sun.max" : "moon")

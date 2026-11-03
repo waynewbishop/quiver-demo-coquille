@@ -40,8 +40,11 @@ struct Linter {
 
     /// Returns every issue in `text` from the filters at or below `level`, ordered by
     /// position, with no two issues overlapping. The default level runs every filter.
+    ///
+    /// The learner's notes are blanked out first, so no filter ever sees them, while
+    /// every issue's offsets still match `text`.
     func lint(_ text: String, through level: CefrLevel = .c2) -> [Issue] {
-        let context = LintContext(text: text, tag: tag)
+        let context = LintContext(text: Notes.masked(text), tag: tag)
         let active = filters.filter { $0.targetLevel <= level }
         return ResolutionMatrix.resolve(active.flatMap { $0.evaluate(context) })
     }

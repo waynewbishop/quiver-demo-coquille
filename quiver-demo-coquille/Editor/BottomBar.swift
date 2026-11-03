@@ -60,6 +60,7 @@ struct CompactBottomBar: View {
     var body: some View {
         HStack(spacing: 12) {
             Button {
+                dismissKeyboard()
                 showsIssueList = true
             } label: {
                 StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count, isGentle: true)
@@ -70,6 +71,7 @@ struct CompactBottomBar: View {
 
             // Grey when off and solid blue when on, so the state reads at a glance.
             Button {
+                dismissKeyboard()
                 model.isEnglishOn.toggle()
             } label: {
                 Image(systemName: "translate")
@@ -156,7 +158,7 @@ struct MacPlayButton: View {
         Button(action: model.togglePlay) {
             Label(model.narrator.isSpeaking ? "Pause" : "Play", systemImage: model.narrator.isSpeaking ? "pause.fill" : "play.fill")
         }
-        .disabled(model.isLocked || !model.hasText)
+        .disabled(model.isLocked || !model.hasFrench)
         .help(model.narrator.isSpeaking ? "Pause" : "Read aloud in French")
         .accessibilityLabel(model.narrator.isSpeaking ? "Pause" : model.narrator.state == .paused ? "Resume" : "Read aloud in French")
     }
@@ -242,17 +244,20 @@ struct PlayControl: View {
 
     /// Play and pause.
     private var play: some View {
-        Button(action: model.togglePlay) {
+        Button {
+            hideKeyboard()
+            model.togglePlay()
+        } label: {
             Image(systemName: model.narrator.isSpeaking ? "pause.fill" : "play.fill")
                 .font(.title3)
                 // An empty page shows a plain disabled control, not a faded blue one.
-                .foregroundStyle(model.hasText ? AnyShapeStyle(.white) : AnyShapeStyle(.tertiary))
+                .foregroundStyle(model.hasFrench ? AnyShapeStyle(.white) : AnyShapeStyle(.tertiary))
                 .frame(width: diameter, height: diameter)
-                .background(Circle().fill(model.hasText ? AnyShapeStyle(.tint) : AnyShapeStyle(.quaternary)))
+                .background(Circle().fill(model.hasFrench ? AnyShapeStyle(.tint) : AnyShapeStyle(.quaternary)))
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .disabled(!model.hasText)
+        .disabled(!model.hasFrench)
         .accessibilityLabel(model.narrator.isSpeaking ? "Pause" : model.narrator.state == .paused ? "Resume" : "Read aloud in French")
     }
 }

@@ -98,7 +98,7 @@ nonisolated struct FrenchGrammar: Grammar {
         let countryTrie = PhraseTrie(phrases: countries.map { PhrasePattern.words(of: $0.key) })
         return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
-                articleGenderIssues(in: $0)
+                articleGenderIssues(in: $0) + possessiveGenderIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.gender.predicted", layer: .localMorphosyntax, targetLevel: .a1) {
                 predictedGenderIssues(in: $0)
@@ -106,11 +106,14 @@ nonisolated struct FrenchGrammar: Grammar {
             GrammarRule(identifier: "grammar.contraction", layer: .localMorphosyntax, targetLevel: .a1) {
                 contractionIssues(in: $0.tokens)
             },
+            GrammarRule(identifier: "grammar.elision", layer: .orthography, targetLevel: .a1) {
+                elisionIssues(in: $0.tokens)
+            },
             GrammarRule(identifier: "grammar.accent", layer: .localMorphosyntax, targetLevel: .a1) {
                 accentIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.auxiliary", layer: .relationalGrammar, targetLevel: .a2) {
-                auxiliaryIssues(in: $0)
+                auxiliaryIssues(in: $0) + reflexiveAuxiliaryIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
                 conjugationIssues(in: $0.tokens)
@@ -131,7 +134,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 patternIssues(in: $0, list: lists[0])
             },
             GrammarRule(identifier: "grammar.wordChoice", layer: .contextualSemantics, targetLevel: .a2) {
-                patternIssues(in: $0, list: lists[1])
+                patternIssues(in: $0, list: lists[1]) + ageIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.negation", layer: .relationalGrammar, targetLevel: .a2) {
                 negationIssues(in: $0.tokens)
@@ -215,10 +218,7 @@ nonisolated struct FrenchGrammar: Grammar {
         return articleNounPairs(in: text).compactMap { index, marked in
             let article = tokens[index]
             let noun = tokens[index + 1]
-            guard let entry = lexicon.noun(noun.normalized),
-                  let gender = entry.gender,
-                  entry.number != .plural,
-                  gender != marked.gender else { return nil }
+            guard let gender = knownGender(of: noun), gender != marked.gender else { return nil }
             let expected = marked.isDefinite ? gender.definiteArticle : gender.indefiniteArticle
             return issue(
                 .gender, .error, from: index, through: index + 1, in: tokens,
@@ -226,6 +226,77 @@ nonisolated struct FrenchGrammar: Grammar {
                 explanation: explanations.render(.articleGender, [
                     "noun": noun.text, "gender": gender.rawValue, "article": expected
                 ]),
+                source: "Lexique · known noun"
+            )
+        }
+    }
+
+    /// The gender of a singular noun the rules can be sure of, or nil.
+    ///
+    /// A capitalised country takes its gender from its own article, whatever Lexique says
+    /// about the common noun: Lexique lists canada as feminine, but it's le Canada.
+    private func knownGender(of noun: Token) -> Gender? {
+        if noun.text.first?.isUppercase == true, let article = patterns.countries[noun.text] {
+            switch article {
+            case "le": return .masculine
+            case "la": return .feminine
+            default: return nil
+            }
+        }
+        guard let entry = lexicon.noun(noun.normalized), entry.number != .plural else { return nil }
+        return entry.gender
+    }
+
+    /// Each possessive that marks a gender, with its masculine and feminine forms.
+    private static let possessives: [String: (gender: Gender, masculine: String, feminine: String)] = [
+        "mon": (.masculine, "mon", "ma"), "ton": (.masculine, "ton", "ta"), "son": (.masculine, "son", "sa"),
+        "ma": (.feminine, "mon", "ma"), "ta": (.feminine, "ton", "ta"), "sa": (.feminine, "son", "sa")
+    ]
+
+    /// Flags mon, ton or son before a known feminine noun ("mon mère" → "ma mère"), ma, ta
+    /// or sa before a known masculine one ("sa frère" → "son frère"), and ma, ta or sa
+    /// before a vowel sound, where French uses mon, ton and son even for a feminine noun
+    /// ("ma amie" → "mon amie").
+    ///
+    /// A word starting with h is judged only when it's a known mute h, since "ma hache" is
+    /// correct and Lexique doesn't record which h is which.
+    private func possessiveGenderIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        return tokens.indices.dropLast().compactMap { index in
+            let possessive = tokens[index]
+            let noun = tokens[index + 1]
+            let word = noun.normalized
+            guard let forms = Self.possessives[possessive.normalized], possessive.isAdjacentToNext,
+                  noun.text.first?.isLowercase == true else { return nil }
+            // "le son de la radio", "un ton sec": son and ton are nouns after a determiner.
+            if index > 0, tokens[index - 1].isAdjacentToNext, Self.determiners[tokens[index - 1].normalized] != nil { return nil }
+            // "sa va" and "sa fait" are ça, which the look-alike list fixes. The tagger can't
+            // help here, since after a possessive it reads almost any word as a noun, so a verb
+            // form after sa is skipped. After the other possessives it's judged as a noun:
+            // voiture is also a form of voiturer.
+            if possessive.normalized == "sa", lexicon.isVerb(word) { return nil }
+
+            let fix: String
+            let explanation: Explanation
+            if takesElision(noun) {
+                guard forms.gender == .feminine,
+                      lexicon.noun(word) != nil || !lexicon.adjectiveLemmas(of: word).isEmpty else { return nil }
+                fix = forms.masculine
+                explanation = explanations.render(.possessiveBeforeVowel, ["fix": fix + " " + word])
+            } else {
+                guard !noun.startsWithVowelOrH, let gender = knownGender(of: noun), gender != forms.gender else { return nil }
+                // A word that can also be an adjective counts only when the tagger is sure it's the noun.
+                if !lexicon.adjectiveLemmas(of: word).isEmpty,
+                   !text.isNoun(index + 1, certainty: Self.tagCertainty) { return nil }
+                fix = gender == .masculine ? forms.masculine : forms.feminine
+                explanation = explanations.render(.possessiveGender, [
+                    "noun": noun.text, "gender": gender.rawValue, "fix": fix + " " + word
+                ])
+            }
+            return issue(
+                .gender, .error, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: possessive.text, fix) + possessive.gap + noun.text,
+                explanation: explanation,
                 source: "Lexique · known noun"
             )
         }
@@ -306,6 +377,10 @@ nonisolated struct FrenchGrammar: Grammar {
             let word = next.normalized
             let isNominal = lexicon.noun(word) != nil || !lexicon.adjectiveLemmas(of: word).isEmpty
             guard isNominal, !lexicon.isInfinitive(word) else { continue }
+            // "j'ai trop de les devoirs" drops the article, which the word-choice list fixes;
+            // contracting would give "trop des devoirs", which is still wrong.
+            if index >= 2, Self.quantityWords.contains(tokens[index - 1].normalized),
+               Self.avoirTenses[tokens[index - 2].normalized] != nil { continue }
 
             issues.append(issue(
                 .contraction, .error, from: index, through: index + 1, in: tokens,
@@ -316,6 +391,121 @@ nonisolated struct FrenchGrammar: Grammar {
                     "contraction": contraction
                 ]),
                 source: "Contraction rule"
+            ))
+        }
+        return issues
+    }
+
+    /// Words of quantity that take de alone: "beaucoup de livres", "trop de devoirs".
+    private static let quantityWords: Set<String> = ["beaucoup", "trop", "assez", "tellement"]
+
+    // MARK: - Elision
+
+    /// Words that lose their last vowel before a vowel sound, with the form they take.
+    private static let elisions: [String: String] = [
+        "je": "j'", "me": "m'", "te": "t'", "se": "s'", "le": "l'", "la": "l'",
+        "de": "d'", "ne": "n'", "que": "qu'"
+    ]
+
+    /// Words with a mute h, which elide like a vowel: l'homme, d'habitude. Any other h is
+    /// left alone, since an aspirated h keeps the full word (le héros, je hais) and Lexique
+    /// doesn't record which h is which.
+    private static let muteHWords: Set<String> = [
+        "homme", "hommes", "hôtel", "hôtels", "heure", "heures", "histoire", "histoires", "hiver",
+        "hivers", "hôpital", "hôpitaux", "habitude", "habitudes", "herbe", "herbes", "huile", "horaire",
+        "horaires", "humeur", "honneur", "hier", "habit", "habits", "hélicoptère", "héroïne", "hommage",
+        "horizon", "horloge", "humain", "humains", "humour", "hygiène", "héritage", "harmonie", "hôte",
+        "hôtesse", "huître", "huîtres", "humanité", "hypothèse"
+    ]
+
+    /// Verbs with a mute h, every form of which elides: j'habite, je m'habille.
+    private static let muteHVerbs = ["habiter", "habiller", "hésiter", "hériter"]
+
+    /// Words starting with a vowel that keep a whole word in front of them: le onze, que oui,
+    /// la une (a newspaper's front page), and the sounds people make while thinking.
+    private static let noElisionWords: Set<String> = [
+        "onze", "onzième", "oui", "ouistiti", "ouate", "un", "une",
+        "euh", "oh", "ah", "eh", "ouais", "ouf", "aïe", "oups"
+    ]
+
+    /// Words a pronoun such as le or la never stands before, so a vowel after them isn't
+    /// the noun or verb that would make it elide.
+    private static let notElidingAfterArticle: Set<String> = [
+        "et", "ou", "où", "en", "au", "aux", "à", "il", "elle", "on", "ils", "elles", "eux",
+        "avec", "après", "avant", "encore", "ainsi", "alors", "aussi", "ici", "enfin", "entre"
+    ]
+
+    /// Whether a word begins with a vowel sound that makes the word before it elide.
+    private func takesElision(_ token: Token) -> Bool {
+        let word = token.normalized
+        if word.first == "h" {
+            return Self.muteHWords.contains(word) || Self.muteHVerbs.contains { isForm(word, of: $0) }
+        }
+        // Only y itself and yeux elide: j'y vais, beaucoup d'yeux, but le yaourt.
+        if word.first == "y" { return word == "y" || word == "yeux" }
+        guard token.startsWithVowel, !Self.noElisionWords.contains(word) else { return false }
+        // "de A à Z", "le ONU": letters and acronyms are read out, so they're left alone.
+        return !token.text.allSatisfy(\.isUppercase)
+    }
+
+    /// Flags je, me, te, se, le, la, de, ne and que written whole before a vowel sound, as
+    /// in "je aime" → "j'aime", "le ami" → "l'ami" and "que il" → "qu'il", and au and du
+    /// before one, as in "au école" → "à l'école".
+    ///
+    /// Each word is judged only before what can follow it: je, me, te, se and ne before a
+    /// verb, y or en; le and la before a noun, adjective or verb; de and que before any
+    /// word Lexique knows. A capitalised word is left alone: a name after de keeps its first
+    /// letter whole as often as not, and au before a country is the country rule's.
+    private func elisionIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let token = tokens[index]
+            let next = tokens[index + 1]
+            let word = token.normalized
+            let nextWord = next.normalized
+            guard token.isAdjacentToNext, takesElision(next) else { continue }
+            // A capital inside a sentence is a name or a title, as Me for Maître.
+            if token.text.first?.isUppercase == true, index > 0, !tokens[index - 1].endsClause { continue }
+            // A name after de or que keeps its first letter whole as often as not: "de Ernest".
+            if next.text.first?.isUppercase == true { continue }
+            let isVerb = lexicon.isVerb(nextWord)
+            let isNominal = lexicon.noun(nextWord) != nil || !lexicon.adjectiveLemmas(of: nextWord).isEmpty
+
+            if word == "au" || word == "du" {
+                guard isNominal,
+                      lexicon.noun(nextWord)?.number != .plural else { continue }
+                let fix = word == "au" ? "à l'" : "de l'"
+                issues.append(issue(
+                    .elision, .error, from: index, through: index + 1, in: tokens,
+                    replacement: matchingCase(of: token.text, fix) + next.text,
+                    explanation: explanations.render(.elisionContraction, ["word": word, "fix": fix + nextWord]),
+                    source: "Elision rule"
+                ))
+                continue
+            }
+
+            guard let elided = Self.elisions[word] else { continue }
+            // A single letter after these is a/à or y: "qu'à", "n'a", "il l'a", "j'y".
+            if nextWord.count == 1, nextWord != "y" {
+                let allowed = nextWord == "a" ? ["ne", "le", "la", "me", "te", "que"].contains(word) : word == "que"
+                guard allowed else { continue }
+            }
+            switch word {
+            case "je", "me", "te", "se", "ne":
+                guard isVerb || ["y", "en"].contains(nextWord) else { continue }
+                // "je me ai levé" needs être, not an elision; the auxiliary rule fixes it.
+                if isReflexiveBeforeAvoir(at: index, in: tokens) { continue }
+            case "le", "la":
+                guard !Self.notElidingAfterArticle.contains(nextWord),
+                      isVerb || isNominal || nextWord == "a" else { continue }
+            default:
+                guard lexicon.contains(nextWord) else { continue }
+            }
+            issues.append(issue(
+                .elision, .error, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: token.text, elided) + next.text,
+                explanation: explanations.render(.elision, ["word": word, "fix": elided + nextWord]),
+                source: "Elision rule"
             ))
         }
         return issues
@@ -517,6 +707,9 @@ nonisolated struct FrenchGrammar: Grammar {
             guard Self.subjectPronouns.contains(subject.normalized),
                   subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
                   !isCoordinated(tokens, subjectAt: index),
+                  // "vous nous avez vus": nous is the object, and the participle agrees with it.
+                  index == 0 || !tokens[index - 1].isAdjacentToNext
+                    || !Self.subjectPronouns.contains(tokens[index - 1].normalized),
                   let tense = Self.avoirTenses[auxiliary.normalized],
                   let person = Self.subjectPersons[subject.normalized],
                   let etre = lexicon.conjugate("être", tense + person),
@@ -567,6 +760,78 @@ nonisolated struct FrenchGrammar: Grammar {
         guard text.isHelperVerb(index, certainty: Self.tagCertainty),
               index + 2 < tokens.count, tokens[index + 1].isAdjacentToNext else { return false }
         return Self.determiners[tokens[index + 2].normalized] != nil
+    }
+
+    /// The reflexive pronouns each subject takes: je me, tu te, il se, nous nous.
+    private static let reflexivePronouns: [String: Set<String>] = [
+        "je": ["me", "m'"], "tu": ["te", "t'"],
+        "il": ["se", "s'"], "elle": ["se", "s'"], "on": ["se", "s'"], "ils": ["se", "s'"], "elles": ["se", "s'"],
+        "nous": ["nous"], "vous": ["vous"]
+    ]
+
+    /// Each reflexive pronoun written whole and elided.
+    private static let reflexiveForms: [String: (whole: String, elided: String)] = [
+        "me": ("me", "m'"), "m'": ("me", "m'"), "te": ("te", "t'"), "t'": ("te", "t'"),
+        "se": ("se", "s'"), "s'": ("se", "s'"), "nous": ("nous", "nous"), "vous": ("vous", "vous")
+    ]
+
+    /// Returns the subject of the reflexive pronoun at `index`, when the pronoun matches it,
+    /// with at most ne between: "il s'", "je ne me", "nous nous". Returns nil otherwise.
+    private func reflexiveSubject(at index: Int, in tokens: [Token]) -> Int? {
+        var subject = index - 1
+        if subject >= 0, ["ne", "n'"].contains(tokens[subject].normalized), tokens[subject].isAdjacentToNext { subject -= 1 }
+        guard subject >= 0, tokens[subject].isAdjacentToNext,
+              Self.reflexivePronouns[tokens[subject].normalized]?.contains(tokens[index].normalized) == true,
+              !isCoordinated(tokens, subjectAt: subject) else { return nil }
+        return subject
+    }
+
+    /// Whether the word at `index` is a reflexive pronoun followed by a form of avoir, as in
+    /// "je me ai levé", which the reflexive auxiliary rule fixes.
+    private func isReflexiveBeforeAvoir(at index: Int, in tokens: [Token]) -> Bool {
+        index + 1 < tokens.count && tokens[index].isAdjacentToNext
+            && Self.avoirTenses[tokens[index + 1].normalized] != nil
+            && reflexiveSubject(at: index, in: tokens) != nil
+    }
+
+    /// Flags avoir after a reflexive pronoun, since a reflexive verb always takes être in
+    /// the compound past: "il s'a trompé" → "il s'est trompé", "nous nous avons couchés"
+    /// → "nous nous sommes couchés".
+    ///
+    /// The pronoun must match its subject, so "il m'a vu" and "vous nous avez vus", where it
+    /// is an object, are left alone, and a past participle must follow, after at most one
+    /// negation word. The learner's participle is kept.
+    private func reflexiveAuxiliaryIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            let reflexive = tokens[index]
+            let auxiliary = tokens[index + 1]
+            guard let forms = Self.reflexiveForms[reflexive.normalized],
+                  isReflexiveBeforeAvoir(at: index, in: tokens), auxiliary.isAdjacentToNext,
+                  let subjectIndex = reflexiveSubject(at: index, in: tokens),
+                  let tense = Self.avoirTenses[auxiliary.normalized],
+                  let person = Self.subjectPersons[tokens[subjectIndex].normalized],
+                  let etre = lexicon.conjugate("être", tense + person) else { continue }
+            var participleIndex = index + 2
+            if ["pas", "jamais", "plus", "rien"].contains(tokens[participleIndex].normalized),
+               tokens[participleIndex].isAdjacentToNext, participleIndex + 1 < tokens.count {
+                participleIndex += 1
+            }
+            guard !lexicon.participles(tokens[participleIndex].normalized).isEmpty else { continue }
+
+            // "s'a" becomes "s'est", but "s'ont" becomes "se sont".
+            let elides = etre.first.map { "aeiouéèê".contains($0) } == true && forms.elided.hasSuffix("'")
+            let pronoun = elides ? forms.elided : forms.whole + " "
+            let replacement = matchingCase(of: reflexive.text, pronoun) + etre
+            let subject = tokens[subjectIndex].normalized
+            issues.append(issue(
+                .auxiliary, .error, from: index, through: index + 1, in: tokens,
+                replacement: replacement,
+                explanation: explanations.render(.reflexiveAuxiliary, ["fix": subject + " " + pronoun + etre]),
+                source: "Auxiliary rule · reflexive verb"
+            ))
+        }
+        return issues
     }
 
     // MARK: - Conjugation
@@ -891,6 +1156,69 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
+    // MARK: - Age
+
+    /// Each present and imperfect form of être with the form of avoir in its person and tense.
+    private static let etreToAvoir: [String: String] = [
+        "suis": "ai", "es": "as", "est": "a", "sommes": "avons", "êtes": "avez", "sont": "ont",
+        "étais": "avais", "était": "avait", "étions": "avions", "étiez": "aviez", "étaient": "avaient"
+    ]
+
+    /// The words French numbers are built from, so "vingt-cinq" and "trente et un" count.
+    private static let numberWords: Set<String> = [
+        "un", "une", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze",
+        "douze", "treize", "quatorze", "quinze", "seize", "vingt", "vingts", "trente", "quarante",
+        "cinquante", "soixante", "cent", "cents", "et"
+    ]
+
+    /// Flags an age given with être, which copies English "I am 20": "je suis 20 ans" →
+    /// "j'ai 20 ans", "mon frère est douze ans" → "a douze ans".
+    ///
+    /// The age is digits or number words right after être, then an or ans. The subject must be
+    /// a subject pronoun or a determiner and noun, so "c'est vingt ans de travail" stays correct.
+    private func ageIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropFirst().dropLast() {
+            let etre = tokens[index]
+            guard let avoir = Self.etreToAvoir[etre.normalized] else { continue }
+            // The digits sit in the gap after être, since the tokenizer keeps only words.
+            var years = index + 1
+            if etre.gap.wholeMatch(of: /\s+\d+\s+/) == nil {
+                guard etre.isAdjacentToNext else { continue }
+                while years < tokens.count, tokens[years - 1].isAdjacentToNext,
+                      tokens[years].normalized.split(separator: "-").allSatisfy({ Self.numberWords.contains(String($0)) }) {
+                    years += 1
+                }
+                guard years > index + 1, years < tokens.count, tokens[years - 1].isAdjacentToNext else { continue }
+            }
+            guard years < tokens.count, ["an", "ans"].contains(tokens[years].normalized) else { continue }
+
+            let subject = tokens[index - 1]
+            guard subject.isAdjacentToNext else { continue }
+            let isPronounSubject = Self.subjectPronouns.contains(subject.normalized)
+            let isNounSubject = index >= 2 && tokens[index - 2].isAdjacentToNext
+                && Self.determiners[tokens[index - 2].normalized] != nil && lexicon.noun(subject.normalized) != nil
+            guard isPronounSubject || isNounSubject else { continue }
+
+            // "je suis" becomes "j'ai": the subject elides before avoir.
+            let isJe = subject.normalized == "je"
+            let first = isJe ? index - 1 : index
+            let replacement = isJe ? matchingCase(of: subject.text, "j'") + avoir : matchingCase(of: etre.text, avoir)
+            var age = etre.gap
+            for position in (index + 1)..<years { age += tokens[position].text + tokens[position].gap }
+            let fix = (isJe ? "j'" : subject.normalized + " ") + avoir + age + tokens[years].text
+            issues.append(issue(
+                .wordChoice, .error, from: first, through: index, in: tokens,
+                replacement: replacement,
+                explanation: explanations.render(.wordChoice, [
+                    "note": "French gives an age with avoir: you have your years.", "fix": fix
+                ]),
+                source: "Word-choice rule"
+            ))
+        }
+        return issues
+    }
+
     // MARK: - Negation
 
     /// Warns on "il dort plus" at the end of a clause, where written French means
@@ -962,7 +1290,8 @@ nonisolated struct FrenchGrammar: Grammar {
             guard let fix = entry.fix,
                   let rendered = renderedFix(fix, for: entry, match: match, in: tokens) else { return nil }
             let (first, elision) = elided(rendered, before: match.start, in: tokens)
-            let (last, replacement) = contracted(elision, after: match.start + match.length - 1, in: tokens)
+            let (contractedLast, contraction) = contracted(elision, after: match.start + match.length - 1, in: tokens)
+            let (last, replacement) = elidedEnding(contraction, after: contractedLast, in: tokens)
             let caseMatched = matchingCase(of: tokens[first].text, replacement)
             switch list.kind {
             case .lookAlike, .wordChoice:
@@ -1136,6 +1465,18 @@ nonisolated struct FrenchGrammar: Grammar {
               // "de le faire": le is a pronoun before an infinitive, and no contraction applies.
               last + 2 >= tokens.count || !lexicon.isInfinitive(tokens[last + 2].normalized) else { return (last, replacement) }
         return (last + 1, (words.dropLast() + [contraction]).joined(separator: " "))
+    }
+
+    /// Elides a fix that ends in de or que before a vowel sound right after the phrase, so
+    /// "beaucoup des amis" becomes "beaucoup d'amis" rather than "beaucoup de amis".
+    /// Returns the last token the fix covers and its text.
+    private func elidedEnding(_ replacement: String, after last: Int, in tokens: [Token]) -> (last: Int, text: String) {
+        var words = replacement.split(separator: " ").map(String.init)
+        guard last + 1 < tokens.count, tokens[last].isAdjacentToNext, takesElision(tokens[last + 1]),
+              let final = words.last, ["de", "que"].contains(final),
+              let elided = Self.elisions[final] else { return (last, replacement) }
+        words.removeLast()
+        return (last + 1, (words + [elided + tokens[last + 1].text]).joined(separator: " "))
     }
 
     // MARK: - Countries

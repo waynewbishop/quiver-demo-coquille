@@ -33,7 +33,10 @@ struct IssueCard: View {
                     .tracking(1)
                     .foregroundStyle(issue.severity.tint)
                 Spacer()
-                Button(action: model.closeCard) {
+                Button {
+                    hideKeyboard()
+                    model.closeCard()
+                } label: {
                     Image(systemName: "xmark")
                         .font(.footnote.weight(.semibold))
                         .frame(width: 32, height: 32)
@@ -76,14 +79,23 @@ struct IssueCard: View {
                     .font(.plexSans(12, relativeTo: .caption))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Ignore") { model.ignore(issue) }
-                    .buttonStyle(.bordered)
+                Button("Ignore") {
+                    hideKeyboard()
+                    model.ignore(issue)
+                }
+                .buttonStyle(.bordered)
                 if issue.replacement != nil {
                     if showsFix {
-                        Button("Apply fix") { model.apply(issue) }
-                            .buttonStyle(.borderedProminent)
+                        Button("Apply fix") {
+                            hideKeyboard()
+                            model.apply(issue)
+                        }
+                        .buttonStyle(.borderedProminent)
                     } else {
-                        Button("Show fix") { showsFix = true }
+                        Button("Show fix") {
+                            hideKeyboard()
+                            showsFix = true
+                        }
                             .buttonStyle(.borderedProminent)
                     }
                 }
@@ -105,6 +117,7 @@ struct IssueCard: View {
                     Divider()
                 }
                 Button {
+                    hideKeyboard()
                     model.choose(choice, for: issue)
                 } label: {
                     HStack(alignment: .firstTextBaseline, spacing: 12) {

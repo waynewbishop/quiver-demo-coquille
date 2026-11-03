@@ -58,15 +58,18 @@ Nous avons acheté une fromage et des pommes rouge.
 | Unknown words | Ahdourdui, with no fix offered | Warning | System spellchecker, no French guess |
 | Article gender | une fromage → un fromage | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
+| Elision | je aime → j'aime, au école → à l'école | Error | Elision rule |
+| Possessives | mon mère → ma mère, ma amie → mon amie | Error | Lexique, known noun |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
 | A or à | je vais a Paris → à, il à faim → a | Error | Accent rule, Lexique verb forms |
 | Prepositions | à Canada → au Canada, dépend sur → dépend de | Error | Country list, preposition list |
 | Conjugation | je va → je vais, ils mange → ils mangent | Error | Conjugation rule, Lexique verb forms |
-| Être or avoir | j'ai allé → je suis allé | Error | Auxiliary rule, Lexique participles |
+| Être or avoir | j'ai allé → je suis allé, il s'a trompé → il s'est trompé | Error | Auxiliary rule, Lexique participles |
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
 | Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
 | Si clauses | si tu viendras → si tu viens | Error | Si clause rule, Lexique verb forms |
+| Word choice | je suis faim → j'ai faim, je suis 20 ans → j'ai 20 ans, beaucoup des gens → beaucoup de gens | Error | Word-choice list and age rule |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |

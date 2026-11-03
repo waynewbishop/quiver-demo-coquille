@@ -259,7 +259,55 @@ final class RuleScorecardTests: XCTestCase {
         ("Nous écoutons la musique.", nil),
         ("La demande sur le site est longue.", nil),
         ("Elle participe au concours dans la ville.", nil),
-        ("J'attends pour voir.", nil)
+        ("J'attends pour voir.", nil),
+        // Written before the elision, possessive, reflexive and age rules were built,
+        // and never used to tune them.
+        ("Je habite à Lyon.", "grammar.elision"),
+        ("Il ne aime pas le café.", "grammar.elision"),
+        ("Je pense que elle est malade.", "grammar.elision"),
+        ("C'est le hôtel de mon frère.", "grammar.elision"),
+        ("Elle se appelle Marie.", "grammar.elision"),
+        ("Un verre de eau, s'il vous plaît.", "grammar.elision"),
+        ("Nous allons au hôpital.", "grammar.elision"),
+        ("Je le ai vu hier.", "grammar.elision"),
+        ("J'habite à Lyon.", nil),
+        ("Le héros arrive.", nil),
+        ("Je le hais.", nil),
+        ("Il mange le yaourt.", nil),
+        ("Je vais à l'hôpital.", nil),
+        ("Le onze novembre, il pleut.", nil),
+        ("Il a dit que oui.", nil),
+        ("Ma tante est là.", nil),
+        ("Mon grand-mère habite ici.", "grammar.gender"),
+        ("Son voiture est rouge.", "grammar.gender"),
+        ("Ma oncle est médecin.", "grammar.gender"),
+        ("Ta école est loin.", "grammar.gender"),
+        ("Sa histoire est triste.", "grammar.gender"),
+        ("Sa maison est grande.", nil),
+        ("Ta copine est sympa.", nil),
+        ("Mon amie est française.", nil),
+        ("Son école est loin.", nil),
+        ("Le son de la radio est fort.", nil),
+        ("Elle s'a couchée tôt.", "grammar.auxiliary"),
+        ("Je me ai brossé les dents.", "grammar.auxiliary"),
+        ("Vous vous avez trompés.", "grammar.auxiliary"),
+        ("Ils se ont rencontrés à Paris.", "grammar.auxiliary"),
+        ("Elle s'est couchée tôt.", nil),
+        ("Vous nous avez vus.", nil),
+        ("Il m'a aidé.", nil),
+        ("Mon frère est 12 ans.", "grammar.wordChoice"),
+        ("Elle est trente ans.", "grammar.wordChoice"),
+        ("Nous sommes 15 ans.", "grammar.wordChoice"),
+        ("Mon frère a 12 ans.", nil),
+        ("C'est vingt ans de travail.", nil),
+        ("Il y a beaucoup des touristes en été.", "grammar.wordChoice"),
+        ("J'ai trop de les devoirs.", "grammar.wordChoice"),
+        ("Je ne veux pas rien.", "grammar.wordChoice"),
+        ("Il ne sort pas jamais.", "grammar.wordChoice"),
+        ("Beaucoup des étudiants de la classe sont partis.", nil),
+        ("Il parle beaucoup des vacances.", nil),
+        ("Ce n'est pas rien.", nil),
+        ("Il ne sort jamais.", nil)
     ]
 
     /// One rule's report on the corpus, with any sentence it got wrong.
@@ -335,7 +383,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 17)
+        XCTAssertEqual(tuning.count, 18)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }

@@ -24,9 +24,12 @@ struct TopBar: View {
     /// Hands a File menu command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
 
+    // Every button here hides the keyboard first, as on iPhone, so nothing opens with
+    // the keyboard still up.
     var body: some View {
         HStack(spacing: 4) {
             Button {
+                hideKeyboard()
                 showsIssueList = true
             } label: {
                 StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count, isGentle: true)
@@ -37,15 +40,18 @@ struct TopBar: View {
             Spacer()
 
             Menu {
-                Button("Journal", systemImage: "list.bullet") { showsEntries = true }
+                Button("Journal", systemImage: "list.bullet") {
+                    hideKeyboard()
+                    showsEntries = true
+                }
                 Divider()
-                Button("Save", systemImage: "square.and.arrow.down") { perform(.save) }
+                Button("Save", systemImage: "square.and.arrow.down") { request(.save) }
                     .disabled(!model.canSave)
-                Button("Save as New Entry…", systemImage: "plus.square.on.square") { perform(.saveAsNewEntry) }
+                Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
                     .disabled(!model.canSave)
                 Divider()
-                Button("Import…", systemImage: "folder") { perform(.importFile) }
-                Button("Export a Copy…", systemImage: "square.and.arrow.up") { perform(.export) }
+                Button("Import…", systemImage: "folder") { request(.importFile) }
+                Button("Export a Copy…", systemImage: "square.and.arrow.up") { request(.export) }
                     .disabled(!model.hasText)
                 ShareLink(item: model.plainText)
                     .disabled(!model.hasText)
@@ -58,12 +64,13 @@ struct TopBar: View {
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
 
-            Button("New") { perform(.new) }
+            Button("New") { request(.new) }
                 .buttonStyle(.bordered)
                 .accessibilityLabel("Start a blank page")
                 .disabled(!model.hasText && model.fileURL == nil)
 
             Button("Phrasebook", systemImage: "book") {
+                hideKeyboard()
                 showsPhrasebook.toggle()
             }
             .labelStyle(.iconOnly)
@@ -73,6 +80,7 @@ struct TopBar: View {
             .contentShape(Rectangle())
 
             Button {
+                hideKeyboard()
                 showsProgress = true
             } label: {
                 Label("\(model.stats.stats.streak(asOf: .now))", systemImage: "chart.bar.xaxis")
@@ -94,6 +102,12 @@ struct TopBar: View {
         .padding(.trailing, 12)
         .padding(.vertical, 6)
     }
+
+    /// Hides the keyboard, then hands the File menu command to the editor.
+    private func request(_ fileRequest: FileRequest) {
+        hideKeyboard()
+        perform(fileRequest)
+    }
 }
 
 #if !os(macOS)
@@ -108,34 +122,43 @@ struct CompactToolbar: ToolbarContent {
     /// Hands a file command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
 
+    // Every button here hides the keyboard first, so a sheet, menu or alert never
+    // opens with the keyboard still covering the bottom of the screen.
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
-            Button("Journal", systemImage: "list.bullet") { showsEntries = true }
+            Button("Journal", systemImage: "list.bullet") {
+                hideKeyboard()
+                showsEntries = true
+            }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Phrasebook", systemImage: "book") { showsPhrasebook.toggle() }
+            Button("Phrasebook", systemImage: "book") {
+                hideKeyboard()
+                showsPhrasebook.toggle()
+            }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Section {
-                    Button("New", systemImage: "square.and.pencil") { perform(.new) }
+                    Button("New", systemImage: "square.and.pencil") { request(.new) }
                         .disabled(!model.hasText && model.fileURL == nil)
-                    Button("Save", systemImage: "square.and.arrow.down") { perform(.save) }
+                    Button("Save", systemImage: "square.and.arrow.down") { request(.save) }
                         .disabled(!model.canSave)
-                    Button("Save as New Entry…", systemImage: "plus.square.on.square") { perform(.saveAsNewEntry) }
+                    Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
                         .disabled(!model.canSave)
                 }
                 Section {
-                    Button("Import…", systemImage: "folder") { perform(.importFile) }
-                    Button("Export a Copy…", systemImage: "square.and.arrow.up") { perform(.export) }
+                    Button("Import…", systemImage: "folder") { request(.importFile) }
+                    Button("Export a Copy…", systemImage: "square.and.arrow.up") { request(.export) }
                         .disabled(!model.hasText)
                     ShareLink(item: model.plainText)
                         .disabled(!model.hasText)
                 }
                 Section {
                     Button("Progress · \(plural(streak, "day")) streak", systemImage: "chart.bar.xaxis") {
+                        hideKeyboard()
                         showsProgress = true
                     }
                     ThemeToggle()
@@ -144,6 +167,12 @@ struct CompactToolbar: ToolbarContent {
                 Label("More", systemImage: "ellipsis")
             }
         }
+    }
+
+    /// Hides the keyboard, then hands the file command to the editor.
+    private func request(_ fileRequest: FileRequest) {
+        hideKeyboard()
+        perform(fileRequest)
     }
 
     /// The learner's current streak, in days.
@@ -212,4 +241,12 @@ struct StatusChip: View {
 /// Returns "1 error" or "3 errors".
 func plural(_ count: Int, _ noun: String) -> String {
     "\(count) \(noun)\(count == 1 ? "" : "s")"
+}
+
+/// Hides the iPhone and iPad keyboard by asking whatever has focus to give it up; does nothing on the Mac.
+@MainActor
+func hideKeyboard() {
+    #if canImport(UIKit)
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    #endif
 }

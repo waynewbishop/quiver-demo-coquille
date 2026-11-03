@@ -381,11 +381,12 @@ final class EditorModelTests: XCTestCase {
         let checkedBefore = model.stats.stats.sentencesChecked
         let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12)))
         model.newEntry(on: date)
-        XCTAssertTrue(model.plainText.hasPrefix("Le 1er novembre 2026\n\nIl fait "))
+        XCTAssertTrue(model.plainText.hasPrefix(EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What's the weather like?\nIl fait \n"))
         XCTAssertTrue(model.blockingIssues.isEmpty)
         XCTAssertNil(model.fileURL)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
-        // The date line has no full stop, so starting an entry checks no sentences.
+        // The date line has no full stop and the notes are never checked, so starting
+        // an entry checks no sentences.
         XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)
     }
 
@@ -393,8 +394,38 @@ final class EditorModelTests: XCTestCase {
     func testEntryHeaderDate() throws {
         let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 12)))
         let header = EditorModel.entryHeader(for: date)
-        XCTAssertTrue(header.text.hasPrefix("Le 31 octobre 2026\n"))
-        XCTAssertEqual(String(header.text.prefix(header.caret)), "Le 31 octobre 2026\n\nIl fait ")
+        XCTAssertTrue(header.text.hasPrefix(EditorModel.entryGuide + "\nLe 31 octobre 2026\n"))
+        XCTAssertEqual(String(header.text.prefix(header.caret)), EditorModel.entryGuide + "\nLe 31 octobre 2026\n\n// What's the weather like?\nIl fait ")
+    }
+
+    // Each starter's note sits on the line above it, and typing at the caret finishes the first starter.
+    func testEntryHeaderNotes() throws {
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 12)))
+        let header = EditorModel.entryHeader(for: date)
+        // Built line by line, since each starter ends in a space an editor might strip.
+        let expected = [
+            "// Finish each sentence in French, then keep going. Grey notes are never checked.",
+            "Le 2 novembre 2026",
+            "",
+            "// What's the weather like?",
+            "Il fait ",
+            "",
+            "// Where are you writing from today?",
+            "Je suis à ",
+            "",
+            "// What are you wearing?",
+            "Je porte ",
+            "",
+            "// How do you feel, and why?",
+            "Je me sens ",
+            ""
+        ].joined(separator: "\n")
+        XCTAssertEqual(header.text, expected)
+        XCTAssertEqual(Notes.ranges(in: header.text).count, 5)
+        var typed = header.text
+        typed.insert(contentsOf: "froid.", at: typed.index(typed.startIndex, offsetBy: header.caret))
+        XCTAssertTrue(typed.contains("// What's the weather like?\nIl fait froid.\n"))
+        XCTAssertEqual(Notes.removed(typed), "Le 2 novembre 2026\n\nIl fait froid.\n\nJe suis à\n\nJe porte\n\nJe me sens\n")
     }
 
     // New starts a blank page with no file, and the example has none either.

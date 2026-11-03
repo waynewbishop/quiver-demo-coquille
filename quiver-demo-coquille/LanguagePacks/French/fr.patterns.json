@@ -66,6 +66,12 @@
       "notaire",
       "vétérinaire"
     ],
+    "quantity": [
+      "beaucoup",
+      "trop",
+      "assez",
+      "tellement"
+    ],
     "sport": [
       "foot",
       "football",
@@ -618,6 +624,149 @@
       "kind": "wordChoice",
       "match": "sur dimanche",
       "note": "Days need no preposition: lundi, or le lundi for every Monday."
+    },
+    {
+      "fix": "$quantity de",
+      "kind": "wordChoice",
+      "match": "$quantity des",
+      "note": "After beaucoup, trop or assez, French uses de alone, with no article.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "a",
+        "avons",
+        "avez",
+        "ont",
+        "avais",
+        "avait",
+        "avions",
+        "aviez",
+        "avaient"
+      ]
+    },
+    {
+      "fix": "$quantity de",
+      "kind": "wordChoice",
+      "match": "$quantity de les",
+      "note": "After beaucoup, trop or assez, French uses de alone, with no article.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "a",
+        "avons",
+        "avez",
+        "ont",
+        "avais",
+        "avait",
+        "avions",
+        "aviez",
+        "avaient"
+      ]
+    },
+    {
+      "fix": "$quantity de",
+      "kind": "wordChoice",
+      "match": "$quantity de le",
+      "note": "After beaucoup, trop or assez, French uses de alone, with no article.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "a",
+        "avons",
+        "avez",
+        "ont",
+        "avais",
+        "avait",
+        "avions",
+        "aviez",
+        "avaient"
+      ]
+    },
+    {
+      "fix": "$quantity de",
+      "kind": "wordChoice",
+      "match": "$quantity de la",
+      "note": "After beaucoup, trop or assez, French uses de alone, with no article.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "a",
+        "avons",
+        "avez",
+        "ont",
+        "avais",
+        "avait",
+        "avions",
+        "aviez",
+        "avaient"
+      ]
+    },
+    {
+      "fix": "$quantity de",
+      "kind": "wordChoice",
+      "match": "$quantity du",
+      "note": "After beaucoup, trop or assez, French uses de alone, with no article.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "a",
+        "avons",
+        "avez",
+        "ont",
+        "avais",
+        "avait",
+        "avions",
+        "aviez",
+        "avaient"
+      ]
+    },
+    {
+      "fix": "rien",
+      "kind": "wordChoice",
+      "match": "pas rien",
+      "note": "With ne, rien already makes the sentence negative, so pas isn't needed.",
+      "unlessAfter": [
+        "est",
+        "était",
+        "sera",
+        "serait"
+      ]
+    },
+    {
+      "fix": "jamais",
+      "kind": "wordChoice",
+      "match": "pas jamais",
+      "note": "With ne, jamais already makes the sentence negative, so pas isn't needed."
+    },
+    {
+      "fix": "jamais",
+      "kind": "wordChoice",
+      "match": "jamais pas",
+      "note": "With ne, jamais already makes the sentence negative, so pas isn't needed."
+    },
+    {
+      "fix": "personne",
+      "kind": "wordChoice",
+      "match": "pas personne",
+      "note": "With ne, personne already makes the sentence negative, so pas isn't needed.",
+      "unlessAfter": [
+        "est",
+        "était",
+        "sera",
+        "serait"
+      ]
+    },
+    {
+      "fix": "aucun",
+      "kind": "wordChoice",
+      "match": "pas aucun",
+      "note": "With ne, aucun already makes the sentence negative, so pas isn't needed."
+    },
+    {
+      "fix": "aucune",
+      "kind": "wordChoice",
+      "match": "pas aucune",
+      "note": "With ne, aucune already makes the sentence negative, so pas isn't needed."
     },
     {
       "fix": "chez le $professional",

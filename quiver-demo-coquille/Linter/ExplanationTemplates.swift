@@ -43,6 +43,11 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case etOrEst
     case preposition
     case placePreposition
+    case elision
+    case elisionContraction
+    case possessiveGender
+    case possessiveBeforeVowel
+    case reflexiveAuxiliary
 
     /// The placeholders the rule fills for this key. A template may use any of them and no others.
     var placeholders: Set<String> {
@@ -69,6 +74,9 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .siClause: ["tense", "fix"]
         case .meaning: ["note"]
         case .etOrEst: ["fix"]
+        case .elision, .elisionContraction: ["word", "fix"]
+        case .possessiveGender: ["noun", "gender", "fix"]
+        case .possessiveBeforeVowel, .reflexiveAuxiliary: ["fix"]
         }
     }
 }

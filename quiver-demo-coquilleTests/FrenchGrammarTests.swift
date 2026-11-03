@@ -157,9 +157,9 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Une petite maison."), [])
     }
 
-    // Before a vowel the article elides, which is outside the gender rule.
+    // Before a vowel the article elides, which the elision rule fixes, not the gender rule.
     func testElisionContextIsSkipped() throws {
-        XCTAssertEqual(try fixes("Je vois la arbre."), [])
+        XCTAssertEqual(try fixes("Je vois la arbre."), ["la arbre → l'arbre"])
     }
 
     // Nouns typed with œ have a gender, though Lexique spells them with oe.
@@ -742,6 +742,88 @@ final class FrenchGrammarTests: XCTestCase {
         }
         // Coming from somewhere, a masculine country still takes du.
         XCTAssertEqual(try fixes("Il revient de Japon."), ["de Japon → du Japon"])
+    }
+
+    // A country's own article settles its gender, though Lexique lists canada as feminine.
+    func testCountryGenderComesFromTheCountryList() throws {
+        XCTAssertFalse(try fixes("Je vais en le Canada.").contains("le Canada → la Canada"))
+        XCTAssertEqual(try fixes("J'aime la Canada."), ["la Canada → le Canada"])
+    }
+
+    // MARK: - Elision
+
+    // Je, le, la, de, ne and que lose their vowel before a vowel sound, and au and du become à l' and de l'.
+    func testElision() throws {
+        XCTAssertEqual(try fixes("Je aime le chocolat."), ["Je aime → J'aime"])
+        XCTAssertEqual(try fixes("Le école est grande."), ["Le école → L'école"])
+        XCTAssertEqual(try fixes("Il ne aime pas le café."), ["ne aime → n'aime"])
+        XCTAssertEqual(try fixes("Je vais au école."), ["au école → à l'école"])
+        XCTAssertEqual(try fixes("Je me habille."), ["me habille → m'habille"])
+    }
+
+    // An aspirated h, le onze, que oui, a name and the title Me keep the whole word.
+    func testElisionSkips() throws {
+        XCTAssertEqual(try fixes("Je le hais."), [])
+        XCTAssertEqual(try fixes("Le héros arrive."), [])
+        XCTAssertEqual(try fixes("Le onze novembre, il pleut."), [])
+        XCTAssertEqual(try fixes("Il a dit que oui."), [])
+        XCTAssertEqual(try fixes("C'est le livre de Ernest."), [])
+        XCTAssertEqual(try fixes("Le dossier de Me Dupont est prêt."), [])
+    }
+
+    // MARK: - Possessives
+
+    // A possessive takes the noun's gender, and ma, ta and sa become mon, ton and son before a vowel.
+    func testPossessiveGender() throws {
+        XCTAssertEqual(try fixes("Mon mère est gentille."), ["Mon mère → Ma mère"])
+        XCTAssertEqual(try fixes("Ton sœur est là."), ["Ton sœur → Ta sœur"])
+        XCTAssertEqual(try fixes("Ma ami est là."), ["Ma ami → Mon ami"])
+        XCTAssertEqual(try fixes("Son voiture est rouge."), ["Son voiture → Sa voiture"])
+        XCTAssertEqual(try fixes("Mon amie est là."), [])
+        XCTAssertEqual(try fixes("Le son de la radio est fort."), [])
+    }
+
+    // MARK: - Reflexive verbs
+
+    // A reflexive verb takes être in the past, and the pronoun elides only before a vowel.
+    func testReflexiveAuxiliary() throws {
+        XCTAssertEqual(try fixes("Il s'a trompé."), ["s'a → s'est"])
+        XCTAssertEqual(try fixes("Nous nous avons couchés."), ["nous avons → nous sommes"])
+        XCTAssertEqual(try fixes("Ils se ont rencontrés."), ["se ont → se sont"])
+        XCTAssertEqual(try fixes("Je me ai levé."), ["me ai → me suis"])
+    }
+
+    // An object pronoun that isn't the subject's own leaves avoir and its agreement alone.
+    func testObjectPronounIsNotReflexive() throws {
+        XCTAssertEqual(try fixes("Vous nous avez vus."), [])
+        XCTAssertEqual(try fixes("Il m'a aidé."), [])
+    }
+
+    // MARK: - Age
+
+    // An age takes avoir, given in digits or words.
+    func testAgeTakesAvoir() throws {
+        XCTAssertEqual(try fixes("Je suis 20 ans."), ["Je suis → J'ai"])
+        XCTAssertEqual(try fixes("Mon frère est douze ans."), ["est → a"])
+        XCTAssertEqual(try fixes("Elle est vingt-cinq ans."), ["est → a"])
+        XCTAssertEqual(try fixes("C'est vingt ans de travail."), [])
+    }
+
+    // MARK: - Quantities and negation
+
+    // After beaucoup or trop, de stands alone, eliding before a vowel.
+    func testQuantityTakesDeAlone() throws {
+        XCTAssertEqual(try fixes("Il y a beaucoup des gens."), ["beaucoup des → beaucoup de"])
+        XCTAssertEqual(try fixes("J'ai beaucoup des amis."), ["beaucoup des amis → beaucoup d'amis"])
+        XCTAssertEqual(try fixes("J'ai trop de les devoirs."), ["trop de les → trop de"])
+        XCTAssertEqual(try fixes("Il parle beaucoup des vacances."), [])
+    }
+
+    // Rien, jamais and personne already negate with ne, so pas is doubled.
+    func testDoubleNegation() throws {
+        XCTAssertEqual(try fixes("Je n'aime pas rien."), ["pas rien → rien"])
+        XCTAssertEqual(try fixes("Il ne mange jamais pas."), ["jamais pas → jamais"])
+        XCTAssertEqual(try fixes("Ce n'est pas rien."), [])
     }
 
     // MARK: - Idioms
