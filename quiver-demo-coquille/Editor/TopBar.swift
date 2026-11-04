@@ -112,7 +112,7 @@ struct TopBar: View {
 
 #if !os(macOS)
 /// The iPhone navigation bar's buttons: the journal on the leading edge, then the
-/// phrasebook and a More menu holding the file commands, progress, and the theme.
+/// phrasebook and a More menu holding the file commands, progress, font size, and the theme.
 struct CompactToolbar: ToolbarContent {
 
     let model: EditorModel
@@ -150,6 +150,7 @@ struct CompactToolbar: ToolbarContent {
                         .disabled(!model.canSave)
                 }
                 Section {
+                    FontSizePicker()
                     Button("Import…", systemImage: "folder") { request(.importFile) }
                     Button("Export a Copy…", systemImage: "square.and.arrow.up") { request(.export) }
                         .disabled(!model.hasText)

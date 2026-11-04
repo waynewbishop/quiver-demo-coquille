@@ -24,8 +24,15 @@ enum FontSize: String, CaseIterable, Identifiable {
     /// The `AppStorage` key holding the choice.
     static let storageKey = "fontSize"
 
-    /// The size a new install starts at, and the one ⌘0 returns to.
-    static let standard = FontSize.medium
+    /// The size a new install starts at, and the one ⌘0 returns to: Small on iPhone,
+    /// where the narrow screen fits more of the sentence, and Medium elsewhere.
+    static var standard: FontSize {
+        #if os(iOS)
+        UIDevice.current.userInterfaceIdiom == .phone ? .small : .medium
+        #else
+        .medium
+        #endif
+    }
 
     var id: Self { self }
 
@@ -70,8 +77,26 @@ enum FontSize: String, CaseIterable, Identifiable {
     }
 }
 
+/// A Font Size submenu for an in-app menu, such as the iPhone's More menu, where
+/// there is no menu bar to hold `FontSizeCommands`.
+struct FontSizePicker: View {
+
+    @AppStorage(FontSize.storageKey) private var fontSize = FontSize.standard
+
+    var body: some View {
+        Picker(selection: $fontSize) {
+            ForEach(FontSize.allCases) { size in
+                Text(size.label).tag(size)
+            }
+        } label: {
+            Label("Font Size", systemImage: "textformat.size")
+        }
+        .pickerStyle(.menu)
+    }
+}
+
 /// The View menu's Font Size submenu: a checkmarked choice of Small, Medium and Large,
-/// then ⌘= and ⌘− to step between them and ⌘0 to return to Medium, as in the browser,
+/// then ⌘= and ⌘− to step between them and ⌘0 to return to the default size, as in the browser,
 /// Xcode and the Quiver Notebook.
 struct FontSizeCommands: Commands {
 
