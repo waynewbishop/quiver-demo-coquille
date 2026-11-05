@@ -170,6 +170,9 @@ struct EditorScreen: View {
             entriesList
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 360)
                 .tint(.brand)
+                // The Journal button below replaces the system's sidebar button, so the Mac
+                // shows the same list icon as the iPhone and iPad.
+                .toolbar(removing: .sidebarToggle)
         } detail: {
             screen
         }
@@ -496,6 +499,15 @@ struct EditorScreen: View {
         .navigationSubtitle(documentStatus)
         .task(id: titleSource) { await retitle() }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button("Journal", systemImage: "list.bullet") {
+                    withAnimation {
+                        columns = columns == .detailOnly ? .all : .detailOnly
+                    }
+                }
+                .help(columns == .detailOnly ? "Show the journal" : "Hide the journal")
+            }
+
             ToolbarItemGroup(placement: .navigation) {
                 MacPlayButton(model: model)
                 MacStopButton(model: model)

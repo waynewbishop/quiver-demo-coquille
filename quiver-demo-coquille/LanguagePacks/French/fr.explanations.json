@@ -167,5 +167,30 @@
     "hint": "A reflexive verb, with se, takes a different helper verb in the past.",
     "template": "A reflexive verb, with se, always takes être in the past: {fix}.",
     "example": "A reflexive verb, with se, always takes être in the past: il s'est trompé."
+  },
+  "sentenceCapital": {
+    "hint": "Look at how this sentence starts.",
+    "template": "A sentence starts with a capital letter: {fix}.",
+    "example": "A sentence starts with a capital letter: Il."
+  },
+  "lowercaseDayOrMonth": {
+    "hint": "French writes days and months differently from English.",
+    "template": "In French, days of the week and months take no capital letter: {fix}.",
+    "example": "In French, days of the week and months take no capital letter: lundi."
+  },
+  "lowercaseLanguage": {
+    "hint": "French writes the names of languages differently from English.",
+    "template": "In French, the name of a language takes no capital letter: {fix}. Only the people take one, as in les Français.",
+    "example": "In French, the name of a language takes no capital letter: anglais. Only the people take one, as in les Français."
+  },
+  "lowercaseNationality": {
+    "hint": "{word} describes someone here rather than naming a people.",
+    "template": "{word} describes someone here, so it takes no capital letter: {fix}. Only the noun for the people takes one, as in les Américains.",
+    "example": "Américain describes someone here, so it takes no capital letter: américain. Only the noun for the people takes one, as in les Américains."
+  },
+  "lowercaseJe": {
+    "hint": "Je isn't written like the English I.",
+    "template": "Unlike the English I, je takes a capital letter only at the start of a sentence: {fix}.",
+    "example": "Unlike the English I, je takes a capital letter only at the start of a sentence: je."
   }
 }

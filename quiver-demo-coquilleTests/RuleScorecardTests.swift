@@ -307,7 +307,36 @@ final class RuleScorecardTests: XCTestCase {
         ("Beaucoup des étudiants de la classe sont partis.", nil),
         ("Il parle beaucoup des vacances.", nil),
         ("Ce n'est pas rien.", nil),
-        ("Il ne sort jamais.", nil)
+        ("Il ne sort jamais.", nil),
+        // Written before the two capital-letter rules were built, and never used to tune them.
+        ("il fait beau aujourd'hui.", "grammar.sentenceCapital"),
+        ("j'habite à Lyon.", "grammar.sentenceCapital"),
+        ("J'ai faim. je vais manger.", "grammar.sentenceCapital"),
+        ("Tu viens ? oui, je viens.", "grammar.sentenceCapital"),
+        ("Quelle belle journée ! nous allons à la plage.", "grammar.sentenceCapital"),
+        ("Il pleut.\nelle reste à la maison.", "grammar.sentenceCapital"),
+        ("C'est fini. après, on dort.", "grammar.sentenceCapital"),
+        ("Bonjour ! comment ça va ?", "grammar.sentenceCapital"),
+        ("Je travaille le Lundi.", "grammar.lowercase"),
+        ("Mon anniversaire est en Mars.", "grammar.lowercase"),
+        ("Nous partons en Juillet.", "grammar.lowercase"),
+        ("Je parle Anglais.", "grammar.lowercase"),
+        ("Elle apprend le Français.", "grammar.lowercase"),
+        ("J'ai un cours de Français.", "grammar.lowercase"),
+        ("J'ai un ami Américain.", "grammar.lowercase"),
+        ("Il est Canadien.", "grammar.lowercase"),
+        ("Mais Je ne sais pas.", "grammar.lowercase"),
+        ("Le 14 Juillet, on danse.", nil),
+        ("Les Français aiment le pain.", nil),
+        ("J'ai vu un Américain à Paris.", nil),
+        ("Il a dit : « Je viens demain. »", nil),
+        ("« Viens ! » dit-il.", nil),
+        ("M. Dupont arrive lundi.", nil),
+        ("Le prix est de 3.5 euros.", nil),
+        ("Je suis allé chez Marie… elle dormait.", nil),
+        ("Chère Marie,\nje pense à toi.", nil),
+        ("Il travaille à l'Alliance Française.", nil),
+        ("Je parle français avec Paul.", nil)
     ]
 
     /// One rule's report on the corpus, with any sentence it got wrong.
@@ -383,7 +412,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 18)
+        XCTAssertEqual(tuning.count, 20)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }

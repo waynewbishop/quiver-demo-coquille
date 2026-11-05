@@ -151,6 +151,12 @@ nonisolated struct FrenchGrammar: Grammar {
             GrammarRule(identifier: "grammar.preposition", layer: .relationalGrammar, targetLevel: .a1) {
                 countryIssues(in: $0.tokens, countries: countries, trie: countryTrie)
                     + patternIssues(in: $0, list: lists[4])
+            },
+            GrammarRule(identifier: "grammar.sentenceCapital", layer: .orthography, targetLevel: .a1) {
+                sentenceCapitalIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.lowercase", layer: .orthography, targetLevel: .a1) {
+                lowercaseIssues(in: $0.tokens)
             }
         ]
     }
@@ -1594,6 +1600,220 @@ nonisolated struct FrenchGrammar: Grammar {
             }
         }
         return issues
+    }
+
+    // MARK: - Capital letters
+
+    /// Abbreviations whose full stop doesn't end the sentence, as in "M. Dupont".
+    private static let abbreviations: Set<String> = [
+        "m", "mm", "mme", "mmes", "mlle", "mlles", "dr", "pr", "st", "ste",
+        "etc", "cf", "ex", "p", "env", "av", "apr", "bd", "vs"
+    ]
+
+    /// Whether token `index` opens a sentence: the first word of the text, or the first
+    /// after a full stop, question mark or exclamation mark and a space, or after a line
+    /// break that no comma, colon or other mark holds open.
+    ///
+    /// Anything unusual between the words counts as no sentence start, so a closing
+    /// quotation mark ("« Viens ! » dit-il"), an ellipsis, a list dash, a decimal
+    /// ("3.5 euros") or a web address ("coquille.fr") never asks for a capital.
+    private func opensSentence(_ index: Int, in tokens: [Token]) -> Bool {
+        // Before the first word, only the very start of the text is known to be a sentence start.
+        guard index > 0 else { return tokens[index].offset == 0 }
+        let previous = tokens[index - 1]
+        let gap = previous.gap
+        guard gap.last?.isWhitespace == true else { return false }
+        let marks = gap.filter { !$0.isWhitespace }
+        guard let last = marks.last else { return gap.contains(where: \.isNewline) }
+        guard ".!?".contains(last), !marks.hasSuffix("..") else { return false }
+        if marks == "." {
+            // An initial, as in "J. Dupont", or an abbreviation, as in "M. Dupont".
+            if previous.text.count == 1, previous.text.first?.isUppercase == true { return false }
+            if Self.abbreviations.contains(previous.normalized) { return false }
+        }
+        return true
+    }
+
+    /// Whether token `index` sits inside a sentence, after a word with nothing but spaces,
+    /// a comma or a number between them, so a capital there can't come from punctuation,
+    /// a quotation or a new line.
+    private func isInsideSentence(_ index: Int, in tokens: [Token]) -> Bool {
+        guard index > 0 else { return false }
+        let gap = tokens[index - 1].gap
+        return gap.allSatisfy { ($0.isWhitespace && !$0.isNewline) || $0 == "," || $0.isNumber }
+    }
+
+    /// Flags a sentence that starts with a lowercase letter, as in "il fait beau" → "Il".
+    ///
+    /// A word with a capital inside it, such as iPhone, is a brand written its own way
+    /// and is left alone, and so is a word standing alone, such as a list item or a
+    /// first word still being typed.
+    private func sentenceCapitalIssues(in tokens: [Token]) -> [Issue] {
+        tokens.indices.compactMap { index in
+            let token = tokens[index]
+            guard let first = token.text.first, first.isLowercase,
+                  !token.text.dropFirst().contains(where: \.isUppercase),
+                  opensSentence(index, in: tokens),
+                  index + 1 < tokens.count, !opensSentence(index + 1, in: tokens) else { return nil }
+            let fix = first.uppercased() + token.text.dropFirst()
+            return issue(
+                .capitalization, .warning, from: index, through: index, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(.sentenceCapital, ["word": token.text, "fix": fix]),
+                source: "Capital letter rule"
+            )
+        }
+    }
+
+    /// Days of the week, which French writes in lowercase.
+    private static let days: Set<String> = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+
+    /// Months, which French writes in lowercase.
+    private static let months: Set<String> = [
+        "janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"
+    ]
+
+    /// Words before a month that show it's the month and not a name, as in "en mars"
+    /// rather than "sur Mars" or "de Mars".
+    private static let monthCues: Set<String> = ["en", "début", "fin", "mi", "mois", "depuis", "dès", "er", "jusqu'en"]
+
+    /// Words after a day that make it a holiday's name, as in "Mardi gras" and "Vendredi saint".
+    private static let holidayWords: Set<String> = ["gras", "saint", "saints"]
+
+    /// Languages, which French writes in lowercase: "je parle anglais".
+    private static let languages: Set<String> = [
+        "français", "anglais", "espagnol", "allemand", "italien", "portugais", "chinois",
+        "japonais", "coréen", "arabe", "russe", "néerlandais", "grec", "polonais", "suédois",
+        "turc", "vietnamien", "hébreu", "latin", "hindi"
+    ]
+
+    /// Verbs whose object can be a language, as in "j'apprends le français".
+    private static let languageVerbs = ["parler", "apprendre", "étudier", "enseigner", "comprendre", "traduire"]
+
+    /// Words that can stand between a language verb and the language, as in "je ne parle pas bien le français".
+    private static let languageVerbFillers: Set<String> = ["le", "l'", "pas", "bien", "mal", "un", "peu", "couramment", "aussi", "très"]
+
+    /// Nouns after which de names a language, as in "un cours de français".
+    private static let languageNouns: Set<String> = [
+        "cours", "classe", "classes", "professeur", "professeure", "prof", "profs", "leçon", "leçons",
+        "examen", "examens", "dictionnaire", "livre", "livres", "devoir", "devoirs", "exercice", "exercices"
+    ]
+
+    /// Nationality adjectives in the masculine singular. French capitalizes the noun for
+    /// the people ("les Français") but never the adjective ("un ami français").
+    private static let nationalityLemmas = [
+        "américain", "anglais", "français", "canadien", "québécois", "espagnol", "allemand",
+        "italien", "portugais", "chinois", "japonais", "coréen", "mexicain", "brésilien",
+        "argentin", "russe", "belge", "suisse", "irlandais", "écossais", "australien", "indien",
+        "marocain", "algérien", "tunisien", "sénégalais", "africain", "européen", "asiatique",
+        "grec", "turc", "néerlandais", "hollandais", "polonais", "suédois", "norvégien", "danois",
+        "vietnamien", "libanais", "égyptien", "haïtien", "cubain", "colombien", "péruvien",
+        "chilien", "parisien", "britannique", "arabe"
+    ]
+
+    /// Every form of the nationality adjectives, masculine and feminine, singular and plural.
+    private static let nationalityForms: Set<String> = {
+        var forms: Set<String> = []
+        for lemma in nationalityLemmas {
+            switch lemma {
+            case "grec": forms.formUnion(["grec", "grecs", "grecque", "grecques"])
+            case "turc": forms.formUnion(["turc", "turcs", "turque", "turques"])
+            case _ where lemma.hasSuffix("s"): forms.formUnion([lemma, lemma + "e", lemma + "es"])
+            case _ where lemma.hasSuffix("ien"): forms.formUnion([lemma, lemma + "s", lemma + "ne", lemma + "nes"])
+            case _ where lemma.hasSuffix("e"): forms.formUnion([lemma, lemma + "s"])
+            default: forms.formUnion([lemma, lemma + "s", lemma + "e", lemma + "es"])
+            }
+        }
+        return forms
+    }()
+
+    /// Words before a nationality that can't be the noun it describes, so "les Français"
+    /// and "un Américain" keep their capital as the people.
+    private static let nonNounsBeforeNationality: Set<String> = [
+        "le", "la", "les", "l'", "un", "une", "des", "du", "de", "d'", "ce", "cet", "cette", "ces",
+        "mon", "ton", "son", "ma", "ta", "sa", "mes", "tes", "ses", "notre", "votre", "leur",
+        "nos", "vos", "leurs", "deux", "trois", "quelques", "plusieurs", "beaucoup", "aux", "au"
+    ]
+
+    /// Flags a capital that French doesn't use inside a sentence, in the places English
+    /// speakers add one: days and months ("le Lundi"), languages ("je parle Anglais"),
+    /// nationality adjectives ("un ami Américain", "il est Canadien") and je ("et Je").
+    ///
+    /// Every other capital inside a sentence is taken for a name, as the other rules
+    /// take it, so this rule speaks only when the words around it rule a name out.
+    private func lowercaseIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices where isInsideSentence(index, in: tokens) {
+            let token = tokens[index]
+            let letters = token.text.filter(\.isLetter)
+            guard letters.first?.isUppercase == true,
+                  !letters.dropFirst().contains(where: \.isUppercase) else { continue }
+            let word = token.normalized
+            let previous = tokens[index - 1]
+            let next = index + 1 < tokens.count ? tokens[index + 1] : nil
+            let key: ExplanationKey
+            if word == "je" || word == "j'" {
+                key = .lowercaseJe
+            } else if Self.days.contains(word) {
+                if let next, Self.holidayWords.contains(next.normalized) { continue }
+                // "le lundi de Pâques" is a holiday's name.
+                if let next, next.normalized == "de", index + 2 < tokens.count,
+                   tokens[index + 2].text.first?.isUppercase == true { continue }
+                key = .lowercaseDayOrMonth
+            } else if Self.months.contains(word) {
+                // "le 14 Juillet" is the national holiday and "Mai 68" the events of that year.
+                if word == "juillet", previous.gap.contains("14") { continue }
+                if word == "mai", token.gap.hasPrefix(" 68") { continue }
+                let afterNumber = previous.gap.contains(where: \.isNumber)
+                let beforeYear = token.gap.prefix(2).last?.isNumber == true
+                guard afterNumber || beforeYear || Self.monthCues.contains(previous.normalized) else { continue }
+                key = .lowercaseDayOrMonth
+            } else if Self.languages.contains(word), isLanguagePosition(index, in: tokens) {
+                key = .lowercaseLanguage
+            } else if Self.nationalityForms.contains(word), describesNoun(at: index, in: tokens) {
+                key = .lowercaseNationality
+            } else {
+                continue
+            }
+            let fix = token.text.lowercased()
+            issues.append(issue(
+                .capitalization, .warning, from: index, through: index, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(key, ["word": token.text, "fix": fix]),
+                source: "Capital letter rule"
+            ))
+        }
+        return issues
+    }
+
+    /// Whether token `index` names a language: after en ("en français"), after a language
+    /// verb ("je parle anglais", "j'apprends le français"), or after de following a word
+    /// such as cours ("un cours de français").
+    private func isLanguagePosition(_ index: Int, in tokens: [Token]) -> Bool {
+        let previous = tokens[index - 1].normalized
+        if previous == "en" { return true }
+        if previous == "de" || previous == "d'" {
+            return index >= 2 && Self.languageNouns.contains(tokens[index - 2].normalized)
+        }
+        var position = index - 1
+        // Step back over at most three words such as le, pas and bien to reach the verb.
+        while position > index - 4, position > 0, Self.languageVerbFillers.contains(tokens[position].normalized) {
+            position -= 1
+        }
+        let word = tokens[position].normalized
+        return Self.languageVerbs.contains { isForm(word, of: $0) }
+    }
+
+    /// Whether the nationality at token `index` is an adjective: right after a form of
+    /// être ("il est Canadien") or right after a lowercase noun ("un ami Américain").
+    /// After an article it's the people ("les Français"), and after a capital it's part
+    /// of a name ("l'Alliance Française"), so both stay as written.
+    private func describesNoun(at index: Int, in tokens: [Token]) -> Bool {
+        let previous = tokens[index - 1]
+        guard previous.text.first?.isLowercase == true, !Self.nonNounsBeforeNationality.contains(previous.normalized) else { return false }
+        if isForm(previous.normalized, of: "être") { return true }
+        return lexicon.noun(previous.normalized) != nil && !lexicon.isVerb(previous.normalized)
     }
 
     // MARK: - Helpers

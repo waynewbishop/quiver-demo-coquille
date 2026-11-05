@@ -42,7 +42,7 @@ final class LinguisticFilterTests: XCTestCase {
             "grammar.auxiliary", "grammar.conjugation", "grammar.siClause", "grammar.participle",
             "grammar.article", "grammar.agreement", "grammar.lookAlike", "grammar.wordChoice",
             "grammar.negation", "grammar.idiom", "grammar.meaning", "grammar.etOrEst",
-            "grammar.preposition"
+            "grammar.preposition", "grammar.sentenceCapital", "grammar.lowercase"
         ])
         XCTAssertEqual(Set(filters.map(\.layer)), Set(LinguisticLayer.allCases))
     }

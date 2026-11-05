@@ -33,6 +33,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case meaning
     case etOrEst
     case preposition
+    case capitalization
 
     /// The short uppercase label shown at the top of an issue card.
     var label: String {
@@ -55,6 +56,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .meaning: "DID YOU MEAN"
         case .etOrEst: "ET OR EST"
         case .preposition: "PREPOSITION"
+        case .capitalization: "CAPITAL LETTERS"
         }
     }
 
@@ -79,6 +81,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .meaning: "Meaning (pas encore or plus)"
         case .etOrEst: "Et or est (il est grand)"
         case .preposition: "Prepositions (au Canada)"
+        case .capitalization: "Capital letters (le lundi)"
         }
     }
 }

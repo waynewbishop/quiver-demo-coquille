@@ -74,6 +74,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
+| Capital letters | il pleut → Il pleut, le Lundi → le lundi, je parle Anglais → anglais | Warning | Capital letter rule |
 
 Errors block play and English; warnings and suggestions never do, and
 every card has **Ignore**, so a false positive can never trap the
