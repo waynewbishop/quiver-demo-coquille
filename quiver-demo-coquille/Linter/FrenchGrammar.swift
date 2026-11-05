@@ -98,7 +98,7 @@ nonisolated struct FrenchGrammar: Grammar {
         let countryTrie = PhraseTrie(phrases: countries.map { PhrasePattern.words(of: $0.key) })
         return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
-                articleGenderIssues(in: $0) + possessiveGenderIssues(in: $0)
+                articleGenderIssues(in: $0) + contractedGenderIssues(in: $0) + possessiveGenderIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.gender.predicted", layer: .localMorphosyntax, targetLevel: .a1) {
                 predictedGenderIssues(in: $0)
@@ -126,6 +126,9 @@ nonisolated struct FrenchGrammar: Grammar {
             },
             GrammarRule(identifier: "grammar.article", layer: .localMorphosyntax, targetLevel: .a2) {
                 generalArticleIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.articleNumber", layer: .localMorphosyntax, targetLevel: .a1) {
+                articleNumberIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.agreement", layer: .localMorphosyntax, targetLevel: .a1) {
                 agreementIssues(in: $0)
@@ -353,6 +356,8 @@ nonisolated struct FrenchGrammar: Grammar {
             guard let marked = Self.articles[article.normalized], article.isAdjacentToNext else { return nil }
             // Before a vowel or h, le and la elide to l', which is a separate rule.
             if marked.isDefinite && noun.startsWithVowelOrH { return nil }
+            // "à la garçon" needs au, not "à le", so the contracted rule takes le and la after à and de.
+            if marked.isDefinite, followsContractingPreposition(index, in: tokens) { return nil }
             // "je le porte": the tagger can't rule out a pronoun.
             if text.mayBePronoun[index] { return nil }
             if Self.superlativeMarkers.contains(noun.normalized) { return nil }
@@ -362,6 +367,75 @@ nonisolated struct FrenchGrammar: Grammar {
                !text.isNoun(index + 1, certainty: Self.tagCertainty) { return nil }
             return (index, marked)
         }
+    }
+
+    /// Whether the word at `index` follows à or de directly, which le and les contract with.
+    private func followsContractingPreposition(_ index: Int, in tokens: [Token]) -> Bool {
+        guard index >= 1 else { return false }
+        let preposition = tokens[index - 1]
+        return ["à", "de"].contains(preposition.normalized) && preposition.isAdjacentToNext
+    }
+
+    /// The singular article that à or de takes before a consonant: au, à la, du or de la.
+    private static func contractedArticle(_ preposition: String, _ gender: Gender) -> String {
+        switch (preposition, gender) {
+        case ("à", .masculine): "au"
+        case ("à", .feminine): "à la"
+        case (_, .masculine): "du"
+        case (_, .feminine): "de la"
+        }
+    }
+
+    /// Flags au, du, à la and de la before a known singular noun of the other gender:
+    /// "au maison" → "à la maison", "de la pain" → "du pain".
+    ///
+    /// "à le" before a feminine noun is caught here too, as "à le maison" → "à la maison",
+    /// since contracting it to au would still be wrong. Before a vowel or h the elision
+    /// rule takes over, and the same skips as the plain gender rule apply.
+    private func contractedGenderIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let article = tokens[index]
+            let noun = tokens[index + 1]
+            guard article.isAdjacentToNext else { continue }
+
+            let first: Int
+            let preposition: String
+            let marked: Gender
+            switch article.normalized {
+            case "au", "du":
+                (first, preposition, marked) = (index, article.normalized == "au" ? "à" : "de", .masculine)
+            case "le", "la":
+                guard followsContractingPreposition(index, in: tokens) else { continue }
+                // "il essaie de la voir": la is a pronoun, and no article is there to fix.
+                if text.mayBePronoun[index] { continue }
+                (first, preposition, marked) = (index - 1, tokens[index - 1].normalized,
+                                                article.normalized == "le" ? .masculine : .feminine)
+            default:
+                continue
+            }
+
+            let word = noun.normalized
+            if noun.startsWithVowelOrH || Self.superlativeMarkers.contains(word) || lexicon.isInfinitive(word) { continue }
+            // "à la mi-2009" is a fixed phrase, and "à la l'…" is a typo with no noun to judge.
+            if word == "mi" || word.hasSuffix("'") { continue }
+            // A capital inside a sentence is a name, unless it's a country the patterns know.
+            if noun.text.first?.isUppercase == true, patterns.countries[noun.text] == nil { continue }
+            if !lexicon.adjectiveLemmas(of: word).isEmpty, !text.isNoun(index + 1, certainty: Self.tagCertainty) { continue }
+            guard let gender = knownGender(of: noun), gender != marked else { continue }
+
+            let expected = Self.contractedArticle(preposition, gender)
+            issues.append(issue(
+                .gender, .error, from: first, through: index + 1, in: tokens,
+                replacement: matchingCase(of: tokens[first].text, expected) + article.gap + noun.text,
+                explanation: explanations.render(.contractedGender, [
+                    "noun": noun.text, "gender": gender.rawValue, "preposition": preposition, "article": expected
+                ]),
+                source: "Lexique · known noun"
+            ))
+        }
+        return issues
     }
 
     // MARK: - Contractions
@@ -381,6 +455,9 @@ nonisolated struct FrenchGrammar: Grammar {
             if article.normalized == "le" && next.startsWithVowelOrH { continue }
             // "de le faire": le is a pronoun before an infinitive, and no contraction applies.
             let word = next.normalized
+            // "à le maison" and "à le livres" need à la and aux, which the gender and number rules give.
+            if article.normalized == "le",
+               knownGender(of: next) == .feminine || isSurelyPlural(word) { continue }
             let isNominal = lexicon.noun(word) != nil || !lexicon.adjectiveLemmas(of: word).isEmpty
             guard isNominal, !lexicon.isInfinitive(word) else { continue }
             // "j'ai trop de les devoirs" drops the article, which the word-choice list fixes;
@@ -580,6 +657,15 @@ nonisolated struct FrenchGrammar: Grammar {
                 from: index, through: index, in: tokens,
                 explanation: .accentAfterVerb, ["verb": previous.text]
             )]
+        } else if lexicon.isInfinitive(previous.normalized), completesConjugatedVerb(index - 1, in: tokens),
+                  // "modifier a posteriori": Latin phrases keep a without an accent.
+                  !Self.latinAfterA.contains(next?.normalized ?? "") {
+            // "je voudrais aller a la plage": the infinitive belongs to voudrais, so it
+            // can't be the subject of avoir the way it is in "voyager a changé ma vie".
+            return [accentIssue(
+                from: index, through: index, in: tokens,
+                explanation: .accentAfterVerb, ["verb": previous.text]
+            )]
         } else if let next, lexicon.isInfinitive(next.normalized),
                   !lexicon.adjectiveLemmas(of: previous.normalized).isEmpty,
                   // A noun or verb before a could be avoir's subject, as in "le chat a mangé",
@@ -615,6 +701,42 @@ nonisolated struct FrenchGrammar: Grammar {
         default:
             return []
         }
+    }
+
+    /// Words that end a negation between a verb and its infinitive, as in "je ne veux pas aller".
+    private static let negationEndings: Set<String> = ["pas", "plus", "jamais"]
+
+    /// Latin words that follow a written without an accent: a priori, a posteriori, a fortiori.
+    private static let latinAfterA: Set<String> = ["priori", "posteriori", "fortiori", "contrario", "minima", "maxima"]
+
+    /// Relative words that make the clause before them a subject, as in "ce dont il veut parler a".
+    private static let relativeOpeners: Set<String> = ["qui", "dont", "où"]
+
+    /// Whether the infinitive at `infinitive` completes a conjugated verb that has a
+    /// subject pronoun, as in "je voudrais aller" or "il ne peut pas venir".
+    ///
+    /// An infinitive can be the subject of avoir ("voyager a changé ma vie"), but not
+    /// one that already belongs to a conjugated verb. A relative clause is left out,
+    /// since in "ce qu'il veut faire a changé" the whole clause is the subject.
+    private func completesConjugatedVerb(_ infinitive: Int, in tokens: [Token]) -> Bool {
+        var verb = infinitive - 1
+        if verb >= 0, Self.negationEndings.contains(tokens[verb].normalized), tokens[verb].isAdjacentToNext {
+            verb -= 1
+        }
+        guard verb >= 1, tokens[verb].isAdjacentToNext else { return false }
+        let verbWord = tokens[verb].normalized
+        guard !lexicon.conjugations(verbWord).isEmpty, !lexicon.isInfinitive(verbWord) else { return false }
+
+        // Walk back past ne, y, en and object pronouns to the subject.
+        var subject = verb - 1
+        while subject >= 0, !Self.subjectPronouns.contains(tokens[subject].normalized),
+              Self.preverbalWords.contains(tokens[subject].normalized), tokens[subject].isAdjacentToNext {
+            subject -= 1
+        }
+        guard subject >= 0, tokens[subject].isAdjacentToNext,
+              Self.subjectPronouns.contains(tokens[subject].normalized) else { return false }
+        if subject >= 1, Self.relativeOpeners.contains(tokens[subject - 1].normalized) { return false }
+        return !isRelativeClauseSubject(tokens, before: subject)
     }
 
     /// Builds an accent issue that replaces the à at `index` with a.
@@ -1107,6 +1229,124 @@ nonisolated struct FrenchGrammar: Grammar {
                 explanation: explanations.render(.generalArticle, ["verb": verb, "fix": fix]),
                 source: "Article rule · Lexique"
             ))
+        }
+        return issues
+    }
+
+    // MARK: - Article and noun number
+
+    /// Singular articles with the plural each becomes: "la montages" → "les montages".
+    private static let pluralOfArticle: [String: String] = [
+        "le": "les", "la": "les", "l'": "les", "un": "des", "une": "des", "au": "aux", "du": "des"
+    ]
+
+    /// Plural articles, which need a plural noun after them.
+    private static let pluralArticles: Set<String> = ["les", "des", "aux"]
+
+    /// Singular nouns that Lexique lists only as the plural of another word: une fois, not
+    /// une foi, and le vers, the worm, not a plural of ver.
+    private static let singularDespitePluralReading: Set<String> = ["fois", "vers"]
+
+    /// Words a learner writes after des when they mean dès, "from": "des demain".
+    private static let afterDes: Set<String> = ["demain", "maintenant", "lors", "aujourd'hui"]
+
+    /// Returns the noun readings of the singular a plural form comes from: montage for
+    /// montages, journal for journaux.
+    private func singulars(of plural: String) -> [(word: String, noun: Lexicon.Noun)] {
+        var candidates: [String] = []
+        if plural.hasSuffix("aux") { candidates += [String(plural.dropLast(3)) + "al", String(plural.dropLast(3)) + "ail"] }
+        if plural.hasSuffix("s") || plural.hasSuffix("x") { candidates.append(String(plural.dropLast())) }
+        return candidates.compactMap { word in
+            guard let noun = lexicon.noun(word), noun.number != .plural else { return nil }
+            return (word, noun)
+        }
+    }
+
+    /// Whether a noun is surely plural: Lexique lists it only as a plural, and its singular
+    /// is a noun whose gender fits.
+    ///
+    /// The gender check keeps out a singular noun that happens to share its spelling with
+    /// another word's plural. Lexique gives cours both genders, since it's the masculine
+    /// noun and the plural of the feminine cour, so "le cours" stays correct. A singular
+    /// that takes both genders fits any plural, as enfant does enfants.
+    private func isSurelyPlural(_ word: String) -> Bool {
+        guard let entry = lexicon.noun(word), entry.number == .plural,
+              !Self.singularDespitePluralReading.contains(word) else { return false }
+        return singulars(of: word).contains { $0.noun.gender == nil || $0.noun.gender == entry.gender }
+    }
+
+    /// Returns a singular noun's plural form, if Lexique lists one whose gender fits:
+    /// pommes for pomme, journaux for journal, chapeaux for chapeau, enfants for enfant.
+    private func plural(of singular: String, gender: Gender?) -> String? {
+        var candidates: [String] = []
+        if singular.hasSuffix("al") { candidates.append(String(singular.dropLast(2)) + "aux") }
+        if singular.hasSuffix("eau") || singular.hasSuffix("au") || singular.hasSuffix("eu") { candidates.append(singular + "x") }
+        candidates.append(singular + "s")
+        return candidates.first { word in
+            guard let noun = lexicon.noun(word), noun.number != .singular else { return false }
+            return gender == nil || noun.gender == nil || noun.gender == gender
+        }
+    }
+
+    /// Flags an article whose number doesn't match the noun after it.
+    ///
+    /// A singular article before a plural noun takes the plural article, so "la montages"
+    /// becomes "les montages" and "à la plages" becomes "aux plages". A plural article
+    /// before a singular noun keeps the article and makes the noun plural, as in "des
+    /// pomme" → "des pommes", since des could stand for either un or du in the singular.
+    /// Nouns that serve both numbers, such as bras and temps, and names are skipped.
+    private func articleNumberIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let article = tokens[index]
+            let noun = tokens[index + 1]
+            let word = noun.normalized
+            guard article.isAdjacentToNext,
+                  noun.text.first?.isUppercase == false,
+                  !Self.superlativeMarkers.contains(word),
+                  !lexicon.isInfinitive(word),
+                  let entry = lexicon.noun(word) else { continue }
+            // "je les porte": the tagger can't rule out a pronoun. A word that is also a verb
+            // counts only when the tagger is sure it's the noun: "il les finance".
+            if ["le", "la", "l'", "les"].contains(article.normalized) {
+                if text.mayBePronoun[index] { continue }
+                if lexicon.isVerb(word), !text.isNounNotVerb(index + 1, certainty: Self.tagCertainty) { continue }
+            }
+            // A word that can also be an adjective counts only when the tagger is sure it's the noun.
+            if !lexicon.adjectiveLemmas(of: word).isEmpty, !text.isNoun(index + 1, certainty: Self.tagCertainty) { continue }
+
+            if let pluralArticle = Self.pluralOfArticle[article.normalized], isSurelyPlural(word) {
+                // After à or de, le, la and l' contract with them in the plural: aux and des.
+                var first = index
+                var fix = pluralArticle
+                if ["le", "la", "l'"].contains(article.normalized), followsContractingPreposition(index, in: tokens) {
+                    first = index - 1
+                    fix = tokens[first].normalized == "à" ? "aux" : "des"
+                }
+                issues.append(issue(
+                    .article, .error, from: first, through: index + 1, in: tokens,
+                    replacement: matchingCase(of: tokens[first].text, fix) + " " + noun.text,
+                    explanation: explanations.render(.articleNumberPlural, ["noun": noun.text, "article": fix]),
+                    source: "Article rule · Lexique"
+                ))
+            } else if Self.pluralArticles.contains(article.normalized), entry.number == .singular,
+                      // Words ending in s, x or z are mostly the same in both numbers: les temps, les prix.
+                      !["s", "x", "z"].contains(where: { word.hasSuffix($0) }),
+                      // "les samedi 18 et dimanche 19": a day before its date stays singular.
+                      !Self.days.contains(word),
+                      !(article.normalized == "des" && Self.afterDes.contains(word)),
+                      let plural = plural(of: word, gender: entry.gender) {
+                let fix = article.text + article.gap + matchingCase(of: noun.text, plural)
+                issues.append(issue(
+                    .article, .error, from: index, through: index + 1, in: tokens,
+                    replacement: fix,
+                    explanation: explanations.render(.articleNumberSingular, [
+                        "article": article.normalized, "fix": article.normalized + " " + plural
+                    ]),
+                    source: "Article rule · Lexique"
+                ))
+            }
         }
         return issues
     }

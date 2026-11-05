@@ -17,6 +17,9 @@ import Foundation
 nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case articleGender
     case articleGenderPredicted
+    case contractedGender
+    case articleNumberPlural
+    case articleNumberSingular
     case contraction
     case agreementGender
     case agreementNumber
@@ -60,6 +63,9 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         switch self {
         case .articleGender: ["noun", "gender", "article"]
         case .articleGenderPredicted: ["noun", "gender", "reason", "article"]
+        case .contractedGender: ["noun", "gender", "preposition", "article"]
+        case .articleNumberPlural: ["noun", "article"]
+        case .articleNumberSingular: ["article", "fix"]
         case .contraction: ["preposition", "article", "contraction"]
         case .agreementGender, .agreementNumber, .agreementGenderAndNumber: ["noun", "gender", "number"]
         case .spelling: ["word", "suggestion", "where"]

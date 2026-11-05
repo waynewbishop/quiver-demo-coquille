@@ -273,6 +273,31 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertTrue(try fixes("Tu a resté.").contains("Tu a resté → Tu es resté"))
     }
 
+    // MARK: - Contracted articles and number
+
+    // The learner's sentence: a after an infinitive is à, and la before a plural noun is les.
+    func testInfinitiveThenAAndPluralNoun() throws {
+        XCTAssertEqual(try fixes("Je voudrais aller a la montages."), ["a → à", "la montages → les montages"])
+        XCTAssertEqual(try fixes("Je voudrais aller a la montagne."), ["a → à"])
+    }
+
+    // The contracted article names the noun's gender and the preposition it comes from.
+    func testContractedGenderExplains() throws {
+        let issue = try XCTUnwrap(try grammar().check("Je reste au maison.").first)
+        XCTAssertEqual(issue.kind, .gender)
+        XCTAssertEqual(issue.reason, "maison is feminine, so à and its article make à la.")
+        XCTAssertEqual(issue.hint, "maison is feminine.")
+    }
+
+    // A number mismatch is an article issue, explained from the noun or the article.
+    func testArticleNumberExplains() throws {
+        let plural = try XCTUnwrap(try grammar().check("Je regarde la montagnes.").first)
+        XCTAssertEqual(plural.kind, .article)
+        XCTAssertEqual(plural.reason, "montagnes is plural, so the article is les.")
+        let singular = try XCTUnwrap(try grammar().check("J'achète des pomme.").first)
+        XCTAssertEqual(singular.reason, "des is plural, so the noun after it is too: des pommes.")
+    }
+
     // MARK: - Regression corpora
 
     /// Correct French that must raise nothing. Add every false positive found here.
@@ -404,11 +429,45 @@ final class FrenchGrammarTests: XCTestCase {
         "Il y a des photos sur le mur.",
         // Plus and moins after an article start a superlative, not a noun.
         "C'était la plus belle journée de l'année.",
-        "C'est le moins cher."
+        "C'est le moins cher.",
+        // An infinitive can be the subject of avoir, alone or in a relative clause.
+        "Voyager a changé ma vie.",
+        "Ce qu'il veut faire a changé.",
+        "Le plaisir de voyager a disparu.",
+        "On peut le modifier a posteriori.",
+        // Contracted and partitive articles that match their noun.
+        "Je vais à la montagne.",
+        "Je vais au marché.",
+        "Je mange du pain et de la confiture.",
+        "Il essaie de la voir.",
+        "Il revient de la gare.",
+        // Nouns that serve both numbers, or look plural but aren't.
+        "Une fois, j'ai vu le temps changer.",
+        "Le cours commence à huit heures.",
+        "Le bras me fait mal.",
+        "Il a donné son avis.",
+        "Il prend les prix et les bras.",
+        "Fermé les samedi 18 et dimanche 19."
     ]
 
     /// Wrong French, each with the one fix the rules must offer.
     private static let wrongFrench: [(text: String, fix: String)] = [
+        // An a after an infinitive that belongs to a conjugated verb.
+        ("Je voudrais aller a Paris.", "a → à"),
+        ("Il ne peut pas venir a la fête.", "a → à"),
+        // Contracted and partitive articles of the wrong gender.
+        ("Je reste au maison.", "au maison → à la maison"),
+        ("Je parle à la garçon.", "à la garçon → au garçon"),
+        ("Je mange de la pain.", "de la pain → du pain"),
+        ("Je veux du confiture.", "du confiture → de la confiture"),
+        ("Je rentre à le maison.", "à le maison → à la maison"),
+        // Articles whose number doesn't match the noun.
+        ("Je regarde la montagnes.", "la montagnes → les montagnes"),
+        ("Il lit le livres.", "le livres → les livres"),
+        ("Je vais à la plages.", "à la plages → aux plages"),
+        ("Je parle de l'enfants.", "de l'enfants → des enfants"),
+        ("J'achète des pomme.", "des pomme → des pommes"),
+        ("Elle lit les journal.", "les journal → les journaux"),
         ("Il fait une décision.", "fait une décision → prend une décision"),
         ("J'ai fait une décision.", "fait une décision → pris une décision"),
         ("Elle avait fait une décision.", "fait une décision → pris une décision"),

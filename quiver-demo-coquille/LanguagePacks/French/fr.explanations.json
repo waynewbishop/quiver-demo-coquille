@@ -9,6 +9,21 @@
     "template": "{noun} is probably {gender}: {reason} So the article would be {article}.",
     "example": "influenceuse is probably feminine: words ending in -euse usually are. So the article would be une."
   },
+  "contractedGender": {
+    "hint": "{noun} is {gender}.",
+    "template": "{noun} is {gender}, so {preposition} and its article make {article}.",
+    "example": "maison is feminine, so à and its article make à la."
+  },
+  "articleNumberPlural": {
+    "hint": "{noun} is plural.",
+    "template": "{noun} is plural, so the article is {article}.",
+    "example": "montagnes is plural, so the article is les."
+  },
+  "articleNumberSingular": {
+    "hint": "{article} is plural, so the noun after it is too.",
+    "template": "{article} is plural, so the noun after it is too: {fix}.",
+    "example": "des is plural, so the noun after it is too: des pommes."
+  },
   "contraction": {
     "hint": "{preposition} + {article} always contracts into one word.",
     "template": "{preposition} + {article} always contracts to {contraction}.",
