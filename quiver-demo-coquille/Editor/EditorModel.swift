@@ -371,6 +371,19 @@ final class EditorModel {
         applyStyling()
     }
 
+    /// Opens the card of the issue after or before the open one, wrapping around, as Xcode's
+    /// Next Issue does; with no card open it starts from the caret.
+    func selectAdjacentIssue(forward: Bool) {
+        lintIfStale()
+        let ordered = visibleIssues.sorted { $0.range.lowerBound < $1.range.lowerBound }
+        guard !ordered.isEmpty else { return }
+        let anchor = selectedIssue?.range.lowerBound ?? caretOffset() ?? 0
+        let next = forward
+            ? ordered.first { $0.range.lowerBound > anchor } ?? ordered.first
+            : ordered.last { $0.range.lowerBound < anchor } ?? ordered.last
+        if let next { select(next) }
+    }
+
     /// Closes the open card.
     func closeCard() {
         selectedIssueID = nil

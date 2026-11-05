@@ -143,6 +143,7 @@ struct EditorScreen: View {
             }
             // The File menu's commands ask this window through `fileRequest`.
             .focusedSceneValue(\.fileRequest, $fileRequest)
+            .focusedSceneValue(\.editorModel, model)
             .focusedSceneValue(\.fileMenuState, FileMenuState(
                 canSave: model.canSave,
                 canExport: model.hasText,
@@ -767,6 +768,12 @@ struct EditorScreen: View {
             // pasted color lasts only until the next edit, which recolors every note.
             .attributedTextFormattingDefinition(EditorAttributes.self)
             .focused($editorIsFocused)
+            // ⇧↵ plays, as it runs code in the Quiver Notebook, and never adds a line.
+            .onKeyPress(.return, phases: .down) { press in
+                guard press.modifiers == .shift else { return .ignored }
+                playFromKeyboard()
+                return .handled
+            }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             .overlay(alignment: .topLeading) {
@@ -792,6 +799,15 @@ struct EditorScreen: View {
 }
 
 extension EditorScreen {
+
+    /// Plays, pauses or resumes for ⇧↵; on the Mac it beeps when errors keep the French from playing.
+    fileprivate func playFromKeyboard() {
+        let wasIdle = model.narrator.state == .idle
+        model.togglePlay()
+        #if os(macOS)
+        if wasIdle && model.narrator.state == .idle { NSSound.beep() }
+        #endif
+    }
 
     /// Start today's entry and Try an example, side by side, or stacked at one width on iPhone.
     @ViewBuilder
