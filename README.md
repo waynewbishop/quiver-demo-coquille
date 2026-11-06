@@ -44,6 +44,34 @@ either itself:
 On a Mac with Apple Intelligence, the window title names the story once
 the French has no errors; otherwise it reads "Coquille".
 
+## Widgets and exercise links
+
+The `CoquilleWidgets` extension provides a small or medium **Today's Prompt**
+Home Screen widget and a Control Center shell launcher on iPhone and iPad.
+Add them through the system's widget gallery and Control Center **+** flow.
+The prompt comes from the bundled catalog and changes on the local calendar
+day, including across daylight-saving changes. Both features work offline.
+Tapping the prompt opens that exact English sentence as an unsaved draft;
+the Control Center button only opens the current editor.
+
+Claude can offer a lesson's writing exercise with a custom link:
+
+```text
+coquille://new?title=Nov%203%3A%20C%27est%20ferm%C3%A9&prompt=Is%20it%20open%3F&prompt=It%20was%20closed.&hint=c%27%C3%A9tait
+```
+
+A confirmation sheet shows the English prompts before **Start writing**
+creates an unsaved entry. Prompts become grey notes above blank answer lines;
+no French answer is inserted. An optional hint stays collapsed until the
+learner asks for it. Links support 1–10 single-line prompts of up to 300
+characters each, an optional 120-character title, and an optional
+300-character hint. The complete URL is capped at 2,048 UTF-8 bytes, and
+unknown, duplicate, malformed, or oversized fields are rejected without
+changing the editor. The same `coquille://` links work on iPhone, iPad and Mac.
+
+The editor supports the system's copy and paste commands, so homework and
+Coquille's feedback can be pasted back into a Claude conversation.
+
 ## What it checks
 
 ```
@@ -231,14 +259,18 @@ Everything is plain folders in one Xcode project:
 - `Speech/`, `Translation/`, `Stats/`, `Editor/` — playback, on-device
   translation, the learner's progress (stored only on the device) and
   the SwiftUI views.
-- `Fonts/` — IBM Plex Sans and Mono, registered at launch, so there's
-  no Info.plist entry.
+- `Prompts/`, `Exercises/` — the daily catalog, strict custom-URL router,
+  exercise confirmation, and optional hint presentation.
+- `CoquilleWidgets/` — the iOS Home Screen timeline and Control Center
+  launcher, with shared prompt code but no Quiver dependency.
+- `Fonts/` — IBM Plex Sans and Mono, registered at app launch and declared
+  under `UIAppFonts` for the widget process.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 83 XCTest cases, including the
-  false-positive traps above, a list of correct French that must pass
-  clean, and a check that every phrase lints clean.
+- `quiver-demo-coquilleTests/` — 95 XCTest cases, including the
+  false-positive traps above, correct French that must pass clean,
+  phrasebook validation, calendar selection, and hostile-link tests.
 
 ## Data
 

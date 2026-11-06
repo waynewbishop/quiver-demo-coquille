@@ -1,0 +1,107 @@
+[
+  {
+    "id": "shopping-opening-hours",
+    "text": "What time does it close?",
+    "level": "A1",
+    "topic": "Shopping",
+    "lesson": "Opening hours"
+  },
+  {
+    "id": "daily-life-morning",
+    "text": "What did you do this morning?",
+    "level": "A1",
+    "topic": "Daily life",
+    "lesson": "Your morning"
+  },
+  {
+    "id": "food-favorite-meal",
+    "text": "What is your favorite meal?",
+    "level": "A1",
+    "topic": "Food",
+    "lesson": "Meals and likes"
+  },
+  {
+    "id": "weather-outside",
+    "text": "What is the weather like outside?",
+    "level": "A1",
+    "topic": "Weather",
+    "lesson": "Today's weather"
+  },
+  {
+    "id": "people-friend",
+    "text": "Who did you spend time with recently?",
+    "level": "A1",
+    "topic": "People",
+    "lesson": "Friends and family"
+  },
+  {
+    "id": "home-room",
+    "text": "Which room in your home do you like best?",
+    "level": "A1",
+    "topic": "Home",
+    "lesson": "Rooms and preferences"
+  },
+  {
+    "id": "travel-next-trip",
+    "text": "Where would you like to travel next?",
+    "level": "A2",
+    "topic": "Travel",
+    "lesson": "Future plans"
+  },
+  {
+    "id": "work-today",
+    "text": "What do you need to do at work or school today?",
+    "level": "A1",
+    "topic": "Work and school",
+    "lesson": "Today's tasks"
+  },
+  {
+    "id": "free-time-weekend",
+    "text": "What did you enjoy doing last weekend?",
+    "level": "A2",
+    "topic": "Free time",
+    "lesson": "Past activities"
+  },
+  {
+    "id": "cafe-order",
+    "text": "What would you like to order at a café?",
+    "level": "A1",
+    "topic": "Café",
+    "lesson": "Ordering politely"
+  },
+  {
+    "id": "directions-place",
+    "text": "How do you get to a place near your home?",
+    "level": "A2",
+    "topic": "Directions",
+    "lesson": "Getting around"
+  },
+  {
+    "id": "feelings-today",
+    "text": "How do you feel today, and why?",
+    "level": "A1",
+    "topic": "Feelings",
+    "lesson": "Feelings and reasons"
+  },
+  {
+    "id": "clothing-wearing",
+    "text": "What are you wearing today?",
+    "level": "A1",
+    "topic": "Clothing",
+    "lesson": "What I wear"
+  },
+  {
+    "id": "journal-small-pleasure",
+    "text": "What small thing made you happy recently?",
+    "level": "A2",
+    "topic": "Journal",
+    "lesson": "A recent pleasure"
+  },
+  {
+    "id": "daily-life-today",
+    "text": "What did you do today?",
+    "level": "A1",
+    "topic": "Daily life",
+    "lesson": "Your day"
+  }
+]

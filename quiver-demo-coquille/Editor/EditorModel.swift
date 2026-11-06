@@ -54,6 +54,9 @@ final class EditorModel {
     private(set) var phrases: [Phrase] = []
     /// The phrasebook phrase last read aloud, if any.
     private(set) var speakingPhraseID: String?
+    /// The supplied title and hidden nudge while an exercise draft is open.
+    private(set) var exerciseTitle: String?
+    private(set) var exerciseHint: String?
 
     let narrator: any Narrator
     /// Reads phrasebook phrases. It's separate from `narrator`, whose word highlight tracks the
@@ -73,6 +76,8 @@ final class EditorModel {
     @ObservationIgnored private var linter: Linter?
     /// Whether the French pack has loaded, so the linter can check text.
     private(set) var isReady = false
+    /// Whether initial restoration has finished, including when the language pack fails.
+    private(set) var hasFinishedLoading = false
     /// The text last kept in `workspace`, so unchanged text isn't written again.
     @ObservationIgnored private var bufferedText: String?
     /// The day a new entry's file is named for, set by New Entry.
@@ -206,8 +211,12 @@ final class EditorModel {
 
     /// Loads the French pack off the main actor, then wires up the linter and translator.
     func load() async {
-        guard linter == nil else { return }
+        guard linter == nil else {
+            hasFinishedLoading = true
+            return
+        }
         restore()
+        defer { hasFinishedLoading = true }
         do {
             let pack = try await Task.detached { try LanguagePack.french() }.value
             linter = Linter(
@@ -469,7 +478,23 @@ final class EditorModel {
     /// weather, the place, clothes and mood, with the caret after "Il fait". Save names
     /// its file for `date`.
     func newEntry(on date: Date = .now) {
-        let entry = Self.entryHeader(for: date)
+        startEntry(Self.entryHeader(for: date), on: date)
+    }
+
+    /// Starts a widget-selected prompt as an unsaved dated draft with no French answer.
+    func newEntry(for prompt: WritingPrompt, on date: Date = .now) {
+        startEntry(Self.guidedEntry(prompts: [prompt.text], for: date), on: date)
+    }
+
+    /// Starts a confirmed Claude exercise, retaining its title and optional folded hint.
+    func newEntry(for exercise: ExercisePrompt, on date: Date = .now) {
+        startEntry(Self.guidedEntry(prompts: exercise.prompts, for: date), on: date)
+        exerciseTitle = exercise.title
+        exerciseHint = exercise.hint
+    }
+
+    /// Replaces the editor with a new unsaved entry and places its requested caret.
+    private func startEntry(_ entry: (text: String, caret: Int), on date: Date) {
         show(.unsaved, text: entry.text, savedText: entry.text)
         entryDate = date
         let caret = text.characters.index(text.startIndex, offsetBy: entry.caret)
@@ -566,6 +591,8 @@ final class EditorModel {
         replaceText(with: contents)
         document = newDocument
         savedText = saved
+        exerciseTitle = nil
+        exerciseHint = nil
         bufferedText = nil
         workspace?.setOpenDocument(newDocument)
     }
@@ -594,16 +621,29 @@ final class EditorModel {
     /// own, and the first of the month is written "1er", as French dates are. The notes
     /// are never checked, so their full stops count as no sentences either.
     static func entryHeader(for date: Date, calendar: Calendar = .current) -> (text: String, caret: Int) {
-        let parts = calendar.dateComponents([.year, .month, .day], from: date)
-        let day = parts.day == 1 ? "1er" : "\(parts.day ?? 1)"
-        let month = frenchMonths[min(max((parts.month ?? 1) - 1, 0), 11)]
         // The guide sits above the date, as a header comment opens a file, and a blank
         // line sets off each note and its starter.
-        let opening = entryGuide + "\nLe \(day) \(month) \(parts.year ?? 2026)\n"
+        let opening = dateHeading(for: date, calendar: calendar)
         let pairs = entryStarters.map { note, starter in "\n" + note + "\n" + starter + "\n" }
         let text = opening + pairs.joined()
         let firstStarter = entryStarters[0]
         return (text, opening.count + 1 + firstStarter.0.count + 1 + firstStarter.1.count)
+    }
+
+    /// Builds English guidance notes and blank answer lines, with the caret at the first.
+    static func guidedEntry(prompts: [String], for date: Date) -> (text: String, caret: Int) {
+        let opening = dateHeading(for: date)
+        let blocks = prompts.map { "\n// \($0)\n\n" }
+        guard let first = blocks.first else { return (opening, opening.count) }
+        return (opening + blocks.joined(), opening.count + first.count)
+    }
+
+    /// The unchecked guide and French date shared by ordinary and prompted entries.
+    private static func dateHeading(for date: Date, calendar: Calendar = .current) -> String {
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        let day = parts.day == 1 ? "1er" : "\(parts.day ?? 1)"
+        let month = frenchMonths[min(max((parts.month ?? 1) - 1, 0), 11)]
+        return entryGuide + "\nLe \(day) \(month) \(parts.year ?? 2026)\n"
     }
 
     /// Drops the old text and everything about it: its errors, ignored issues, the card,

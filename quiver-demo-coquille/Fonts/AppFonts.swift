@@ -67,9 +67,3 @@ extension Font {
         .custom(weight == .regular ? "IBMPlexSans" : "IBMPlexSans-Medm", size: size, relativeTo: style)
     }
 }
-
-extension Color {
-    /// The design's blue. Set as the tint explicitly because the Mac otherwise uses the
-    /// accent color chosen in System Settings.
-    static let brand = Color("AccentColor")
-}

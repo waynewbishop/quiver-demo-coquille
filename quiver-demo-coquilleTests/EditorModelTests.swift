@@ -637,6 +637,44 @@ final class EditorModelTests: XCTestCase {
         XCTAssertTrue(second.needsSaveDecision)
         XCTAssertEqual(second.plainText, "Mes notes.")
     }
+
+    // A widget prompt is an unsaved note and blank answer line, never a French answer.
+    func testWidgetPromptEntryHasExactTextAndCaret() throws {
+        let model = try makeModel()
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12)))
+        let prompt = WritingPrompt(id: "shopping", text: "What time does it close?", level: "A1", topic: "Shopping", lesson: "Opening hours")
+        let expected = EditorModel.guidedEntry(prompts: [prompt.text], for: date)
+        let checkedBefore = model.stats.stats.sentencesChecked
+        model.newEntry(for: prompt, on: date)
+        XCTAssertEqual(model.plainText, expected.text)
+        XCTAssertEqual(String(model.plainText.prefix(expected.caret)), EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What time does it close?\n\n")
+        XCTAssertEqual(Notes.removed(model.plainText), "Le 1er novembre 2026\n\n\n")
+        XCTAssertNil(model.fileURL)
+        XCTAssertFalse(model.needsSaveDecision)
+        XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)
+    }
+
+    // An exercise retains its title and hint only while that draft is open.
+    func testExerciseEntryContentAndLifecycle() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 12)))
+        let exercise = ExercisePrompt(title: "Ouvert ou fermé", prompts: ["Is it open?", "It was closed."], hint: "c'était")
+        model.newEntry(for: exercise, on: date)
+        XCTAssertEqual(model.plainText, EditorModel.guidedEntry(prompts: exercise.prompts, for: date).text)
+        XCTAssertEqual(model.exerciseTitle, exercise.title)
+        XCTAssertEqual(model.exerciseHint, exercise.hint)
+        XCTAssertTrue(model.proposedName(title: model.exerciseTitle).hasPrefix("2026-11-02"))
+        XCTAssertEqual(Notes.ranges(in: model.plainText).count, 3)
+        XCTAssertFalse(model.plainText.contains("c'était"))
+        model.startNew()
+        XCTAssertNil(model.exerciseTitle)
+        XCTAssertNil(model.exerciseHint)
+        model.newEntry(for: exercise, on: date)
+        model.newEntry(on: date)
+        XCTAssertNil(model.exerciseTitle)
+        XCTAssertNil(model.exerciseHint)
+    }
 }
 
 final class FrenchTextFileTests: XCTestCase {

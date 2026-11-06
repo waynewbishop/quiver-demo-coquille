@@ -25,6 +25,8 @@ struct EditorScreen: View {
 
     let journal: Journal
     @State private var model: EditorModel
+    /// A validated link waiting for initial restoration or a save decision.
+    @Binding private var pendingRoute: CoquilleRoute?
     @State private var showsIssueList = false
     @State private var showsImporter = false
     /// The text and name of a copy being exported, while the save panel is up.
@@ -84,9 +86,15 @@ struct EditorScreen: View {
 
     /// Creates the editor around the app's one stats store, which the Corrections window
     /// reads too, the journal of saved entries, and the workspace that keeps unsaved work.
-    init(stats: StatsStore, journal: Journal, workspace: Workspace?) {
+    init(
+        stats: StatsStore,
+        journal: Journal,
+        workspace: Workspace?,
+        pendingRoute: Binding<CoquilleRoute?> = .constant(nil)
+    ) {
         self.journal = journal
         _model = State(initialValue: EditorModel(stats: stats, journal: journal, workspace: workspace))
+        _pendingRoute = pendingRoute
     }
 
     var body: some View {
@@ -133,7 +141,7 @@ struct EditorScreen: View {
             }
             .sheet(item: $naming) { naming in
                 SaveEntrySheet(
-                    suggestedTitle: storyTitle ?? "",
+                    suggestedTitle: model.exerciseTitle ?? storyTitle ?? "",
                     proposedName: model.proposedName(title:),
                     isNewEntry: naming.asNewEntry
                 ) { title in
@@ -204,7 +212,11 @@ struct EditorScreen: View {
             .tint(.brand)
             .preferredColorScheme(Appearance.colorScheme(for: appearance))
             .animation(.snappy(duration: 0.2), value: model.selectedIssueID)
-            .task { await model.load() }
+            .task {
+                await model.load()
+                consumePendingRoute()
+            }
+            .onChange(of: pendingRoute) { consumePendingRoute() }
             .onChange(of: showsSuggestions, initial: true) { model.showsSuggestions = showsSuggestions }
             .onChange(of: model.showsSuggestions) { showsSuggestions = model.showsSuggestions }
             .sheet(isPresented: $showsIssueList) {
@@ -241,6 +253,8 @@ struct EditorScreen: View {
         case open(URL)
         case new
         case todaysEntry
+        case prompt(WritingPrompt)
+        case exercise(ExercisePrompt)
         case importFile
         case example
     }
@@ -282,6 +296,16 @@ struct EditorScreen: View {
         }
     }
 
+    /// Applies a link only after workspace restoration; a later arrival waits for that task.
+    private func consumePendingRoute() {
+        guard model.hasFinishedLoading, let route = pendingRoute else { return }
+        pendingRoute = nil
+        switch route {
+        case .today(let prompt): move(.prompt(prompt))
+        case .exercise(let exercise): move(.exercise(exercise))
+        }
+    }
+
     /// Goes to other writing, first asking Save or Don't Save when there's work that isn't saved.
     private func move(_ move: Move) {
         if case .open(let url) = move, url == model.fileURL { return }
@@ -303,6 +327,16 @@ struct EditorScreen: View {
             editorIsFocused = true
         case .todaysEntry:
             model.newEntry()
+            editorIsFocused = true
+        case .prompt(let prompt):
+            model.newEntry(for: prompt)
+            storyTitle = nil
+            showsEntries = false
+            editorIsFocused = true
+        case .exercise(let exercise):
+            model.newEntry(for: exercise)
+            storyTitle = nil
+            showsEntries = false
             editorIsFocused = true
         case .importFile:
             showsImporter = true
@@ -372,7 +406,7 @@ struct EditorScreen: View {
 
     /// The open writing's name for an exported copy: the entry's own, or the story's title.
     private var exportName: String {
-        model.fileURL?.deletingPathExtension().lastPathComponent ?? FrenchTextFile.suggestedFilename(for: storyTitle)
+        model.fileURL?.deletingPathExtension().lastPathComponent ?? FrenchTextFile.suggestedFilename(for: model.exerciseTitle ?? storyTitle)
     }
 
     /// Copies the file picked in Import… into the journal as a new entry and opens it,
@@ -407,7 +441,7 @@ struct EditorScreen: View {
     /// The open writing's name, as the window and the save question show it.
     private var documentName: String {
         switch model.document {
-        case .unsaved: storyTitle ?? "Untitled"
+        case .unsaved: model.exerciseTitle ?? storyTitle ?? "Untitled"
         case .entry(let url): Journal.title(of: url) ?? url.deletingPathExtension().lastPathComponent
         }
     }
@@ -515,7 +549,8 @@ struct EditorScreen: View {
             }
 
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("New") { move(.new) }
+                Button("New", systemImage: "square.and.pencil") { move(.new) }
+                    .labelStyle(.iconOnly)
                     .help("Start a blank page (⌘N)")
                     .disabled(!model.hasText && model.fileURL == nil)
 
@@ -529,8 +564,8 @@ struct EditorScreen: View {
                 Button {
                     showsProgress = true
                 } label: {
-                    Label("\(model.stats.stats.streak(asOf: .now)) day streak", systemImage: "chart.bar.xaxis")
-                        .labelStyle(.titleAndIcon)
+                    Label("Progress", systemImage: "chart.bar.xaxis")
+                        .labelStyle(.iconOnly)
                 }
                 .help("Your progress")
             }
@@ -718,6 +753,7 @@ struct EditorScreen: View {
 
     /// Names the story after a pause in typing; an editor with no French goes back to the app's name.
     private func retitle() async {
+        guard model.exerciseTitle == nil else { return }
         guard let text = titleSource else {
             if !model.hasFrench { storyTitle = nil }
             return
@@ -744,8 +780,20 @@ struct EditorScreen: View {
         #endif
     }
 
-    /// The French editor, with a placeholder when it is empty.
+    /// The French editor, with an optional exercise hint and an empty-text placeholder.
     private var editor: some View {
+        VStack(spacing: 0) {
+            if let hint = model.exerciseHint {
+                ExerciseHintView(hint: hint)
+                    .id(hint)
+                Divider()
+            }
+            textEditor
+        }
+    }
+
+    /// The text editor itself, including its placeholder and editing commands.
+    private var textEditor: some View {
         TextEditor(text: $model.text, selection: $model.selection)
             .font(.plexMono(fontSize.frenchSize, relativeTo: .title3))
             .lineSpacing(fontSize.frenchLineSpacing)
