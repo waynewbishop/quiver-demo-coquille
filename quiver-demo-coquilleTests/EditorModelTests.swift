@@ -20,6 +20,7 @@ final class EditorModelTests: XCTestCase {
 
     /// Records what it was asked to say instead of speaking.
     private final class FakeNarrator: Narrator {
+        var voiceID = ""
         private(set) var state = PlaybackState.idle
         var spokenRange: Range<Int>?
         private(set) var spoken: [String] = []
@@ -298,6 +299,19 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(narrator.state, .speaking)
     }
 
+    // Changing voice stops the old utterance and applies to both kinds of playback.
+    func testPlaybackVoicePreferenceAppliesToBothNarrators() throws {
+        let model = try makeModel()
+        let phrase = Phrase(situation: .greetings, french: "Bonjour !", english: "Hello!", register: .either, note: nil)
+        model.togglePhrase(phrase)
+        model.setPlaybackVoice("fr-test-voice")
+        XCTAssertEqual(narrator.voiceID, "fr-test-voice")
+        XCTAssertEqual(phraseNarrator.voiceID, "fr-test-voice")
+        XCTAssertEqual(narrator.state, .idle)
+        XCTAssertEqual(phraseNarrator.state, .idle)
+        XCTAssertFalse(model.isSpeaking(phrase))
+    }
+
     // Playing the phrase that's already playing stops it.
     func testPlayingAPhraseAgainStopsIt() throws {
         let model = try makeModel()
@@ -467,6 +481,83 @@ final class EditorModelTests: XCTestCase {
         let end = model.text.characters.index(model.text.startIndex, offsetBy: 2)
         model.selection = AttributedTextSelection(range: model.text.startIndex..<end)
         XCTAssertTrue(model.hasSelection)
+    }
+
+    // Dictated phrases collect at one advancing caret, even after the editor loses focus.
+    func testDictationAdvancesTheInsertionCaret() throws {
+        let model = try makeModel()
+        model.beginDictation()
+        model.insertDictatedText("Bonjour.")
+        model.insertDictatedText(" Ça va. ")
+        XCTAssertEqual(model.plainText, "Bonjour. Ça va.")
+        guard case .insertionPoint(let caret) = model.selection.indices(in: model.text) else {
+            return XCTFail("Dictation should leave an insertion point")
+        }
+        XCTAssertEqual(model.text.characters.distance(from: model.text.startIndex, to: caret), model.plainText.count)
+        XCTAssertTrue(model.isLintCurrent)
+        model.endDictation()
+    }
+
+    // Dictation replaces the initial selection and doesn't count its correction as typed.
+    func testDictationReplacesSelectionWithoutLearnerFixCredit() throws {
+        let model = try makeModel()
+        type("Nous avons une fromage.", into: model)
+        model.lintNow()
+        let wrong = try XCTUnwrap(model.plainText.range(of: "une"))
+        let lowerOffset = model.plainText.distance(from: model.plainText.startIndex, to: wrong.lowerBound)
+        let upperOffset = model.plainText.distance(from: model.plainText.startIndex, to: wrong.upperBound)
+        let lower = model.text.characters.index(model.text.startIndex, offsetBy: lowerOffset)
+        let upper = model.text.characters.index(model.text.startIndex, offsetBy: upperOffset)
+        model.selection = AttributedTextSelection(range: lower..<upper)
+
+        model.beginDictation()
+        model.insertDictatedText("un")
+
+        XCTAssertEqual(model.plainText, "Nous avons un fromage.")
+        XCTAssertFalse(model.isLocked)
+        XCTAssertTrue(model.isLintCurrent)
+        XCTAssertEqual(model.stats.stats.fixedByLearner, 0)
+        XCTAssertEqual(model.stats.stats.errorsFixed, 0)
+    }
+
+    // A new phrase after a newline starts cleanly, with no leading space.
+    func testDictationDoesNotAddSpaceAfterNewline() throws {
+        let model = try makeModel()
+        type("Il pleut.\n", into: model)
+        let end = model.text.characters.index(model.text.startIndex, offsetBy: model.plainText.count)
+        model.selection = AttributedTextSelection(insertionPoint: end)
+        model.beginDictation()
+        model.insertDictatedText("Il neige.")
+        XCTAssertEqual(model.plainText, "Il pleut.\nIl neige.")
+    }
+
+    // Restored text with no cursor takes dictation at its end.
+    func testDictationWithoutSelectionAppends() throws {
+        let model = try makeModel()
+        model.open("Il pleut.")
+        model.beginDictation()
+        model.insertDictatedText("Il neige.")
+        XCTAssertEqual(model.plainText, "Il pleut. Il neige.")
+    }
+
+    // Dictation stops either kind of playback before listening.
+    func testDictationStopsNarration() throws {
+        let model = try makeModel()
+        type("Il pleut.", into: model)
+        model.lintNow()
+        model.togglePlay()
+        model.beginDictation()
+        XCTAssertEqual(narrator.state, .idle)
+        XCTAssertEqual(phraseNarrator.state, .idle)
+    }
+
+    // Final dictated text is kept in the workspace immediately.
+    func testDictationPersistsImmediately() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        model.beginDictation()
+        model.insertDictatedText("Il pleut.")
+        XCTAssertEqual(files.workspace.unsavedText(), "Il pleut.")
     }
 
     // MARK: - Journal

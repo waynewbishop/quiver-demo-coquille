@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     let stats: StatsStore
     let journal: Journal
+    let voice: VoiceEntryModel
     @State private var pendingRoute: CoquilleRoute?
     @State private var pendingExercise: ExercisePrompt?
 
@@ -12,6 +13,7 @@ struct ContentView: View {
             stats: stats,
             journal: journal,
             workspace: Workspace.standard(),
+            voice: voice,
             pendingRoute: $pendingRoute
         )
         .onOpenURL { url in
@@ -33,5 +35,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")))
+    ContentView(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")), voice: VoiceEntryModel())
 }

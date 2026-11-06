@@ -23,6 +23,8 @@ enum PlaybackState: Equatable {
 
 /// Reads text aloud. Named to avoid clashing with Apple's own speech types.
 protocol Narrator: AnyObject {
+    /// The selected system voice identifier, or an empty string for Automatic.
+    var voiceID: String { get set }
     /// Whether speech is idle, playing, or paused.
     var state: PlaybackState { get }
     /// The word being spoken, as UTF-16 offsets into the spoken text, or `nil` when idle.
@@ -56,6 +58,9 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
 
     /// The voice language, such as "fr-FR".
     let language: String
+    /// The learner's selected voice, or an empty string for Automatic.
+    var voiceID = ""
+    static let voiceStorageKey = "frenchPlaybackVoice"
     @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     /// Identifies the utterance in flight, so a late callback from a replaced one is ignored.
     @ObservationIgnored private var currentUtterance: ObjectIdentifier?
@@ -71,7 +76,7 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
     func speak(_ text: String) {
         synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = Self.preferredVoice(for: language)
+        utterance.voice = Self.preferredVoice(for: language, voiceID: voiceID)
         currentUtterance = ObjectIdentifier(utterance)
         spokenRange = nil
         state = .speaking
@@ -100,9 +105,12 @@ final class SpeechNarrator: NSObject, Narrator, AVSpeechSynthesizerDelegate {
         synthesizer.stopSpeaking(at: .immediate)
     }
 
-    /// Returns the installed voice for a language, female first, then highest quality.
-    static func preferredVoice(for language: String) -> AVSpeechSynthesisVoice? {
+    /// Returns the selected installed voice, or the language's automatic voice.
+    static func preferredVoice(for language: String, voiceID: String = "") -> AVSpeechSynthesisVoice? {
         let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == language }
+        if let selected = voices.first(where: { $0.identifier == voiceID }) {
+            return selected
+        }
         let best = voices.max { score($0) < score($1) }
         return best ?? AVSpeechSynthesisVoice(language: language)
     }

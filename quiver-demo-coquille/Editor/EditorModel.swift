@@ -88,6 +88,8 @@ final class EditorModel {
     /// The text last seen by `textDidChange`, to tell typing from styling changes.
     @ObservationIgnored private var observedText = ""
     @ObservationIgnored private var lintTask: Task<Void, Never>?
+    /// The selection to replace, then the advancing caret, during one dictation session.
+    @ObservationIgnored private var dictationRange: Range<Int>?
     /// Whether the editor holds Try an example, whose mistakes aren't the learner's.
     /// It ends once the example's opening sentence is gone: cleared, deleted, or typed over.
     @ObservationIgnored private var isRehearsal = false
@@ -253,6 +255,59 @@ final class EditorModel {
         }
     }
 
+    /// Starts dictation at the current selection and stops either narrator.
+    func beginDictation() {
+        narrator.stop()
+        phraseNarrator.stop()
+        lintTask?.cancel()
+        switch selection.indices(in: text) {
+        case .insertionPoint(let point):
+            let offset = text.characters.distance(from: text.startIndex, to: point)
+            dictationRange = offset..<offset
+        case .ranges(let ranges):
+            guard let range = ranges.ranges.first else {
+                dictationRange = nil
+                return
+            }
+            let lower = text.characters.distance(from: text.startIndex, to: range.lowerBound)
+            let upper = text.characters.distance(from: text.startIndex, to: range.upperBound)
+            dictationRange = lower..<upper
+        }
+    }
+
+    /// Ends dictation without changing the editor's current selection.
+    func endDictation() {
+        dictationRange = nil
+    }
+
+    /// Inserts one final dictated phrase, keeping later phrases at the advancing caret.
+    func insertDictatedText(_ dictated: String) {
+        if dictationRange == nil { beginDictation() }
+        let phrase = dictated.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !phrase.isEmpty, let target = dictationRange else { return }
+        let plain = plainText
+        guard target.lowerBound >= 0, target.upperBound <= plain.count,
+              let range = attributedRange(for: target) else { return }
+
+        var insertion = phrase
+        let lower = plain.index(plain.startIndex, offsetBy: target.lowerBound)
+        let upper = plain.index(plain.startIndex, offsetBy: target.upperBound)
+        if lower > plain.startIndex, plain[plain.index(before: lower)].isWhitespace == false {
+            insertion = " " + insertion
+        }
+        if upper < plain.endIndex {
+            let next = plain[upper]
+            if next.isLetter || next.isNumber { insertion += " " }
+        }
+
+        text.replaceSubrange(range, with: AttributedString(insertion))
+        let caret = target.lowerBound + insertion.count
+        dictationRange = caret..<caret
+        let index = text.characters.index(text.startIndex, offsetBy: caret)
+        selection = AttributedTextSelection(insertionPoint: index)
+        lint(applied: nil, countsTypedFixes: false)
+    }
+
     /// Lints right away if the text changed since the last lint, so play and English
     /// never act on a stale verdict. Returns whether it linted.
     @discardableResult
@@ -268,10 +323,9 @@ final class EditorModel {
         lint(applied: nil)
     }
 
-    /// Lints the current text, counts the errors the learner fixed by typing, and restyles.
+    /// Lints the current text, counts learner-typed fixes when requested, and restyles.
     /// `applied` is the issue whose fix Apply just inserted, which isn't the learner's own.
-    /// Unknown words count too: with no fix to apply, every fix to one is the learner's.
-    private func lint(applied: Issue?) {
+    private func lint(applied: Issue?, countsTypedFixes: Bool = true) {
         guard let linter else { return }
         let plain = plainText
         // A question with choices has no single fix, so changing its words isn't fixing an error.
@@ -290,7 +344,7 @@ final class EditorModel {
             // The errors before a rehearsal ended were the example's, so none of them count as fixed.
             // Stats see the French alone, so a note is never counted as a sentence or
             // logged as part of one.
-            if !wasRehearsal {
+            if !wasRehearsal && countsTypedFixes {
                 for fix in typedFixes(of: previousErrors, from: previousText, to: plain) {
                     stats.recordFix(byLearner: true, issue: fix, in: Notes.masked(previousText))
                 }
@@ -689,8 +743,10 @@ final class EditorModel {
     /// playback and English, so nothing carries over into the new text.
     private func replaceText(with contents: String) {
         narrator.stop()
+        phraseNarrator.stop()
         lintTask?.cancel()
         translationTask?.cancel()
+        dictationRange = nil
         ignoredKeys = []
         issues = []
         selectedIssueID = nil
@@ -705,6 +761,15 @@ final class EditorModel {
     /// Stops the French and goes back to the start, as Xcode's Stop button does.
     func stopPlaying() {
         narrator.stop()
+    }
+
+    /// Uses one system voice for French and phrasebook playback, stopping any old voice.
+    func setPlaybackVoice(_ voiceID: String) {
+        narrator.stop()
+        phraseNarrator.stop()
+        speakingPhraseID = nil
+        narrator.voiceID = voiceID
+        phraseNarrator.voiceID = voiceID
     }
 
     /// Pauses, resumes, or starts the French; any edit to the text stops playback.

@@ -21,6 +21,10 @@ struct TopBar: View {
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
     @Binding var showsEntries: Bool
+    @Binding var showsSettings: Bool
+    let voice: VoiceEntryModel
+    let toggleVoice: () -> Void
+    @AppStorage(VoiceEntryModel.enabledStorageKey) private var voiceEntryEnabled = false
     /// Hands a File menu command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
 
@@ -69,6 +73,14 @@ struct TopBar: View {
                 .accessibilityLabel("Start a blank page")
                 .disabled(!model.hasText && model.fileURL == nil)
 
+            if voiceEntryEnabled {
+                VoiceEntryButton(voice: voice, action: toggleVoice)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.tint)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+
             Button("Phrasebook", systemImage: "book") {
                 hideKeyboard()
                 showsPhrasebook.toggle()
@@ -91,6 +103,18 @@ struct TopBar: View {
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
             .accessibilityLabel("Your progress: \(model.stats.stats.streak(asOf: .now)) day streak")
+
+            Button {
+                hideKeyboard()
+                showsSettings = true
+            } label: {
+                Label("Settings", systemImage: "gear")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
 
             ThemeToggle()
                 .buttonStyle(.plain)
@@ -119,6 +143,10 @@ struct CompactToolbar: ToolbarContent {
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
     @Binding var showsEntries: Bool
+    @Binding var showsSettings: Bool
+    let voice: VoiceEntryModel
+    let toggleVoice: () -> Void
+    @AppStorage(VoiceEntryModel.enabledStorageKey) private var voiceEntryEnabled = false
     /// Hands a file command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
 
@@ -129,6 +157,12 @@ struct CompactToolbar: ToolbarContent {
             Button("Journal", systemImage: "list.bullet") {
                 hideKeyboard()
                 showsEntries = true
+            }
+        }
+
+        if voiceEntryEnabled {
+            ToolbarItem(placement: .topBarTrailing) {
+                VoiceEntryButton(voice: voice, action: toggleVoice)
             }
         }
 
@@ -163,6 +197,10 @@ struct CompactToolbar: ToolbarContent {
                         showsProgress = true
                     }
                     ThemeToggle()
+                    Button("Settings", systemImage: "gear") {
+                        hideKeyboard()
+                        showsSettings = true
+                    }
                 }
             } label: {
                 Label("More", systemImage: "ellipsis")

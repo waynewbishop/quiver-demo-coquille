@@ -13,21 +13,31 @@
 
 import SwiftUI
 
-/// The learner's light or dark choice, as in the Quiver Notebook: the app follows the
-/// system until the toggle is used, then remembers the choice between launches.
-enum Appearance: String {
+/// The learner's appearance choice, remembered between launches.
+enum Appearance: String, CaseIterable, Identifiable {
+    case system
     case light
     case dark
 
     /// The `AppStorage` key holding the choice; absent means follow the system.
     static let storageKey = "appearance"
 
+    var id: Self { self }
+
+    var label: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
     /// The color scheme to force, or `nil` to follow the system.
-    static func colorScheme(for stored: String?) -> ColorScheme? {
-        switch stored.flatMap(Appearance.init(rawValue:)) {
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
         case .light: .light
         case .dark: .dark
-        case nil: nil
         }
     }
 }
@@ -35,13 +45,13 @@ enum Appearance: String {
 /// A moon in light mode and a sun in dark mode; clicking switches to the other.
 struct ThemeToggle: View {
 
-    @AppStorage(Appearance.storageKey) private var stored: String?
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button {
             hideKeyboard()
-            stored = (colorScheme == .dark ? Appearance.light : Appearance.dark).rawValue
+            appearance = colorScheme == .dark ? .light : .dark
         } label: {
             Label(label, systemImage: colorScheme == .dark ? "sun.max" : "moon")
                 .labelStyle(.iconOnly)

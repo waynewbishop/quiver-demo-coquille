@@ -7,6 +7,8 @@ import SwiftUI
     @State private var stats = StatsStore()
     /// The learner's entries, one text file each, in the app's Documents folder.
     @State private var journal = Journal(folderURL: Journal.defaultFolderURL())
+    /// Voice entry is shared by Settings and the editor, so one session owns the microphone.
+    @State private var voice = VoiceEntryModel()
 
     /// Registers the bundled fonts before the first view draws.
     init() {
@@ -15,7 +17,7 @@ import SwiftUI
 
     var body: some Scene {
         WindowGroup {
-            ContentView(stats: stats, journal: journal)
+            ContentView(stats: stats, journal: journal, voice: voice)
         }
         .commands {
             FileCommands()
@@ -28,6 +30,11 @@ import SwiftUI
         #endif
 
         #if os(macOS)
+        Settings {
+            SettingsView(voice: voice)
+                .tint(.brand)
+        }
+
         // Listed in the Window menu, so the corrections can stay open beside the editor.
         Window("Corrections", id: "corrections") {
             NavigationStack {
