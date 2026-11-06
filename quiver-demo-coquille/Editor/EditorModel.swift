@@ -283,7 +283,7 @@ final class EditorModel {
         issues = linter.lint(plain)
         lintedText = plain
         let wasRehearsal = isRehearsal
-        if isRehearsal, !plain.contains(Self.exampleOpening) {
+        if isRehearsal, !Self.holdsExample(plain) {
             isRehearsal = false
         }
         if !isRehearsal {
@@ -441,19 +441,58 @@ final class EditorModel {
         }
     }
 
-    /// The design's sample paragraph, with one mistake for each kind of check and one
-    /// issue at each level: errors, a warning ("elle vient plus", missing its ne), and
-    /// a suggestion for an English pattern that's correct but unnatural ("c'était chaud").
-    static let example = "Hier, je suis allé au marché avec ma sœur. C'était chaud. Nous avons acheté une fromage et des pommes rouge. Le boulangère était très gentile, et la pain sentait bon. Ma sœur adore ce marché, mais elle vient plus."
+    /// A sample paragraph and its first sentence, which has no mistakes, so fixing the others
+    /// never changes it. While the opening is in the text, the editor is still holding the example.
+    struct Example {
+        let text: String
+        let opening: String
+    }
 
-    /// The example's first sentence, which has no mistakes, so fixing the others never changes it.
-    /// While it's in the text, the editor is still holding the example.
-    static let exampleOpening = "Hier, je suis allé au marché avec ma sœur."
+    /// Five short paragraphs, each aimed at a different kind of mistake: noun gender, et and est,
+    /// run-together words, capital letters, and look-alike words.
+    static let examples: [Example] = [
+        Example(
+            text: "Ce matin, nous sommes allés à la boulangerie. Nous avons acheté un baguette et une croissant. Le boulangère nous a aussi donné une pain au chocolat gratuit, et c'était délicieux!",
+            opening: "Ce matin, nous sommes allés à la boulangerie."
+        ),
+        Example(
+            text: "J'ai un petit chat qui s'appelle Biscuit. Mon chat et très curieux. Hier, il et monté sur la table et il à renversé mon verre d'eau. Maintenant, il est sous le canapé et il fait semblant de dormir.",
+            opening: "J'ai un petit chat qui s'appelle Biscuit."
+        ),
+        Example(
+            text: "Hier soir, nous avons regardé un film de fantômes. Jen'ai pas dormi de la nuit parceque j'entendais des bruits partout. Ce matin, mon frère m'a dit que c'était seulement le chat. Jene regarderai plus jamais de film d'horreur!",
+            opening: "Hier soir, nous avons regardé un film de fantômes."
+        ),
+        Example(
+            text: "Ma famille adore voyager. samedi, nous sommes allés à paris pour visiter la tour eiffel. Nous avons mangé des crêpes le Samedi soir et parlé Français avec un serveur très sympa.",
+            opening: "Ma famille adore voyager."
+        ),
+        Example(
+            text: "Mon voisin a un perroquet très drôle. Chaque soir, il imite le facteur, mais il ne sait jamais ou se cacher quand le chat arrive. Les enfants ce moquent de lui, et ils son toujours contents de l'écouter.",
+            opening: "Mon voisin a un perroquet très drôle."
+        ),
+    ]
+
+    /// The example now on the page, so Try an example never repeats it twice in a row.
+    private var currentExampleIndex: Int?
+
+    /// The paragraph last loaded by Try an example.
+    var currentExample: Example? {
+        currentExampleIndex.map { Self.examples[$0] }
+    }
+
+    /// Whether `text` still holds the opening of any example.
+    static func holdsExample(_ text: String) -> Bool {
+        examples.contains { text.contains($0.opening) }
+    }
 
     /// Starts the sample paragraph as unsaved writing from a clean slate, so a rehearsal
     /// never changes the next run: ignored issues come back, and playback and English reset.
-    func loadExample() {
-        show(.unsaved, text: Self.example, savedText: "")
+    func loadExample(index: Int? = nil) {
+        let choices = Self.examples.indices.filter { $0 != currentExampleIndex }
+        let pick = index ?? choices.randomElement() ?? 0
+        currentExampleIndex = pick
+        show(.unsaved, text: Self.examples[pick].text, savedText: "")
         isRehearsal = true
         lintNow()
         jumpToFirstError()
@@ -847,7 +886,7 @@ final class EditorModel {
         savedText = saved
         bufferedText = contents
         observedText = contents
-        isRehearsal = restored == .unsaved && contents.contains(Self.exampleOpening)
+        isRehearsal = restored == .unsaved && Self.holdsExample(contents)
         text = AttributedString(contents)
     }
 

@@ -156,14 +156,14 @@ final class EditorModelTests: XCTestCase {
     // Try an example starts over: an issue ignored during a rehearsal comes back.
     func testExampleResetsIgnoredIssues() throws {
         let model = try makeModel()
-        model.loadExample()
+        model.loadExample(index: 0)
         let first = try XCTUnwrap(model.blockingIssues.first)
         let count = model.visibleIssues.count
 
         model.ignore(first)
         XCTAssertEqual(model.visibleIssues.count, count - 1)
 
-        model.loadExample()
+        model.loadExample(index: 0)
         XCTAssertEqual(model.visibleIssues.count, count)
         XCTAssertEqual(model.selectedIssue?.id, first.id)
         XCTAssertEqual(narrator.state, .idle)
@@ -194,19 +194,10 @@ final class EditorModelTests: XCTestCase {
         XCTAssertFalse(model.visibleIssues.contains { $0.kind == .meaning })
     }
 
-    // Try an example shows every level: errors, a warning, and a suggestion.
-    func testExampleShowsEveryLevel() throws {
-        let model = try makeModel()
-        model.showsSuggestions = true
-        model.loadExample()
-        let severities = Set(model.visibleIssues.map(\.severity))
-        XCTAssertEqual(severities, [.error, .warning, .suggestion])
-    }
-
     // Try an example's mistakes aren't the learner's: fixing them counts nothing until New starts a blank page.
     func testExampleIsNotCounted() throws {
         let model = try makeModel()
-        model.loadExample()
+        model.loadExample(index: 0)
         let issue = try XCTUnwrap(model.blockingIssues.first)
         model.apply(issue)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
@@ -235,19 +226,30 @@ final class EditorModelTests: XCTestCase {
 
     // Fixing the example's mistakes leaves its opening sentence, so the rehearsal carries on.
     func testFixingTheExampleKeepsTheRehearsal() throws {
-        // The rehearsal check relies on the example opening with this mistake-free sentence.
-        XCTAssertTrue(EditorModel.example.hasPrefix(EditorModel.exampleOpening))
+        // The rehearsal check relies on every example containing its mistake-free opening sentence.
+        for example in EditorModel.examples {
+            XCTAssertTrue(example.text.contains(example.opening))
+        }
         let model = try makeModel()
         model.loadExample()
-        let fixed = Self.exampleWithFirstErrorFixed
-        type(fixed, into: model)
+        let opening = try XCTUnwrap(model.currentExample).opening
+        type(opening + " Nous avons un fromage.", into: model)
         model.lintNow()
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
         XCTAssertEqual(model.stats.stats.sentencesChecked, 0)
     }
 
-    /// The example with "une fromage" typed as "un fromage".
-    private static let exampleWithFirstErrorFixed = EditorModel.example.replacingOccurrences(of: "une fromage", with: "un fromage")
+    // Try an example never shows the same paragraph twice in a row.
+    func testExamplesDoNotRepeatBackToBack() throws {
+        let model = try makeModel()
+        var previous: String?
+        for _ in 0..<20 {
+            model.loadExample()
+            let current = try XCTUnwrap(model.currentExample).text
+            XCTAssertNotEqual(current, previous)
+            previous = current
+        }
+    }
 
     // A half-typed word's guess never becomes a tricky word; the fix the learner keeps does.
     func testTrickyWordsComeFromFixes() throws {
