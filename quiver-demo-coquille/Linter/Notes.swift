@@ -78,6 +78,30 @@ enum Notes {
         return kept.joined(separator: "\n")
     }
 
+    /// The offset of the line break that `new` added to `old`, and the column of the
+    /// opening `*`, when it ends the line that opens a block note with no `*/`, and
+    /// nothing follows on that line.
+    static func lineBreakOpeningBlockNote(from old: String, to new: String) -> (lineBreak: Int, asteriskColumn: Int)? {
+        let characters = Array(new)
+        guard characters.count == old.count + 1 else { return nil }
+        var lineBreak = zip(new, old).prefix(while: { $0 == $1 }).count
+        guard characters[lineBreak].isNewline else { return nil }
+        // Beside another line break the difference lands on the later one, so step back to the first.
+        while lineBreak > 0, characters[lineBreak - 1].isNewline {
+            lineBreak -= 1
+        }
+        guard lineBreak + 1 == characters.count || characters[lineBreak + 1].isNewline,
+              let note = ranges(in: new).first(where: { $0.contains(lineBreak) }),
+              characters[note.lowerBound + 1] == "*",
+              !characters[note.lowerBound..<lineBreak].contains(where: \.isNewline) else {
+            return nil
+        }
+        let isClosed = note.count >= 4 && characters[note.upperBound - 2] == "*" && characters[note.upperBound - 1] == "/"
+        guard !isClosed else { return nil }
+        let lineStart = characters[..<note.lowerBound].lastIndex(where: \.isNewline).map { $0 + 1 } ?? 0
+        return (lineBreak, note.lowerBound + 1 - lineStart)
+    }
+
     /// The offset just past the `*/` that closes a note whose text starts at `start`, or
     /// the end of the text when nothing closes it.
     private static func blockEnd(in characters: [Character], from start: Int) -> Int {

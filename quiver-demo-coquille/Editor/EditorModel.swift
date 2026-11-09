@@ -238,6 +238,7 @@ final class EditorModel {
 
     /// Schedules a lint after the learner stops typing. Styling-only changes are ignored.
     func textDidChange() {
+        closeBlockNoteAfterReturn()
         let plain = plainText
         guard plain != observedText else { return }
         observedText = plain
@@ -251,6 +252,21 @@ final class EditorModel {
             guard !Task.isCancelled else { return }
             lintNow()
         }
+    }
+
+    /// Puts `*/` on the line below the caret when Return ends the line that opens a block note,
+    /// with the caret directly beneath the opening `*`.
+    /// The next `textDidChange` finds this text already observed, so it can't run twice.
+    /// The note is colored here because replacing the text later would lose the caret.
+    private func closeBlockNoteAfterReturn() {
+        guard let opening = Notes.lineBreakOpeningBlockNote(from: observedText, to: plainText) else { return }
+        let indent = String(repeating: " ", count: opening.asteriskColumn)
+        var closed = text
+        closed.insert(AttributedString(indent + "\n*/"), at: closed.characters.index(closed.startIndex, offsetBy: opening.lineBreak + 1))
+        Self.greyNotes(in: &closed)
+        text = closed
+        let caret = text.characters.index(text.startIndex, offsetBy: opening.lineBreak + 1 + indent.count)
+        selection = AttributedTextSelection(insertionPoint: caret)
     }
 
     /// Lints right away if the text changed since the last lint, so play and English

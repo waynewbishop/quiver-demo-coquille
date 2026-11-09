@@ -70,6 +70,18 @@ final class EditorModelTests: XCTestCase {
         model.textDidChange()
     }
 
+    // Return after opening a block note closes it below, with the caret beneath the opening asterisk.
+    func testReturnClosesAnOpenBlockNote() throws {
+        let model = try makeModel()
+        type("/* note", into: model)
+        type("/* note\n", into: model)
+        XCTAssertEqual(model.plainText, "/* note\n \n*/")
+        guard case .insertionPoint(let caret) = model.selection.indices(in: model.text) else {
+            return XCTFail("The caret should be a single insertion point")
+        }
+        XCTAssertEqual(model.text.characters.distance(from: model.text.startIndex, to: caret), 9)
+    }
+
     // An error typed just before play is caught before anything is spoken.
     func testPlayChecksTextTypedSinceTheLastLint() throws {
         let model = try makeModel()

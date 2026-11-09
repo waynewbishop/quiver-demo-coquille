@@ -48,6 +48,20 @@ final class NotesTests: XCTestCase {
         XCTAssertEqual(Notes.ranges(in: "// Vocabulary"), [0..<13])
     }
 
+    /// Return is recognized only at the end of the line that opens an unclosed block note.
+    func testLineBreakOpeningBlockNote() {
+        XCTAssertEqual(Notes.lineBreakOpeningBlockNote(from: "/* note", to: "/* note\n")?.lineBreak, 7)
+        XCTAssertEqual(Notes.lineBreakOpeningBlockNote(from: "/* note", to: "/* note\n")?.asteriskColumn, 1)
+        XCTAssertEqual(Notes.lineBreakOpeningBlockNote(from: "/* a\nBonjour", to: "/* a\n\nBonjour")?.lineBreak, 4)
+        XCTAssertEqual(Notes.lineBreakOpeningBlockNote(from: "Je /* a", to: "Je /* a\n")?.asteriskColumn, 4)
+        XCTAssertEqual(Notes.lineBreakOpeningBlockNote(from: "Salut\n/* a", to: "Salut\n/* a\n")?.asteriskColumn, 1)
+        XCTAssertNil(Notes.lineBreakOpeningBlockNote(from: "/* a*/", to: "/* a\n*/"))
+        XCTAssertNil(Notes.lineBreakOpeningBlockNote(from: "// a", to: "// a\n"))
+        XCTAssertNil(Notes.lineBreakOpeningBlockNote(from: "/* a\nb", to: "/* a\nb\n"))
+        XCTAssertNil(Notes.lineBreakOpeningBlockNote(from: "/* ab", to: "/* a\nb"))
+        XCTAssertNil(Notes.lineBreakOpeningBlockNote(from: "/* a", to: "/* ab"))
+    }
+
     /// A block note can sit between words and spans its markers.
     func testBlockNoteBetweenWords() {
         let text = "Je /* I */ mange."
