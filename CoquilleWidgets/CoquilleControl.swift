@@ -14,15 +14,28 @@
 import SwiftUI
 import WidgetKit
 
-/// A Control Center button that only opens Coquille.
+/// A control that goes straight to writing: the current text, or today's entry on an empty page.
 struct CoquilleControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.waynebishop.coquille.open") {
-            ControlWidgetButton(action: OpenCoquilleIntent()) {
-                Label("Coquille", image: "ShellControl")
+            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.writeLink)) {
+                Label("Écrivez", image: "ShellControl")
             }
         }
         .displayName("Coquille")
-        .description("Open your French editor.")
+        .description("Carry on writing, or start today's entry.")
+    }
+}
+
+/// A control that opens the phrasebook, for the moment a phrase is needed.
+struct CoquillePhrasebookControl: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: "com.waynebishop.coquille.phrasebook") {
+            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.phrasebookLink)) {
+                Label("Phrasebook", systemImage: "book")
+            }
+        }
+        .displayName("Coquille Phrasebook")
+        .description("Open your French phrasebook.")
     }
 }

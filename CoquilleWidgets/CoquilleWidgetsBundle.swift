@@ -20,5 +20,6 @@ struct CoquilleWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TodaysPromptWidget()
         CoquilleControl()
+        CoquillePhrasebookControl()
     }
 }

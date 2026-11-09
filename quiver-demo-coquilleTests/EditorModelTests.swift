@@ -695,8 +695,9 @@ final class EditorModelTests: XCTestCase {
         let checkedBefore = model.stats.stats.sentencesChecked
         model.newEntry(for: prompt, on: date)
         XCTAssertEqual(model.plainText, expected.text)
-        XCTAssertEqual(String(model.plainText.prefix(expected.caret)), EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What time does it close?\n\n")
-        XCTAssertEqual(Notes.removed(model.plainText), "Le 1er novembre 2026\n\n\n")
+        XCTAssertEqual(String(model.plainText.prefix(expected.caret)), EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What time does it close?\n")
+        XCTAssertEqual(expected.caret, expected.text.count, "A single prompt must end on its answer line")
+        XCTAssertEqual(Notes.removed(model.plainText), "Le 1er novembre 2026\n\n")
         XCTAssertNil(model.fileURL)
         XCTAssertFalse(model.needsSaveDecision)
         XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)

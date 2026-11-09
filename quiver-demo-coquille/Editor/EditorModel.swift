@@ -670,12 +670,14 @@ final class EditorModel {
         return (text, opening.count + 1 + firstStarter.0.count + 1 + firstStarter.1.count)
     }
 
-    /// Builds English guidance notes and blank answer lines, with the caret at the first.
+    /// Builds English guidance notes and blank answer lines, with the caret directly
+    /// beneath the first note, on its answer line.
     static func guidedEntry(prompts: [String], for date: Date) -> (text: String, caret: Int) {
         let opening = dateHeading(for: date)
-        let blocks = prompts.map { "\n// \($0)\n\n" }
+        let blocks = prompts.map { "\n// \($0)\n" }
         guard let first = blocks.first else { return (opening, opening.count) }
-        return (opening + blocks.joined(), opening.count + first.count)
+        // Nothing follows the last note's answer line, so a single prompt ends right where the caret goes.
+        return (opening + blocks.joined(separator: "\n"), opening.count + first.count)
     }
 
     /// The unchecked guide and French date shared by ordinary and prompted entries.

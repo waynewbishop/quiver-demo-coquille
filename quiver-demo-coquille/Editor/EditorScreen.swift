@@ -84,8 +84,8 @@ struct EditorScreen: View {
     #if os(macOS)
     /// The English pane's share of the window, kept between launches.
     @AppStorage("englishPaneFraction") private var englishFraction = SplitPanes<EmptyView, EmptyView>.defaultFraction
-    /// Whether the journal sidebar is showing.
-    @State private var columns = NavigationSplitViewVisibility.all
+    /// Whether the journal sidebar is showing. It starts closed, so the writing comes first.
+    @State private var columns = NavigationSplitViewVisibility.detailOnly
     #endif
 
     /// Window width at which English moves from below the French to beside it.

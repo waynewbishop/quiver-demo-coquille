@@ -47,16 +47,16 @@ the French has no errors; otherwise it reads "Coquille".
 ## Widgets and exercise links
 
 The `CoquilleWidgets` extension provides a small or medium **Coquille**
-widget and a Control Center shell launcher on iPhone, iPad and Mac. Add
-them through the system's widget gallery and Control Center **+** flow.
+widget and two controls, Coquille and Coquille Phrasebook, on iPhone, iPad
+and Mac. Add them through the system's widget gallery and Control Center **+** flow.
 
 The bar at the top carries on with the current writing, or starts today's
 entry when the editor is empty. Small adds today's prompt and the phrasebook;
 medium also adds the journal and corrections. The prompt comes from the
 bundled catalog and changes on the local calendar day, including across
 daylight-saving changes, and opens that exact English sentence as an unsaved
-draft. Everything works offline, and the Control Center button only opens
-the current editor.
+draft. Everything works offline. The Coquille control behaves like the bar,
+and the Phrasebook control opens the phrasebook.
 
 Claude can offer a lesson's writing exercise with a custom link:
 
