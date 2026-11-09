@@ -992,6 +992,9 @@ nonisolated struct FrenchGrammar: Grammar {
             // Lexique lists n' and y as verb forms; a pronoun, ne or an elision is never the verb here.
             guard !Self.preverbalWords.contains(verbToken.normalized), !verbToken.normalized.hasSuffix("'") else { continue }
             let readings = lexicon.conjugations(verbToken.normalized)
+            // "le boulanger nous a donné": mid-clause, nous or vous before a third-person verb is the object.
+            if ["nous", "vous"].contains(subject.normalized), index > 0, !tokens[index - 1].endsClause,
+               readings.contains(where: { $0.codes.contains { $0.hasSuffix("3s") || $0.hasSuffix("3p") } }) { continue }
             guard !readings.isEmpty,
                   !readings.contains(where: { $0.codes.contains { $0.hasSuffix(person) } }),
                   let reading = readings.first, readings.count == 1,
@@ -1207,6 +1210,8 @@ nonisolated struct FrenchGrammar: Grammar {
             }
             let noun = tokens[nounIndex]
             let word = noun.normalized
+            // "j'aime son chien": before a noun phrase, son is the possessive, not the noun for a sound.
+            if word == "son", startsNounPhrase(after: nounIndex, in: tokens) { continue }
             guard !Self.bareAfterLiking.contains(word),
                   noun.text.first?.isUppercase == false,
                   word.first != "h",
@@ -1231,6 +1236,16 @@ nonisolated struct FrenchGrammar: Grammar {
             ))
         }
         return issues
+    }
+
+    /// Whether a noun, or an adjective and then a noun, directly follows the word at `index`.
+    private func startsNounPhrase(after index: Int, in tokens: [Token]) -> Bool {
+        let next = index + 1
+        guard next < tokens.count, tokens[index].isAdjacentToNext else { return false }
+        if lexicon.noun(tokens[next].normalized) != nil { return true }
+        return next + 1 < tokens.count && tokens[next].isAdjacentToNext
+            && !lexicon.adjectiveLemmas(of: tokens[next].normalized).isEmpty
+            && lexicon.noun(tokens[next + 1].normalized) != nil
     }
 
     // MARK: - Article and noun number

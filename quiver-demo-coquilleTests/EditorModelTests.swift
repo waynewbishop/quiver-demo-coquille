@@ -252,6 +252,38 @@ final class EditorModelTests: XCTestCase {
         }
     }
 
+    /// Lints every example, treating the run-together words as a spellchecker would.
+    private func issuesInEachExample() throws -> [[Issue]] {
+        let model = try makeModel(spellChecker: UnknownWordSpellChecker(unknown: ["Jen'ai", "parceque", "Jene"]))
+        model.showsSuggestions = true
+        return EditorModel.examples.indices.map { index in
+            model.loadExample(index: index)
+            return model.visibleIssues
+        }
+    }
+
+    // Each example flags exactly the mistakes written into it, and nothing that's correct.
+    func testEachExampleFlagsItsIntendedMistakes() throws {
+        let expected: [Set<String>] = [
+            ["un baguette", "une gâteau", "Le boulangère", "une pain"],
+            ["et", "à"],
+            ["Jen'ai", "parceque", "Jene"],
+            ["samedi", "Samedi", "Français"],
+            ["sava", "Ilya", "ils son", "c'était chaud"],
+        ]
+        let found = try issuesInEachExample()
+        XCTAssertEqual(found.count, expected.count)
+        for (issues, mistakes) in zip(found, expected) {
+            XCTAssertEqual(Set(issues.map(\.original)), mistakes)
+        }
+    }
+
+    // Together the examples show every level: errors, a warning, and a suggestion.
+    func testExamplesShowEveryLevel() throws {
+        let severities = Set(try issuesInEachExample().joined().map(\.severity))
+        XCTAssertEqual(severities, [.error, .warning, .suggestion])
+    }
+
     // A half-typed word's guess never becomes a tricky word; the fix the learner keeps does.
     func testTrickyWordsComeFromFixes() throws {
         let model = try makeModel()

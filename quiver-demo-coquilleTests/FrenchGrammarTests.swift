@@ -700,6 +700,30 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(issue.hint, "cava is a past form of caver, “to dig,” as in il cava un trou.")
     }
 
+    // After ils or elles, son can only be the verb sont; son the possessive stays correct elsewhere.
+    func testSonAfterAPluralSubject() throws {
+        XCTAssertEqual(try fixes("Ils son contents."), ["Ils son → Ils sont"])
+        XCTAssertEqual(try fixes("Elles son parties."), ["Elles son → Elles sont"])
+        XCTAssertEqual(try fixes("Ils voient son chien."), [])
+    }
+
+    // Before a noun or an adjective and a noun, son is the possessive; after le, it's the noun.
+    func testSonAsPossessiveOrNoun() throws {
+        XCTAssertEqual(try fixes("Ils aiment son chien."), [])
+        XCTAssertEqual(try fixes("Il aime son petit chien."), [])
+        XCTAssertEqual(try fixes("Elle appelle son amie."), [])
+        XCTAssertEqual(try fixes("J'aime le son de sa voix."), [])
+    }
+
+    // After a noun, nous or vous before a third-person verb is the object, not the subject.
+    func testNousAndVousAsObjectsAfterANoun() throws {
+        XCTAssertEqual(try fixes("Le facteur nous a donné une lettre."), [])
+        XCTAssertEqual(try fixes("Mes amis nous ont parlé."), [])
+        XCTAssertEqual(try fixes("Cette dame vous regarde."), [])
+        XCTAssertEqual(try fixes("Nous va au marché."), ["va → allons"])
+        XCTAssertEqual(try fixes("Hier, nous va au marché."), ["va → allons"])
+    }
+
     // After a subject pronoun, cava is the verb caver, which is correct French.
     func testCavaAfterSubjectIsTheVerb() throws {
         XCTAssertEqual(try fixes("Il cava un trou."), [])

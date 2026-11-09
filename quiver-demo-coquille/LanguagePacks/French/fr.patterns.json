@@ -326,6 +326,18 @@
       "note": "ilya runs three words together, and y stands on its own."
     },
     {
+      "fix": "ils sont",
+      "kind": "lookAlike",
+      "match": "ils son",
+      "note": "son means his or her, so it comes before a noun; the verb être is spelled sont here."
+    },
+    {
+      "fix": "elles sont",
+      "kind": "lookAlike",
+      "match": "elles son",
+      "note": "son means his or her, so it comes before a noun; the verb être is spelled sont here."
+    },
+    {
       "fix": "@avoir $avoirNoun",
       "kind": "wordChoice",
       "match": "@être $avoirNoun",

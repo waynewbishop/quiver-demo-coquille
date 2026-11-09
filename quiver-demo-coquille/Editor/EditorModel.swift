@@ -451,7 +451,7 @@ final class EditorModel {
     /// run-together words, capital letters, and look-alike words.
     static let examples: [Example] = [
         Example(
-            text: "Ce matin, nous sommes allés à la boulangerie. Nous avons acheté un baguette et une croissant. Le boulangère nous a aussi donné une pain au chocolat gratuit, et c'était délicieux!",
+            text: "Ce matin, nous sommes allés à la boulangerie. Nous avons acheté un baguette et une gâteau. Le boulangère nous a aussi donné une pain au chocolat gratuit, et c'était délicieux!",
             opening: "Ce matin, nous sommes allés à la boulangerie."
         ),
         Example(
@@ -463,11 +463,11 @@ final class EditorModel {
             opening: "Hier soir, nous avons regardé un film de fantômes."
         ),
         Example(
-            text: "Ma famille adore voyager. samedi, nous sommes allés à paris pour visiter la tour eiffel. Nous avons mangé des crêpes le Samedi soir et parlé Français avec un serveur très sympa.",
+            text: "Ma famille adore voyager. samedi, nous sommes allés à Paris pour visiter la tour Eiffel. Nous avons mangé des crêpes le Samedi soir et parlé Français avec un serveur très sympa.",
             opening: "Ma famille adore voyager."
         ),
         Example(
-            text: "Mon voisin a un perroquet très drôle. Chaque soir, il imite le facteur, mais il ne sait jamais ou se cacher quand le chat arrive. Les enfants ce moquent de lui, et ils son toujours contents de l'écouter.",
+            text: "Mon voisin a un perroquet très drôle. Chaque matin, il répète la même question: Comment sava? Ilya toujours des enfants devant sa cage, et ils son très contents de l'écouter. Hier, c'était chaud, alors le perroquet est resté dehors.",
             opening: "Mon voisin a un perroquet très drôle."
         ),
     ]

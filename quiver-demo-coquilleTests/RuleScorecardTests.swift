@@ -201,6 +201,18 @@ final class RuleScorecardTests: XCTestCase {
         ("La mère de Paul est venue.", nil),
         ("Le professeur est arrivé.", nil),
         ("Mes amies sont venues.", nil),
+        // Written before the conjugation rule learned nous and vous as objects after a
+        // noun, and before ils son and elles son joined the look-alike list.
+        ("Le médecin nous a reçus.", nil),
+        ("Ma tante vous appelle ce soir.", nil),
+        ("Les voisins nous ont invités.", nil),
+        ("Ce professeur nous donne des devoirs.", nil),
+        ("Nous va à la plage.", "grammar.conjugation"),
+        ("Vous mange trop.", "grammar.conjugation"),
+        ("Ils son fatigués.", "grammar.lookAlike"),
+        ("Elles son ici.", "grammar.lookAlike"),
+        ("Elles adorent son gâteau.", nil),
+        ("Ils connaissent son frère.", nil),
         // Written after the et-or-est model was trained and tuned, and never used to tune it.
         ("Mon père et professeur.", "grammar.etOrEst"),
         ("Ma chambre et petite.", "grammar.etOrEst"),
