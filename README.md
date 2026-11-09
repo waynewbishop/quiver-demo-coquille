@@ -106,6 +106,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |
+| Numbers and times | vingt et deux → vingt-deux, dix sept → dix-sept, deux heure → deux heures, 6 pm → 18h | Error (6:00 is a warning) | Number and time rules |
 | Capital letters | il pleut → Il pleut, le Lundi → le lundi, je parle Anglais → anglais | Warning | Capital letter rule |
 
 Errors block play and English; warnings and suggestions never do, and
@@ -272,7 +273,7 @@ Everything is plain folders in one Xcode project:
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 235 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 243 XCTest cases, including the
   false-positive traps above, correct French that must pass clean,
   phrasebook validation, calendar selection, and hostile-link tests.
 

@@ -34,6 +34,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case etOrEst
     case preposition
     case capitalization
+    case number
 
     /// The short uppercase label shown at the top of an issue card.
     var label: String {
@@ -57,6 +58,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .etOrEst: "ET OR EST"
         case .preposition: "PREPOSITION"
         case .capitalization: "CAPITAL LETTERS"
+        case .number: "NUMBERS"
         }
     }
 
@@ -82,6 +84,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .etOrEst: "Et or est (il est grand)"
         case .preposition: "Prepositions (au Canada)"
         case .capitalization: "Capital letters (le lundi)"
+        case .number: "Numbers and times (vingt-deux)"
         }
     }
 }

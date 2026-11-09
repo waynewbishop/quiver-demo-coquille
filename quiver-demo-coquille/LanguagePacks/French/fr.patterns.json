@@ -340,6 +340,12 @@
       "note": "son means his or her, so it comes before a noun; the verb être is spelled sont here."
     },
     {
+      "fix": "à midi",
+      "kind": "idiom",
+      "match": "à douze heures",
+      "note": "For twelve o'clock in the day, midi is more natural."
+    },
+    {
       "fix": "au printemps",
       "kind": "preposition",
       "match": "en printemps",

@@ -163,6 +163,10 @@ nonisolated struct FrenchGrammar: Grammar {
             },
             GrammarRule(identifier: "grammar.lowercase", layer: .orthography, targetLevel: .a1) {
                 lowercaseIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.number", layer: .orthography, targetLevel: .a1) {
+                numberWordIssues(in: $0.tokens) + oneAgreementIssues(in: $0)
+                    + heureIssues(in: $0.tokens) + timeFormatIssues(in: $0.tokens)
             }
         ]
     }
@@ -1373,6 +1377,8 @@ nonisolated struct FrenchGrammar: Grammar {
                   !Self.superlativeMarkers.contains(word),
                   !lexicon.isInfinitive(word),
                   let entry = lexicon.noun(word) else { continue }
+            // "vingt et un élèves": this un is a number, not an article.
+            if isPartOfNumber(index, in: tokens) { continue }
             // "je les porte": the tagger can't rule out a pronoun. A word that is also a verb
             // counts only when the tagger is sure it's the noun: "il les finance".
             if ["le", "la", "l'", "les"].contains(article.normalized) {
@@ -1945,6 +1951,159 @@ nonisolated struct FrenchGrammar: Grammar {
         return issues
     }
 
+    // MARK: - Numbers and times
+
+    /// The tens that form compounds with et or a hyphen.
+    private static let numberTens: Set<String> = ["vingt", "trente", "quarante", "cinquante", "soixante"]
+
+    /// Two to nine, the units that join a ten with a hyphen.
+    private static let numberUnits: Set<String> = ["deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"]
+
+    /// Single number words of two or more.
+    private static let pluralNumbers: Set<String> = numberUnits.union(numberTens).union([
+        "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "cent", "mille"
+    ])
+
+    /// Whether the un or une at `index` belongs to a larger number: "vingt et un", "cent un".
+    private func isPartOfNumber(_ index: Int, in tokens: [Token]) -> Bool {
+        guard ["un", "une"].contains(tokens[index].normalized), index > 0 else { return false }
+        let previous = tokens[index - 1].normalized
+        if ["cent", "cents", "mille"].contains(previous) { return true }
+        guard previous == "et", index > 1 else { return false }
+        return Self.numberTens.contains(tokens[index - 2].normalized) || tokens[index - 2].normalized == "mille"
+    }
+
+    /// Whether a hyphenated word names a number above two, such as dix-huit.
+    private func isCompoundNumber(_ word: String) -> Bool {
+        guard let first = word.split(separator: "-").first, word.contains("-") else { return false }
+        return first == "dix" || Self.numberTens.contains(String(first)) || first == "quatre"
+    }
+
+    /// Flags how compound numbers join: "vingt et deux" → "vingt-deux", "vingt-un" →
+    /// "vingt et un", "dix sept" → "dix-sept", "vingt deux" → "vingt-deux".
+    private func numberWordIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for (index, token) in tokens.enumerated() {
+            let word = token.normalized
+            let parts = word.split(separator: "-").map(String.init)
+            if parts.count == 2, Self.numberTens.contains(parts[0]), ["un", "une"].contains(parts[1]) {
+                let fix = "\(parts[0]) et \(parts[1])"
+                issues.append(numberIssue(from: index, through: index, in: tokens, fix: fix,
+                                          note: "Before un or une, tens take et, with no hyphen."))
+                continue
+            }
+            guard index + 1 < tokens.count, token.isAdjacentToNext else { continue }
+            let next = tokens[index + 1].normalized
+            if (word == "dix" && ["sept", "huit", "neuf"].contains(next))
+                || (Self.numberTens.contains(word) && Self.numberUnits.contains(next)) {
+                issues.append(numberIssue(from: index, through: index + 1, in: tokens, fix: "\(word)-\(next)",
+                                          note: "Compound numbers take a hyphen."))
+            } else if Self.numberTens.contains(word), next == "et", tokens[index + 1].isAdjacentToNext, index + 2 < tokens.count,
+                      Self.numberUnits.contains(tokens[index + 2].normalized) {
+                let fix = "\(word)-\(tokens[index + 2].normalized)"
+                issues.append(numberIssue(from: index, through: index + 2, in: tokens, fix: fix,
+                                          note: "Et only comes before un or une; other compounds take a hyphen."))
+            }
+        }
+        return issues
+    }
+
+    /// Builds a numbers error whose fix keeps the first word's capital.
+    private func numberIssue(from first: Int, through last: Int, in tokens: [Token], fix: String, note: String) -> Issue {
+        let replacement = matchingCase(of: tokens[first].text, fix)
+        return issue(
+            .number, .error, from: first, through: last, in: tokens,
+            replacement: replacement,
+            explanation: explanations.render(.wordChoice, ["note": note, "fix": replacement]),
+            source: "Number rule"
+        )
+    }
+
+    /// Flags the un of "vingt et un" that doesn't match a known noun: "vingt et un heures" →
+    /// "vingt et une heures".
+    private func oneAgreementIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        return tokens.indices.dropLast().compactMap { index in
+            let one = tokens[index]
+            let noun = tokens[index + 1]
+            let word = noun.normalized
+            guard index > 1, tokens[index - 1].normalized == "et", Self.numberTens.contains(tokens[index - 2].normalized),
+                  ["un", "une"].contains(one.normalized), one.isAdjacentToNext, noun.text.first?.isUppercase == false,
+                  lexicon.adjectiveLemmas(of: word).isEmpty || text.isNoun(index + 1, certainty: Self.tagCertainty),
+                  let gender = lexicon.noun(word)?.gender else { return nil }
+            let expected = gender == .feminine ? "une" : "un"
+            guard expected != one.normalized else { return nil }
+            return issue(
+                .number, .error, from: index, through: index + 1, in: tokens,
+                replacement: expected + one.gap + noun.text,
+                explanation: explanations.render(.articleGender, ["noun": noun.text, "gender": gender.rawValue, "article": expected]),
+                source: "Number rule"
+            )
+        }
+    }
+
+    /// Flags heure after a number of two or more, in words or figures: "deux heure" → "deux heures".
+    private func heureIssues(in tokens: [Token]) -> [Issue] {
+        tokens.indices.dropFirst().compactMap { index in
+            let previous = tokens[index - 1]
+            guard tokens[index].normalized == "heure" else { return nil }
+            let isWord = previous.isAdjacentToNext
+                && (Self.pluralNumbers.contains(previous.normalized) || isCompoundNumber(previous.normalized))
+            var isFigure = false
+            if let match = previous.gap.firstMatch(of: /(\d+)\s*$/), let value = Int(match.output.1) { isFigure = value >= 2 }
+            guard isWord || isFigure else { return nil }
+            return numberIssue(from: index, through: index, in: tokens, fix: "heures", note: "Heure takes an s from deux upward.")
+        }
+    }
+
+    /// Flags English time formats: "at 18h" → "à 18h", "6 pm" → "18h", and, as a warning
+    /// because timetables do use it, "6:00" → "6h". Figures sit in the gaps between words.
+    private func timeFormatIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for (index, token) in tokens.enumerated() {
+            let word = token.normalized
+            let numberFollows = index + 1 < tokens.count && token.isAdjacentToNext
+                && Self.pluralNumbers.contains(tokens[index + 1].normalized)
+            if word == "at", token.gap.firstMatch(of: /^\s*\d/) != nil || numberFollows {
+                issues.append(numberIssue(from: index, through: index, in: tokens, fix: "à",
+                                          note: "At is English; before a time, French says à."))
+            }
+            if ["pm", "am"].contains(word), index > 0,
+               let match = tokens[index - 1].gap.firstMatch(of: /(\d{1,2})\s*$/),
+               let hour = Int(match.output.1), (1...12).contains(hour) {
+                let clock = word == "pm" ? (hour == 12 ? 12 : hour + 12) : (hour == 12 ? 0 : hour)
+                let gap = tokens[index - 1].gap
+                let figures = gap.distance(from: match.range.lowerBound, to: gap.endIndex)
+                let fix = "\(clock)h"
+                let explanation = explanations.render(.wordChoice, ["note": "French writes times on the 24-hour clock.", "fix": fix])
+                issues.append(Issue(
+                    kind: .number, severity: .error, offset: token.offset - figures, length: figures + token.text.count,
+                    original: String(gap[match.range]) + token.text, replacement: fix,
+                    reason: explanation.reason, hint: explanation.hint, source: "Time format rule"
+                ))
+            }
+            // Only right after a time word: "Ct 4:12" is a citation and "2:00.531" a lap time.
+            let timeWords: Set<String> = ["à", "vers", "dès", "avant", "après", "de"]
+            for match in token.gap.matches(of: /(\d{1,2}):(\d{2})/) where timeWords.contains(word) {
+                let gap = token.gap
+                let before = match.range.lowerBound > gap.startIndex ? gap[gap.index(before: match.range.lowerBound)] : " "
+                let after = match.range.upperBound < gap.endIndex ? gap[match.range.upperBound] : " "
+                guard !before.isNumber, before != ":", !after.isNumber, after != ":",
+                      gap[match.range.upperBound...].firstMatch(of: /^[.,]\d/) == nil,
+                      let hour = Int(match.output.1), hour < 24, let minutes = Int(match.output.2), minutes < 60 else { continue }
+                let fix = minutes == 0 ? "\(hour)h" : "\(hour)h\(match.output.2)"
+                let explanation = explanations.render(.wordChoice, ["note": "In everyday French, times are written with h.", "fix": fix])
+                issues.append(Issue(
+                    kind: .number, severity: .warning,
+                    offset: token.end + gap.distance(from: gap.startIndex, to: match.range.lowerBound),
+                    length: match.output.0.count, original: String(match.output.0), replacement: fix,
+                    reason: explanation.reason, hint: explanation.hint, source: "Time format rule"
+                ))
+            }
+        }
+        return issues
+    }
+
     // MARK: - Et or est
 
     /// What each word means, shown when the learner is asked which one they meant.
@@ -1960,6 +2119,10 @@ nonisolated struct FrenchGrammar: Grammar {
         for (index, token) in tokens.enumerated() {
             let written = token.normalized
             guard written == "et" || written == "est" else { continue }
+            // "vingt et un" and "vingt et deux": the numbers rule judges et between number words.
+            if written == "et", index > 0, index + 1 < tokens.count, Self.numberTens.contains(tokens[index - 1].normalized),
+               (["un", "une", "onze", "dix"].contains(tokens[index + 1].normalized)
+                || Self.numberUnits.contains(tokens[index + 1].normalized)) { continue }
             let other = written == "et" ? "est" : "et"
             let place = text.places[index]
             let words = text.sentences[place.sentence]

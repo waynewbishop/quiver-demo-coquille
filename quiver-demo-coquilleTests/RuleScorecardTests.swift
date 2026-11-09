@@ -35,6 +35,10 @@ final class RuleScorecardTests: XCTestCase {
         ("Le voiture est rouge.", "grammar.gender"),
         ("Il lève le main.", "grammar.gender"),
         ("Une espace libre.", "grammar.gender"),
+        ("Il y a vingt et deux élèves.", "grammar.number"),
+        ("Il a dix sept ans.", "grammar.number"),
+        ("Il est deux heure.", "grammar.number"),
+        ("Le train part à 6 pm.", "grammar.number"),
         ("Ce maison est belle.", "grammar.gender"),
         ("Quel maison est belle?", "grammar.gender"),
         ("Il n'a aucun maison.", "grammar.gender"),
@@ -433,7 +437,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 21)
+        XCTAssertEqual(tuning.count, 22)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }
