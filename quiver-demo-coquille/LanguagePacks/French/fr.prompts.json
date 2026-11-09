@@ -1,12 +1,5 @@
 [
   {
-    "id": "shopping-opening-hours",
-    "text": "What time does it close?",
-    "level": "A1",
-    "topic": "Shopping",
-    "lesson": "Opening hours"
-  },
-  {
     "id": "daily-life-morning",
     "text": "What did you do this morning?",
     "level": "A1",
@@ -22,10 +15,19 @@
   },
   {
     "id": "weather-outside",
-    "text": "What is the weather like outside?",
+    "text": "What's the weather like?",
     "level": "A1",
     "topic": "Weather",
-    "lesson": "Today's weather"
+    "lesson": "Today's weather",
+    "starter": "Il fait "
+  },
+  {
+    "id": "place-writing-from",
+    "text": "Where are you writing from today?",
+    "level": "A1",
+    "topic": "Places",
+    "lesson": "Where I am",
+    "starter": "Je suis à "
   },
   {
     "id": "people-friend",
@@ -33,13 +35,6 @@
     "level": "A1",
     "topic": "People",
     "lesson": "Friends and family"
-  },
-  {
-    "id": "home-room",
-    "text": "Which room in your home do you like best?",
-    "level": "A1",
-    "topic": "Home",
-    "lesson": "Rooms and preferences"
   },
   {
     "id": "travel-next-trip",
@@ -78,17 +73,19 @@
   },
   {
     "id": "feelings-today",
-    "text": "How do you feel today, and why?",
+    "text": "How do you feel, and why?",
     "level": "A1",
     "topic": "Feelings",
-    "lesson": "Feelings and reasons"
+    "lesson": "Feelings and reasons",
+    "starter": "Je me sens "
   },
   {
     "id": "clothing-wearing",
-    "text": "What are you wearing today?",
+    "text": "What are you wearing?",
     "level": "A1",
     "topic": "Clothing",
-    "lesson": "What I wear"
+    "lesson": "What I wear",
+    "starter": "Je porte "
   },
   {
     "id": "journal-small-pleasure",

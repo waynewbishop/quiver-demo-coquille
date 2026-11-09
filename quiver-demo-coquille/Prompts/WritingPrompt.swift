@@ -20,4 +20,6 @@ nonisolated struct WritingPrompt: Identifiable, Codable, Equatable, Sendable {
     let level: String
     let topic: String
     let lesson: String
+    /// French that opens the answer, ending in a space, for prompts that give the learner a start.
+    var starter: String? = nil
 }

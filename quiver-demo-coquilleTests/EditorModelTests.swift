@@ -433,7 +433,7 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
     }
 
-    // A new entry replaces the text with today's French date and opening lines, the caret after "Il fait".
+    // A new entry replaces the text with the full French date and the day's prompt.
     func testNewEntryStartsWithTheDate() throws {
         let model = try makeModel()
         type("Nous avons une fromage.", into: model)
@@ -441,7 +441,9 @@ final class EditorModelTests: XCTestCase {
         let checkedBefore = model.stats.stats.sentencesChecked
         let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12)))
         model.newEntry(on: date)
-        XCTAssertTrue(model.plainText.hasPrefix(EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What's the weather like?\nIl fait \n"))
+        let prompt = PromptCatalog.prompt(on: date)
+        XCTAssertEqual(model.plainText, EditorModel.guidedEntry(for: prompt, on: date).text)
+        XCTAssertTrue(model.plainText.hasPrefix(EditorModel.entryGuide + "\nDimanche 1er novembre 2026\n\n// \(prompt.text)\n"))
         XCTAssertTrue(model.blockingIssues.isEmpty)
         XCTAssertNil(model.fileURL)
         XCTAssertEqual(model.stats.stats.errorsFixed, 0)
@@ -450,42 +452,30 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)
     }
 
-    // Other days of the month are plain numbers.
-    func testEntryHeaderDate() throws {
+    // The date names the weekday in full, and other days of the month are plain numbers.
+    func testEntryDateNamesTheWeekday() throws {
         let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 31, hour: 12)))
-        let header = EditorModel.entryHeader(for: date)
-        XCTAssertTrue(header.text.hasPrefix(EditorModel.entryGuide + "\nLe 31 octobre 2026\n"))
-        XCTAssertEqual(String(header.text.prefix(header.caret)), EditorModel.entryGuide + "\nLe 31 octobre 2026\n\n// What's the weather like?\nIl fait ")
+        let entry = EditorModel.guidedEntry(prompts: ["Question?"], for: date)
+        XCTAssertTrue(entry.text.hasPrefix(EditorModel.entryGuide + "\nSamedi 31 octobre 2026\n"))
     }
 
-    // Each starter's note sits on the line above it, and typing at the caret finishes the first starter.
-    func testEntryHeaderNotes() throws {
+    // A starter sits under its note, and typing at the caret finishes it.
+    func testPromptStarterSitsUnderItsNote() throws {
         let date = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 12)))
-        let header = EditorModel.entryHeader(for: date)
-        // Built line by line, since each starter ends in a space an editor might strip.
+        let prompt = WritingPrompt(id: "weather", text: "What's the weather like?", level: "A1", topic: "Weather", lesson: "Today", starter: "Il fait ")
+        let entry = EditorModel.guidedEntry(for: prompt, on: date)
+        // Built line by line, since the starter ends in a space an editor might strip.
         let expected = [
-            "// Finish each sentence in French, then keep going. Grey notes are never checked.",
-            "Le 2 novembre 2026",
+            "// Write in French, then keep going. Grey notes are never checked.",
+            "Lundi 2 novembre 2026",
             "",
             "// What's the weather like?",
-            "Il fait ",
-            "",
-            "// Where are you writing from today?",
-            "Je suis à ",
-            "",
-            "// What are you wearing?",
-            "Je porte ",
-            "",
-            "// How do you feel, and why?",
-            "Je me sens ",
-            ""
+            "Il fait "
         ].joined(separator: "\n")
-        XCTAssertEqual(header.text, expected)
-        XCTAssertEqual(Notes.ranges(in: header.text).count, 5)
-        var typed = header.text
-        typed.insert(contentsOf: "froid.", at: typed.index(typed.startIndex, offsetBy: header.caret))
-        XCTAssertTrue(typed.contains("// What's the weather like?\nIl fait froid.\n"))
-        XCTAssertEqual(Notes.removed(typed), "Le 2 novembre 2026\n\nIl fait froid.\n\nJe suis à\n\nJe porte\n\nJe me sens\n")
+        XCTAssertEqual(entry.text, expected)
+        XCTAssertEqual(entry.caret, expected.count)
+        XCTAssertEqual(Notes.ranges(in: entry.text).count, 2)
+        XCTAssertEqual(Notes.removed(entry.text + "froid."), "Lundi 2 novembre 2026\n\nIl fait froid.")
     }
 
     // New starts a blank page with no file, and the example has none either.
@@ -707,9 +697,9 @@ final class EditorModelTests: XCTestCase {
         let checkedBefore = model.stats.stats.sentencesChecked
         model.newEntry(for: prompt, on: date)
         XCTAssertEqual(model.plainText, expected.text)
-        XCTAssertEqual(String(model.plainText.prefix(expected.caret)), EditorModel.entryGuide + "\nLe 1er novembre 2026\n\n// What time does it close?\n")
+        XCTAssertEqual(String(model.plainText.prefix(expected.caret)), EditorModel.entryGuide + "\nDimanche 1er novembre 2026\n\n// What time does it close?\n")
         XCTAssertEqual(expected.caret, expected.text.count, "A single prompt must end on its answer line")
-        XCTAssertEqual(Notes.removed(model.plainText), "Le 1er novembre 2026\n\n")
+        XCTAssertEqual(Notes.removed(model.plainText), "Dimanche 1er novembre 2026\n\n")
         XCTAssertNil(model.fileURL)
         XCTAssertFalse(model.needsSaveDecision)
         XCTAssertEqual(model.stats.stats.sentencesChecked, checkedBefore)

@@ -528,16 +528,14 @@ final class EditorModel {
         open(try FrenchTextFile.text(at: url), from: url)
     }
 
-    /// Starts today's journal entry, unsaved, with the date and opening lines for the
-    /// weather, the place, clothes and mood, with the caret after "Il fait". Save names
-    /// its file for `date`.
+    /// Starts today's journal entry, unsaved, with the day's prompt. Save names its file for `date`.
     func newEntry(on date: Date = .now) {
-        startEntry(Self.entryHeader(for: date), on: date)
+        newEntry(for: PromptCatalog.prompt(on: date), on: date)
     }
 
-    /// Starts a widget-selected prompt as an unsaved dated draft with no French answer.
+    /// Starts a prompt as an unsaved dated draft, with the caret where the answer goes.
     func newEntry(for prompt: WritingPrompt, on date: Date = .now) {
-        startEntry(Self.guidedEntry(prompts: [prompt.text], for: date), on: date)
+        startEntry(Self.guidedEntry(for: prompt, on: date), on: date)
     }
 
     /// Starts a confirmed Claude exercise, retaining its title and optional folded hint.
@@ -660,30 +658,13 @@ final class EditorModel {
     ]
 
     /// The note above a new entry's date, which also shows the learner that notes exist.
-    static let entryGuide = "// Finish each sentence in French, then keep going. Grey notes are never checked."
+    static let entryGuide = "// Write in French, then keep going. Grey notes are never checked."
 
-    /// A new entry's sentence starters, each with the note that sits on the line above
-    /// it asking what to write about, as a comment sits above the code it describes.
-    private static let entryStarters = [
-        ("// What's the weather like?", "Il fait "),
-        ("// Where are you writing from today?", "Je suis à "),
-        ("// What are you wearing?", "Je porte "),
-        ("// How do you feel, and why?", "Je me sens ")
-    ]
-
-    /// Returns a new entry's opening lines and the caret offset after "Il fait ".
-    ///
-    /// The date line has no full stop, so it never counts as a checked sentence on its
-    /// own, and the first of the month is written "1er", as French dates are. The notes
-    /// are never checked, so their full stops count as no sentences either.
-    static func entryHeader(for date: Date, calendar: Calendar = .current) -> (text: String, caret: Int) {
-        // The guide sits above the date, as a header comment opens a file, and a blank
-        // line sets off each note and its starter.
-        let opening = dateHeading(for: date, calendar: calendar)
-        let pairs = entryStarters.map { note, starter in "\n" + note + "\n" + starter + "\n" }
-        let text = opening + pairs.joined()
-        let firstStarter = entryStarters[0]
-        return (text, opening.count + 1 + firstStarter.0.count + 1 + firstStarter.1.count)
+    /// Builds one prompt's note and answer line, with the caret after its French starter, if any.
+    static func guidedEntry(for prompt: WritingPrompt, on date: Date) -> (text: String, caret: Int) {
+        let entry = guidedEntry(prompts: [prompt.text], for: date)
+        let starter = prompt.starter ?? ""
+        return (entry.text + starter, entry.caret + starter.count)
     }
 
     /// Builds English guidance notes and blank answer lines, with the caret directly
@@ -696,12 +677,16 @@ final class EditorModel {
         return (opening + blocks.joined(separator: "\n"), opening.count + first.count)
     }
 
-    /// The unchecked guide and French date shared by ordinary and prompted entries.
+    /// The unchecked guide and French date shared by every new entry.
+    ///
+    /// The date line has no full stop, so it never counts as a checked sentence on its
+    /// own, and the first of the month is written "1er", as French dates are.
     private static func dateHeading(for date: Date, calendar: Calendar = .current) -> String {
-        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        let parts = calendar.dateComponents([.year, .month, .day, .weekday], from: date)
+        let weekday = Journal.frenchWeekdays[min(max((parts.weekday ?? 1) - 1, 0), 6)]
         let day = parts.day == 1 ? "1er" : "\(parts.day ?? 1)"
         let month = frenchMonths[min(max((parts.month ?? 1) - 1, 0), 11)]
-        return entryGuide + "\nLe \(day) \(month) \(parts.year ?? 2026)\n"
+        return entryGuide + "\n\(weekday) \(day) \(month) \(parts.year ?? 2026)\n"
     }
 
     /// Drops the old text and everything about it: its errors, ignored issues, the card,

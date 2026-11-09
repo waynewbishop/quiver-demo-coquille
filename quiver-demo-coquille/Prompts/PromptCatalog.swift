@@ -61,6 +61,7 @@ nonisolated enum PromptCatalog {
     }
 
     /// Chooses from `prompts` using calendar-day arithmetic, including across DST changes.
+    /// The choice looks random but holds all day, and each round of the list uses every prompt once.
     static func prompt(on date: Date, calendar: Calendar, from prompts: [WritingPrompt]) -> WritingPrompt {
         guard !prompts.isEmpty,
               let reference = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1)),
@@ -72,7 +73,33 @@ nonisolated enum PromptCatalog {
             return fallback
         }
         let remainder = days % prompts.count
-        let index = remainder < 0 ? remainder + prompts.count : remainder
-        return prompts[index]
+        let position = remainder < 0 ? remainder + prompts.count : remainder
+        let round = (days - position) / prompts.count
+        var order = shuffledIndices(count: prompts.count, round: round)
+        // One round's last prompt mustn't open the next round, or a day would repeat.
+        if prompts.count > 2, order[0] == shuffledIndices(count: prompts.count, round: round - 1).last {
+            order.swapAt(0, 1)
+        }
+        return prompts[order[position]]
+    }
+
+    /// The prompt order for one round of the list, the same every time for that round.
+    private static func shuffledIndices(count: Int, round: Int) -> [Int] {
+        var generator = RoundGenerator(state: UInt64(truncatingIfNeeded: round))
+        return Array(0..<count).shuffled(using: &generator)
+    }
+
+    /// A seeded SplitMix64 generator, so the app and its widget agree without shared storage.
+    private struct RoundGenerator: RandomNumberGenerator {
+        var state: UInt64
+
+        /// Returns the next value in the seeded sequence.
+        mutating func next() -> UInt64 {
+            state &+= 0x9E37_79B9_7F4A_7C15
+            var mixed = state
+            mixed = (mixed ^ (mixed >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            mixed = (mixed ^ (mixed >> 27)) &* 0x94D0_49BB_1331_11EB
+            return mixed ^ (mixed >> 31)
+        }
     }
 }

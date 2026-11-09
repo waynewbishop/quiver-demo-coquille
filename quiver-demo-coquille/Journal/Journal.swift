@@ -183,9 +183,16 @@ final class Journal {
         return title.isEmpty ? nil : title
     }
 
-    /// Whether a line is a date heading such as "Le 31 octobre 2026", with no sentence after it.
+    /// The French weekday names as a date heading writes them, indexed from Sunday.
+    static let frenchWeekdays = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
+
+    /// Whether a line is a date heading such as "Samedi 31 octobre 2026", or the older
+    /// "Le 31 octobre 2026", with no sentence after it.
     static func isDateLine(_ line: String) -> Bool {
-        line.hasPrefix("Le ") && line.contains(where: \.isNumber) && !line.contains(where: { ".!?".contains($0) })
+        let firstWord = String(line.prefix { $0 != " " })
+        return (firstWord == "Le" || frenchWeekdays.contains(firstWord))
+            && line.contains(where: \.isNumber)
+            && !line.contains(where: { ".!?".contains($0) })
     }
 
     /// "2026-10-31 Title", or "2026-10-31" when the title is empty.
