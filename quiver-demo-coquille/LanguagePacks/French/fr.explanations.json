@@ -58,6 +58,11 @@
     "template": "{word} is two words run together: {fix}.",
     "example": "mecouche is two words run together: me couche."
   },
+  "enArticle": {
+    "hint": "En doesn't normally come before le, la or les.",
+    "template": "En doesn't normally come before le, la or les. It should be {fix}.",
+    "example": "En doesn't normally come before le, la or les. It should be dans les."
+  },
   "lookAlike": {
     "hint": "{note}",
     "template": "{note} It should be {fix}.",

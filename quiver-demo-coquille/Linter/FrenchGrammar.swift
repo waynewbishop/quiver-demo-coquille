@@ -99,6 +99,7 @@ nonisolated struct FrenchGrammar: Grammar {
         return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
                 articleGenderIssues(in: $0) + contractedGenderIssues(in: $0) + possessiveGenderIssues(in: $0)
+                    + determinerGenderIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.gender.predicted", layer: .localMorphosyntax, targetLevel: .a1) {
                 predictedGenderIssues(in: $0)
@@ -153,6 +154,8 @@ nonisolated struct FrenchGrammar: Grammar {
             },
             GrammarRule(identifier: "grammar.preposition", layer: .relationalGrammar, targetLevel: .a1) {
                 countryIssues(in: $0.tokens, countries: countries, trie: countryTrie)
+                    + missingPlacePrepositionIssues(in: $0.tokens, countries: countries, trie: countryTrie)
+                    + enArticleIssues(in: $0.tokens)
                     + patternIssues(in: $0, list: lists[4])
             },
             GrammarRule(identifier: "grammar.sentenceCapital", layer: .orthography, targetLevel: .a1) {
@@ -254,6 +257,54 @@ nonisolated struct FrenchGrammar: Grammar {
         }
         guard let entry = lexicon.noun(noun.normalized), entry.number != .plural else { return nil }
         return entry.gender
+    }
+
+    /// Demonstratives, quel and aucun, each with the gender it marks and its two forms.
+    private static let otherDeterminers: [String: (masculine: String, feminine: String)] = [
+        "ce": ("ce", "cette"), "cet": ("ce", "cette"), "cette": ("ce", "cette"),
+        "quel": ("quel", "quelle"), "quelle": ("quel", "quelle"),
+        "aucun": ("aucun", "aucune"), "aucune": ("aucun", "aucune")
+    ]
+
+    /// Words whose listed gender misleads after a determiner: slang, loanwords, and "tombait pile".
+    private static let unjudgedAfterDeterminer: Set<String> = ["putain", "pile", "team"]
+
+    /// Flags ce, cet, cette, quel, quelle, aucun or aucune that doesn't suit a known singular
+    /// noun: "ce maison" → "cette maison", "ce ami" → "cet ami", "quel maison" → "quelle maison".
+    ///
+    /// Ce is also a pronoun and quelle often comes before être or avoir, so their forms stay
+    /// silent, and a word that can also be an adjective counts only when the tagger is sure,
+    /// except that ce before a masculine vowel sound is wrong either way. An h word that
+    /// isn't a known mute h leaves ce and cet alone, as Lexique doesn't record which it takes.
+    private func determinerGenderIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        return tokens.indices.dropLast().compactMap { index in
+            let determiner = tokens[index]
+            let noun = tokens[index + 1]
+            let word = noun.normalized
+            guard let forms = Self.otherDeterminers[determiner.normalized], determiner.isAdjacentToNext,
+                  noun.text.first?.isUppercase == false, !word.hasSuffix("'"), Self.articles[word] == nil,
+                  !isForm(word, of: "être"), !isForm(word, of: "avoir"), !Self.unjudgedAfterDeterminer.contains(word),
+                  !Self.superlativeMarkers.contains(word), !lexicon.isInfinitive(word),
+                  let gender = knownGender(of: noun) else { return nil }
+            let needsCet = determiner.normalized == "ce" && gender == .masculine && takesElision(noun)
+            guard needsCet || lexicon.adjectiveLemmas(of: word).isEmpty
+                    || text.isNoun(index + 1, certainty: Self.tagCertainty) else { return nil }
+            var expected = gender == .masculine ? forms.masculine : forms.feminine
+            if expected == "ce" {
+                if word.first == "h", !takesElision(noun) { return nil }
+                if takesElision(noun) { expected = "cet" }
+            }
+            guard expected != determiner.normalized else { return nil }
+            return issue(
+                .gender, .error, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: determiner.text, expected) + determiner.gap + noun.text,
+                explanation: explanations.render(.articleGender, [
+                    "noun": noun.text, "gender": gender.rawValue, "article": expected
+                ]),
+                source: "Lexique · determiner"
+            )
+        }
     }
 
     /// Each possessive that marks a gender, with its masculine and feminine forms.
@@ -1545,7 +1596,10 @@ nonisolated struct FrenchGrammar: Grammar {
                     source: "Meaning list"
                 )
                 let first = tokens[match.start].text
-                question.choices = (entry.choices ?? []).map { Choice(text: matchingCase(of: first, $0.text), meaning: $0.meaning) }
+                question.choices = (entry.choices ?? []).map { choice in
+                    let wording = renderedFix(choice.text, for: entry, match: match, in: tokens) ?? choice.text
+                    return Choice(text: matchingCase(of: first, wording), meaning: choice.meaning)
+                }
                 return question
             }
             guard let fix = entry.fix,
@@ -1801,6 +1855,94 @@ nonisolated struct FrenchGrammar: Grammar {
                 source: "Country list"
             )
         }
+    }
+
+    /// Nouns that keep la after en: "en la matière", "en la personne de", and "en la majeur", the key.
+    private static let nounsAfterEnLa: Set<String> = ["matière", "personne", "majeur", "mineur"]
+
+    /// Verbs after which en before an article is a mistake for dans.
+    private static let placeVerbs = [
+        "aller", "courir", "marcher", "habiter", "vivre", "voyager", "rester", "travailler",
+        "venir", "partir", "arriver", "entrer", "jouer", "dormir", "manger", "lire"
+    ]
+
+    /// Flags en before le, la or les and a noun, where French uses dans: "en les montagnes".
+    ///
+    /// L' is left alone for "en l'air", and any -ant word for "en les voyant", where les is a
+    /// pronoun. Only after a verb of movement, place or activity: "croire en la science",
+    /// "consister en la direction" and "en la majeur" are correct.
+    private func enArticleIssues(in tokens: [Token]) -> [Issue] {
+        tokens.indices.dropLast(2).compactMap { index in
+            let article = tokens[index + 1]
+            let noun = tokens[index + 2]
+            let word = noun.normalized
+            guard tokens[index].normalized == "en", tokens[index].isAdjacentToNext, article.isAdjacentToNext,
+                  ["le", "la", "les"].contains(article.normalized), noun.text.first?.isUppercase == false,
+                  lexicon.noun(word) != nil, !Self.nounsAfterEnLa.contains(word), !word.hasSuffix("ant"),
+                  index > 0, tokens[index - 1].isAdjacentToNext,
+                  Self.placeVerbs.contains(where: { isForm(tokens[index - 1].normalized, of: $0) }) else { return nil }
+            let fix = "dans " + article.text
+            return issue(
+                .preposition, .error, from: index, through: index + 1, in: tokens,
+                replacement: matchingCase(of: tokens[index].text, fix),
+                explanation: explanations.render(.enArticle, ["fix": fix]),
+                source: "En + article rule"
+            )
+        }
+    }
+
+    /// Flags a place with no preposition after a subject and a form of aller or habiter:
+    /// "je vais France" → "en France", "je vais Paris" → "à Paris".
+    ///
+    /// A bare city is judged after aller only, since "j'habite Paris" is correct French.
+    /// The subject is required, so the cheer "Allez Marseille!" stays silent.
+    private func missingPlacePrepositionIssues(
+        in tokens: [Token],
+        countries: [(key: String, value: String)],
+        trie: PhraseTrie
+    ) -> [Issue] {
+        /// Whether the word at `index` follows a subject and a form of one of `verbs`.
+        func followsSubjectAndVerb(_ index: Int, verbs: [String]) -> Bool {
+            guard index >= 2, tokens[index - 1].isAdjacentToNext, tokens[index - 2].isAdjacentToNext,
+                  Self.subjectPronouns.contains(tokens[index - 2].normalized) else { return false }
+            return lexicon.conjugations(tokens[index - 1].normalized).contains { verbs.contains($0.verb) }
+        }
+        var issues: [Issue] = []
+        var countryStarts = Set<Int>()
+        for match in trie.matches(in: tokens) {
+            let (name, article) = countries[match.entry]
+            guard tokens[match.start].text.first?.isUppercase == true, !article.isEmpty,
+                  let expected = ["la": "en", "l'": "en", "le": "au", "les": "aux"][article] else { continue }
+            countryStarts.insert(match.start)
+            guard followsSubjectAndVerb(match.start, verbs: ["aller", "habiter"]) else { continue }
+            let last = match.start + match.length - 1
+            var nameText = ""
+            for index in match.start..<last { nameText += tokens[index].text + tokens[index].gap }
+            nameText += tokens[last].text
+            let reason = ["la": "a feminine country", "l'": "a country starting with a vowel",
+                          "le": "a masculine country", "les": "a plural country"][article] ?? "a country"
+            let fix = expected + " " + nameText
+            issues.append(issue(
+                .preposition, .error, from: match.start, through: last, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(.placePreposition, ["place": name, "reason": reason, "fix": fix]),
+                source: "Missing place rule"
+            ))
+        }
+        for index in tokens.indices where !countryStarts.contains(index) {
+            let place = tokens[index]
+            guard place.text.first?.isUppercase == true, followsSubjectAndVerb(index, verbs: ["aller"]),
+                  !Self.likingAdverbs.contains(place.normalized),
+                  patterns.classKeys(of: place.normalized).isEmpty else { continue }
+            let fix = "à " + place.text
+            issues.append(issue(
+                .preposition, .error, from: index, through: index, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(.placePreposition, ["place": place.text, "reason": "a place name", "fix": fix]),
+                source: "Missing place rule"
+            ))
+        }
+        return issues
     }
 
     // MARK: - Et or est

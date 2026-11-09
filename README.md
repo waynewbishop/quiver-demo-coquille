@@ -89,14 +89,14 @@ Nous avons acheté une fromage et des pommes rouge.
 | Spelling | gentile → gentille | Error | System spellchecker, guesses ranked by Quiver |
 | Unknown words | Ahdourdui, with no fix offered | Warning | System spellchecker, no French guess |
 | Run-together words | jesuis → je suis, jaime → j'aime | Warning | System spellchecker, split by Lexique |
-| Article gender | une fromage → un fromage | Error | Lexique, known noun |
+| Article gender | une fromage → un fromage, ce maison → cette maison, quel maison → quelle maison | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Elision | je aime → j'aime, au école → à l'école | Error | Elision rule |
 | Possessives | mon mère → ma mère, ma amie → mon amie | Error | Lexique, known noun |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
 | A or à | je vais a Paris → à, il à faim → a | Error | Accent rule, Lexique verb forms |
-| Prepositions | à Canada → au Canada, dépend sur → dépend de | Error | Country list, preposition list |
+| Prepositions | à Canada → au Canada, je vais France → en France, en les montagnes → dans les montagnes, dépend sur → dépend de, en printemps → au printemps | Error | Country list, preposition list, place and en rules |
 | Conjugation | je va → je vais, ils mange → ils mangent | Error | Conjugation rule, Lexique verb forms |
 | Être or avoir | j'ai allé → je suis allé, il s'a trompé → il s'est trompé | Error | Auxiliary rule, Lexique participles |
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
@@ -272,7 +272,7 @@ Everything is plain folders in one Xcode project:
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 224 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 235 XCTest cases, including the
   false-positive traps above, correct French that must pass clean,
   phrasebook validation, calendar selection, and hostile-link tests.
 

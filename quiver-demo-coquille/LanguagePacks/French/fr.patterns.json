@@ -1,5 +1,7 @@
 {
   "classes": {
+    "number": ["deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "douze", "quelques", "plusieurs", "2", "3", "4", "5", "6", "7", "8", "9", "10", "12"],
+    "timeUnit": ["ans", "années", "mois", "semaines", "jours", "heures"],
     "avoirNoun": [
       "faim",
       "soif",
@@ -336,6 +338,147 @@
       "kind": "lookAlike",
       "match": "elles son",
       "note": "son means his or her, so it comes before a noun; the verb être is spelled sont here."
+    },
+    {
+      "fix": "au printemps",
+      "kind": "preposition",
+      "match": "en printemps",
+      "note": "Seasons take au or en: au printemps, but en été, en automne and en hiver."
+    },
+    {
+      "fix": "au printemps",
+      "kind": "preposition",
+      "match": "dans le printemps",
+      "note": "Seasons take au or en: au printemps, but en été, en automne and en hiver.",
+      "onlyAtClauseEnd": true
+    },
+    {
+      "fix": "en été",
+      "kind": "preposition",
+      "match": "dans l'été",
+      "note": "Seasons take au or en: au printemps, but en été, en automne and en hiver.",
+      "onlyAtClauseEnd": true
+    },
+    {
+      "fix": "en automne",
+      "kind": "preposition",
+      "match": "dans l'automne",
+      "note": "Seasons take au or en: au printemps, but en été, en automne and en hiver.",
+      "onlyAtClauseEnd": true
+    },
+    {
+      "fix": "en hiver",
+      "kind": "preposition",
+      "match": "dans l'hiver",
+      "note": "Seasons take au or en: au printemps, but en été, en automne and en hiver.",
+      "onlyAtClauseEnd": true
+    },
+    {
+      "fix": "dans le train",
+      "kind": "preposition",
+      "match": "sur le train",
+      "note": "Inside a train or a plane, French says dans."
+    },
+    {
+      "fix": "dans l'avion",
+      "kind": "preposition",
+      "match": "sur l'avion",
+      "note": "Inside a train or a plane, French says dans."
+    },
+    {
+      "fix": "@décider de",
+      "kind": "preposition",
+      "match": "@décider:ip à",
+      "note": "Before an infinitive, décider takes de: je décide de partir.",
+      "onlyBeforeInfinitive": true,
+      "unlessAfter": [
+        "me",
+        "m'",
+        "te",
+        "t'",
+        "se",
+        "s'",
+        "nous",
+        "vous"
+      ]
+    },
+    {
+      "fix": "@décider de",
+      "kind": "preposition",
+      "match": "@décider:ii à",
+      "note": "Before an infinitive, décider takes de: je décide de partir.",
+      "onlyBeforeInfinitive": true,
+      "unlessAfter": [
+        "me",
+        "m'",
+        "te",
+        "t'",
+        "se",
+        "s'",
+        "nous",
+        "vous"
+      ]
+    },
+    {
+      "fix": "@décider de",
+      "kind": "preposition",
+      "match": "@décider:pp à",
+      "note": "Before an infinitive, décider takes de: je décide de partir.",
+      "onlyAfter": [
+        "ai",
+        "as",
+        "avons",
+        "avez",
+        "ont"
+      ],
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "fix": "@oublier de",
+      "kind": "preposition",
+      "match": "@oublier à",
+      "note": "Before an infinitive, oublier takes de: j'oublie de manger.",
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "fix": "@finir de",
+      "kind": "preposition",
+      "match": "@finir à",
+      "note": "Before an infinitive, finir takes de: je finis de manger.",
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "fix": "@arrêter de",
+      "kind": "preposition",
+      "match": "@arrêter à",
+      "note": "Before an infinitive, arrêter takes de: j'arrête de fumer.",
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "fix": "@aider à",
+      "kind": "preposition",
+      "match": "@aider de",
+      "note": "Before an infinitive, aider takes à: j'aide à faire.",
+      "onlyBeforeInfinitive": true
+    },
+    {
+      "choices": [
+        {
+          "meaning": "a length planned ahead",
+          "text": "pour $number $timeUnit"
+        },
+        {
+          "meaning": "it lasted that long and is over",
+          "text": "pendant $number $timeUnit"
+        },
+        {
+          "meaning": "it started then and is still going",
+          "text": "depuis $number $timeUnit"
+        }
+      ],
+      "kind": "meaning",
+      "match": "pour $number $timeUnit",
+      "note": "Pour gives a planned length; pendant one that's over; depuis one still going."
     },
     {
       "fix": "@avoir $avoirNoun",
