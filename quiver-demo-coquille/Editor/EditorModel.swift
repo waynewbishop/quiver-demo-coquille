@@ -88,8 +88,6 @@ final class EditorModel {
     /// The text last seen by `textDidChange`, to tell typing from styling changes.
     @ObservationIgnored private var observedText = ""
     @ObservationIgnored private var lintTask: Task<Void, Never>?
-    /// The selection to replace, then the advancing caret, during one dictation session.
-    @ObservationIgnored private var dictationRange: Range<Int>?
     /// Whether the editor holds Try an example, whose mistakes aren't the learner's.
     /// It ends once the example's opening sentence is gone: cleared, deleted, or typed over.
     @ObservationIgnored private var isRehearsal = false
@@ -253,59 +251,6 @@ final class EditorModel {
             guard !Task.isCancelled else { return }
             lintNow()
         }
-    }
-
-    /// Starts dictation at the current selection and stops either narrator.
-    func beginDictation() {
-        narrator.stop()
-        phraseNarrator.stop()
-        lintTask?.cancel()
-        switch selection.indices(in: text) {
-        case .insertionPoint(let point):
-            let offset = text.characters.distance(from: text.startIndex, to: point)
-            dictationRange = offset..<offset
-        case .ranges(let ranges):
-            guard let range = ranges.ranges.first else {
-                dictationRange = nil
-                return
-            }
-            let lower = text.characters.distance(from: text.startIndex, to: range.lowerBound)
-            let upper = text.characters.distance(from: text.startIndex, to: range.upperBound)
-            dictationRange = lower..<upper
-        }
-    }
-
-    /// Ends dictation without changing the editor's current selection.
-    func endDictation() {
-        dictationRange = nil
-    }
-
-    /// Inserts one final dictated phrase, keeping later phrases at the advancing caret.
-    func insertDictatedText(_ dictated: String) {
-        if dictationRange == nil { beginDictation() }
-        let phrase = dictated.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !phrase.isEmpty, let target = dictationRange else { return }
-        let plain = plainText
-        guard target.lowerBound >= 0, target.upperBound <= plain.count,
-              let range = attributedRange(for: target) else { return }
-
-        var insertion = phrase
-        let lower = plain.index(plain.startIndex, offsetBy: target.lowerBound)
-        let upper = plain.index(plain.startIndex, offsetBy: target.upperBound)
-        if lower > plain.startIndex, plain[plain.index(before: lower)].isWhitespace == false {
-            insertion = " " + insertion
-        }
-        if upper < plain.endIndex {
-            let next = plain[upper]
-            if next.isLetter || next.isNumber { insertion += " " }
-        }
-
-        text.replaceSubrange(range, with: AttributedString(insertion))
-        let caret = target.lowerBound + insertion.count
-        dictationRange = caret..<caret
-        let index = text.characters.index(text.startIndex, offsetBy: caret)
-        selection = AttributedTextSelection(insertionPoint: index)
-        lint(applied: nil, countsTypedFixes: false)
     }
 
     /// Lints right away if the text changed since the last lint, so play and English
@@ -746,7 +691,6 @@ final class EditorModel {
         phraseNarrator.stop()
         lintTask?.cancel()
         translationTask?.cancel()
-        dictationRange = nil
         ignoredKeys = []
         issues = []
         selectedIssueID = nil

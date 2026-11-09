@@ -12,6 +12,11 @@
 // permissions and limitations under the License.
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The learner's appearance choice, remembered between launches.
 enum Appearance: String, CaseIterable, Identifiable {
@@ -39,6 +44,32 @@ enum Appearance: String, CaseIterable, Identifiable {
         case .light: .light
         case .dark: .dark
         }
+    }
+
+    /// Applies the choice to the whole app at the platform level.
+    ///
+    /// `preferredColorScheme(nil)` doesn't reliably undo an earlier light or dark choice,
+    /// which left the text editor drawing dark-mode text on a light page. Setting the
+    /// platform's own override, or clearing it, also reaches the Settings and
+    /// Corrections windows and sheets, which sit outside the editor's view tree.
+    @MainActor
+    func apply() {
+        #if os(macOS)
+        NSApplication.shared.appearance = switch self {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
+        }
+        #else
+        let style: UIUserInterfaceStyle = switch self {
+        case .system: .unspecified
+        case .light: .light
+        case .dark: .dark
+        }
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            for window in scene.windows { window.overrideUserInterfaceStyle = style }
+        }
+        #endif
     }
 }
 

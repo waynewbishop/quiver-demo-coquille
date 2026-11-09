@@ -24,7 +24,6 @@ import UniformTypeIdentifiers
 struct EditorScreen: View {
 
     let journal: Journal
-    let voice: VoiceEntryModel
     @State private var model: EditorModel
     /// A validated link waiting for initial restoration or a save decision.
     @Binding private var pendingRoute: CoquilleRoute?
@@ -51,14 +50,9 @@ struct EditorScreen: View {
     @State private var showsProgress = false
     @State private var showsPhrasebook = false
     @State private var showsSettings = false
-    @State private var voiceProblem: VoiceProblem?
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
-    @AppStorage(VoiceEntryModel.enabledStorageKey) private var voiceEntryEnabled = false
-    #if os(macOS)
-    @Environment(\.openSettings) private var openSettings
-    #endif
     #if !os(macOS)
     /// Compact on iPhone, where the editor gets a navigation bar instead of the top bar.
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -99,11 +93,9 @@ struct EditorScreen: View {
         stats: StatsStore,
         journal: Journal,
         workspace: Workspace?,
-        voice: VoiceEntryModel,
         pendingRoute: Binding<CoquilleRoute?> = .constant(nil)
     ) {
         self.journal = journal
-        self.voice = voice
         _model = State(initialValue: EditorModel(stats: stats, journal: journal, workspace: workspace))
         _pendingRoute = pendingRoute
     }
@@ -150,14 +142,6 @@ struct EditorScreen: View {
             } message: { problem in
                 Text(problem.message)
             }
-            .alert(voiceProblem?.title ?? "", isPresented: showsVoiceProblem, presenting: voiceProblem) { problem in
-                if problem.opensSettings {
-                    Button("Open Settings") { openVoiceSettings() }
-                }
-                Button("OK", role: .cancel) {}
-            } message: { problem in
-                Text(problem.message)
-            }
             .sheet(item: $naming) { naming in
                 SaveEntrySheet(
                     suggestedTitle: model.exerciseTitle ?? storyTitle ?? "",
@@ -183,30 +167,12 @@ struct EditorScreen: View {
             // A title the model gave other writing doesn't name this writing.
             .onChange(of: model.document) {
                 storyTitle = nil
-                stopVoice()
-            }
-            .onChange(of: voice.state) {
-                if !voice.isActive { model.endDictation() }
-                presentVoiceProblem()
-            }
-            .onChange(of: voiceEntryEnabled) {
-                if !voiceEntryEnabled { stopVoice() }
-            }
-            .onChange(of: showsSettings) {
-                if showsSettings { stopVoice() }
-            }
-            .onChange(of: editorIsFocused) {
-                if editorIsFocused && voice.isActive { stopVoice() }
             }
             // Writing that isn't saved is kept before the app can be quit.
             .onChange(of: scenePhase) {
-                if scenePhase != .active {
-                    model.saveNow()
-                    stopVoice()
-                }
+                if scenePhase != .active { model.saveNow() }
                 if scenePhase == .active { journal.refresh() }
             }
-            .onDisappear { stopVoice() }
     }
 
     /// On the Mac, the journal sidebar beside the editor; elsewhere the editor alone,
@@ -249,7 +215,7 @@ struct EditorScreen: View {
     private var screen: some View {
         layout
             .tint(.brand)
-            .preferredColorScheme(appearance.colorScheme)
+            .onChange(of: appearance, initial: true) { appearance.apply() }
             .animation(.snappy(duration: 0.2), value: model.selectedIssueID)
             .task {
                 await model.load()
@@ -273,7 +239,7 @@ struct EditorScreen: View {
             }
             #if !os(macOS)
             .sheet(isPresented: $showsSettings) {
-                SettingsView(voice: voice)
+                SettingsView()
                     .tint(.brand)
             }
             #endif
@@ -286,14 +252,6 @@ struct EditorScreen: View {
     private struct FileProblem {
         let title: String
         let message: String
-    }
-
-    /// A voice-entry error, with a route to its model or permission controls when useful.
-    private struct VoiceProblem: Identifiable {
-        let id = UUID()
-        let title: String
-        let message: String
-        let opensSettings: Bool
     }
 
     /// A copy to export: its text and suggested name.
@@ -598,9 +556,6 @@ struct EditorScreen: View {
             }
 
             ToolbarItemGroup(placement: .navigation) {
-                if voiceEntryEnabled {
-                    VoiceEntryButton(voice: voice, action: toggleVoice)
-                }
                 MacPlayButton(model: model)
                 MacStopButton(model: model)
             }
@@ -709,7 +664,7 @@ struct EditorScreen: View {
             .toolbarVisibility(isLandscapePhone && editorIsFocused ? .hidden : .automatic, for: .navigationBar)
             .animation(.snappy(duration: 0.2), value: editorIsFocused)
             .toolbar {
-                CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, voice: voice, toggleVoice: toggleVoice, perform: handle)
+                CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
             }
             // Going back to the French brings the keyboard up, so the phrasebook sheet
             // steps down rather than sharing the screen with it.
@@ -766,7 +721,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, voice: voice, toggleVoice: toggleVoice, perform: handle)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
 
                 if isWide {
                     HStack(spacing: 0) {
@@ -824,61 +779,6 @@ struct EditorScreen: View {
     private func jumpToFirstError() {
         editorIsFocused = true
         model.jumpToFirstError()
-    }
-
-    /// Starts at the current selection before hiding the keyboard, or finishes the active session.
-    private func toggleVoice() {
-        if !voice.isActive {
-            model.beginDictation()
-            voice.onFinalText = { model.insertDictatedText($0) }
-            editorIsFocused = false
-        }
-        Task { await voice.toggle() }
-    }
-
-    private func stopVoice() {
-        guard voice.state != .idle else {
-            model.endDictation()
-            return
-        }
-        guard voice.state != .stopping else { return }
-        Task {
-            await voice.stop()
-            model.endDictation()
-        }
-    }
-
-    private func presentVoiceProblem() {
-        switch voice.state {
-        case .denied:
-            voiceProblem = VoiceProblem(
-                title: "Microphone Access Is Off",
-                message: "Allow Coquille to use the microphone in Settings before dictating French.",
-                opensSettings: true
-            )
-        case .modelMissing:
-            voiceProblem = VoiceProblem(
-                title: "French Speech Model Needed",
-                message: "Download the French speech model in Coquille Settings before using Voice Entry.",
-                opensSettings: true
-            )
-        case .failed(let message):
-            voiceProblem = VoiceProblem(title: "Voice Entry Unavailable", message: message, opensSettings: false)
-        default:
-            voiceProblem = nil
-        }
-    }
-
-    private func openVoiceSettings() {
-        #if os(macOS)
-        openSettings()
-        #else
-        showsSettings = true
-        #endif
-    }
-
-    private var showsVoiceProblem: Binding<Bool> {
-        Binding(get: { voiceProblem != nil }, set: { if !$0 { voiceProblem = nil } })
     }
 
     /// The placeholder's top offset, matching where the editor draws its first line.
@@ -949,11 +849,6 @@ struct EditorScreen: View {
                     }
                     .padding(.horizontal, 25)
                     .padding(.vertical, placeholderTopInset)
-                }
-            }
-            .overlay(alignment: .bottomLeading) {
-                if voice.state == .preparing || voice.state == .listening {
-                    VoiceInterimView(voice: voice)
                 }
             }
             .onChange(of: model.text) { model.textDidChange() }
@@ -1078,5 +973,5 @@ struct PaneHeader: View {
 }
 
 #Preview {
-    EditorScreen(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")), workspace: nil, voice: VoiceEntryModel())
+    EditorScreen(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")), workspace: nil)
 }
