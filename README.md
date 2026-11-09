@@ -46,13 +46,17 @@ the French has no errors; otherwise it reads "Coquille".
 
 ## Widgets and exercise links
 
-The `CoquilleWidgets` extension provides a small or medium **Today's Prompt**
-Home Screen widget and a Control Center shell launcher on iPhone and iPad.
-Add them through the system's widget gallery and Control Center **+** flow.
-The prompt comes from the bundled catalog and changes on the local calendar
-day, including across daylight-saving changes. Both features work offline.
-Tapping the prompt opens that exact English sentence as an unsaved draft;
-the Control Center button only opens the current editor.
+The `CoquilleWidgets` extension provides a small or medium **Coquille**
+widget and a Control Center shell launcher on iPhone, iPad and Mac. Add
+them through the system's widget gallery and Control Center **+** flow.
+
+The bar at the top carries on with the current writing, or starts today's
+entry when the editor is empty. Small adds today's prompt and the phrasebook;
+medium also adds the journal and corrections. The prompt comes from the
+bundled catalog and changes on the local calendar day, including across
+daylight-saving changes, and opens that exact English sentence as an unsaved
+draft. Everything works offline, and the Control Center button only opens
+the current editor.
 
 Claude can offer a lesson's writing exercise with a custom link:
 
@@ -261,14 +265,14 @@ Everything is plain folders in one Xcode project:
   the SwiftUI views.
 - `Prompts/`, `Exercises/` — the daily catalog, strict custom-URL router,
   exercise confirmation, and optional hint presentation.
-- `CoquilleWidgets/` — the iOS Home Screen timeline and Control Center
+- `CoquilleWidgets/` — the widget timeline and Control Center
   launcher, with shared prompt code but no Quiver dependency.
 - `Fonts/` — IBM Plex Sans and Mono, registered at app launch and declared
   under `UIAppFonts` for the widget process.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 220 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 224 XCTest cases, including the
   false-positive traps above, correct French that must pass clean,
   phrasebook validation, calendar selection, and hostile-link tests.
 

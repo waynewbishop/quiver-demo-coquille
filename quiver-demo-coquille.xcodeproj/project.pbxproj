@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C0C00000000000000000000D /* CoquilleWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000002 /* CoquilleWidgets.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C0C00000000000000000000D /* CoquilleWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000002 /* CoquilleWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C0C000000000000000000011 /* quiver-demo-coquille/Prompts/WritingPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000010 /* quiver-demo-coquille/Prompts/WritingPrompt.swift */; };
 		C0C000000000000000000013 /* quiver-demo-coquille/Prompts/PromptCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000012 /* quiver-demo-coquille/Prompts/PromptCatalog.swift */; };
 		C0C000000000000000000015 /* quiver-demo-coquille/Prompts/CoquilleRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000014 /* quiver-demo-coquille/Prompts/CoquilleRoute.swift */; };
@@ -20,6 +20,7 @@
 		C0C000000000000000000023 /* quiver-demo-coquille/Fonts/AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000022 /* quiver-demo-coquille/Fonts/AppFonts.swift */; };
 		C0C000000000000000000028 /* quiver-demo-coquille/Fonts/BrandColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */; };
 		C0C000000000000000000029 /* quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C00000000000000000002A /* quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift */; };
+		C0C00000000000000000002B /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */; };
 		DA2705DA3091505900F81D2D /* Quiver in Frameworks */ = {isa = PBXBuildFile; productRef = DA2705D93091505900F81D2D /* Quiver */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +68,7 @@
 		C0C000000000000000000022 /* quiver-demo-coquille/Fonts/AppFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Fonts/AppFonts.swift"; sourceTree = SOURCE_ROOT; };
 		C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Fonts/BrandColor.swift"; sourceTree = SOURCE_ROOT; };
 		C0C00000000000000000002A /* quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift"; sourceTree = "<group>"; };
+		C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift"; sourceTree = "<group>"; };
 		DA2705F23091505900F81D2D /* quiver-demo-coquilleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "quiver-demo-coquilleTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -162,6 +164,7 @@
 				C0C000000000000000000022 /* quiver-demo-coquille/Fonts/AppFonts.swift */,
 				C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */,
 				C0C00000000000000000002A /* quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift */,
+				C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */,
 				C0C000000000000000000018 /* quiver-demo-coquille/LanguagePacks/French/fr.prompts.json */,
 				C0C00000000000000000001A /* quiver-demo-coquille/Fonts/IBMPlexMono-Regular.ttf */,
 				C0C00000000000000000001C /* quiver-demo-coquille/Fonts/IBMPlexMono-Medium.ttf */,
@@ -323,6 +326,7 @@
 				C0C000000000000000000023 /* quiver-demo-coquille/Fonts/AppFonts.swift in Sources */,
 				C0C000000000000000000028 /* quiver-demo-coquille/Fonts/BrandColor.swift in Sources */,
 				C0C000000000000000000029 /* quiver-demo-coquille/Prompts/OpenCoquilleIntent.swift in Sources */,
+				C0C00000000000000000002B /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift in Sources */,
 			);
 		};
 		DA2705F43091505900F81D2D /* Sources */ = {
@@ -335,7 +339,6 @@
 /* Begin PBXTargetDependency section */
 		C0C00000000000000000000C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilter = ios;
 			target = C0C000000000000000000003 /* CoquilleWidgets */;
 			targetProxy = C0C00000000000000000000B /* PBXContainerItemProxy */;
 		};
@@ -576,6 +579,13 @@
 		C0C000000000000000000008 /* Debug configuration for PBXNativeTarget "CoquilleWidgets" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_APP_SANDBOX = YES;
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -594,9 +604,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.waynebishoppersonalteam.quiverdemocoquille.widgets;
 				PRODUCT_NAME = CoquilleWidgets;
-				SDKROOT = iphoneos;
+				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -608,6 +618,13 @@
 		C0C000000000000000000009 /* Release configuration for PBXNativeTarget "CoquilleWidgets" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_APP_SANDBOX = YES;
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -626,9 +643,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.waynebishoppersonalteam.quiverdemocoquille.widgets;
 				PRODUCT_NAME = CoquilleWidgets;
-				SDKROOT = iphoneos;
+				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;

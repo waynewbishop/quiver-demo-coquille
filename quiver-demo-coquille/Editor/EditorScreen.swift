@@ -50,8 +50,12 @@ struct EditorScreen: View {
     @State private var showsProgress = false
     @State private var showsPhrasebook = false
     @State private var showsSettings = false
+    @State private var showsCorrections = false
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
     #if !os(macOS)
     /// Compact on iPhone, where the editor gets a navigation bar instead of the top bar.
@@ -245,6 +249,17 @@ struct EditorScreen: View {
                 SettingsView()
                     .tint(.brand)
             }
+            .sheet(isPresented: $showsCorrections) {
+                NavigationStack {
+                    CorrectionsView(store: model.stats)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showsCorrections = false }
+                            }
+                        }
+                }
+                .tint(.brand)
+            }
             #endif
             .modifier(PhrasebookPresentation(isPresented: $showsPhrasebook, model: model))
     }
@@ -318,6 +333,23 @@ struct EditorScreen: View {
         switch route {
         case .today(let prompt): move(.prompt(prompt))
         case .exercise(let exercise): move(.exercise(exercise))
+        case .write:
+            // Never a save question on the way to writing: carry on, or start today's entry.
+            if model.hasText { editorIsFocused = true } else { move(.todaysEntry) }
+        case .phrasebook:
+            showsPhrasebook = true
+        case .journal:
+            #if os(macOS)
+            columns = .all
+            #else
+            showsEntries = true
+            #endif
+        case .corrections:
+            #if os(macOS)
+            openWindow(id: "corrections")
+            #else
+            showsCorrections = true
+            #endif
         }
     }
 

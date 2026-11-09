@@ -14,18 +14,18 @@
 import SwiftUI
 import WidgetKit
 
-/// The small and medium Home Screen prompt widget.
+/// The small and medium widget, whose kind stays the same so placed widgets carry over.
 struct TodaysPromptWidget: Widget {
     private let kind = "CoquilleTodaysPrompt"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodaysPromptProvider()) { entry in
-            TodaysPromptView(entry: entry)
-                .widgetURL(CoquilleRoute.widgetURL(for: entry.prompt))
+            CoquilleWidgetView(entry: entry)
         }
-        .configurationDisplayName("Today's Prompt")
-        .description("One English sentence each day. Tap to write the French in Coquille.")
+        .configurationDisplayName("Coquille")
+        .description("Write in French, or jump to today's prompt and your phrasebook.")
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
 

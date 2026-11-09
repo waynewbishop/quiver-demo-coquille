@@ -14,20 +14,27 @@ struct ContentView: View {
             workspace: Workspace.standard(),
             pendingRoute: $pendingRoute
         )
-        .onOpenURL { url in
-            guard let route = CoquilleRoute.parse(url) else { return }
-            switch route {
-            case .today:
-                pendingRoute = route
-            case .exercise(let exercise):
-                pendingExercise = exercise
-            }
+        .onOpenURL { open($0) }
+        .onChange(of: RouteInbox.shared.link, initial: true) {
+            guard let link = RouteInbox.shared.link else { return }
+            RouteInbox.shared.link = nil
+            if let url = URL(string: link) { open(url) }
         }
         .sheet(item: $pendingExercise) { exercise in
             ExerciseStartView(exercise: exercise) { confirmed in
                 pendingRoute = .exercise(confirmed)
                 pendingExercise = nil
             }
+        }
+    }
+
+    /// Validates a link, asking for confirmation first when it would start an exercise.
+    private func open(_ url: URL) {
+        guard let route = CoquilleRoute.parse(url) else { return }
+        if case .exercise(let exercise) = route {
+            pendingExercise = exercise
+        } else {
+            pendingRoute = route
         }
     }
 }

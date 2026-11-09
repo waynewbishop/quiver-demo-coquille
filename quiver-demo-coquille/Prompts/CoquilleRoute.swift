@@ -17,6 +17,21 @@ import Foundation
 nonisolated enum CoquilleRoute: Equatable, Sendable {
     case today(WritingPrompt)
     case exercise(ExercisePrompt)
+    case write
+    case phrasebook
+    case journal
+    case corrections
+
+    /// The links behind the widget's buttons.
+    static let writeLink = "coquille://write"
+    static let phrasebookLink = "coquille://phrasebook"
+    static let journalLink = "coquille://journal"
+    static let correctionsLink = "coquille://corrections"
+
+    /// Destinations that take no fields at all.
+    private static let destinations: [String: CoquilleRoute] = [
+        "write": .write, "phrasebook": .phrasebook, "journal": .journal, "corrections": .corrections,
+    ]
 
     private static let maximumURLLength = 2_048
     private static let maximumPromptCount = 10
@@ -43,10 +58,13 @@ nonisolated enum CoquilleRoute: Equatable, Sendable {
               components.password == nil,
               components.port == nil,
               components.fragment == nil,
-              let host = components.host,
-              let items = components.queryItems else {
+              let host = components.host else {
             return nil
         }
+        if let destination = destinations[host] {
+            return components.query == nil ? destination : nil
+        }
+        guard let items = components.queryItems else { return nil }
 
         switch host {
         case "today":
