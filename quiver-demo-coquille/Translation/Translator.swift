@@ -37,15 +37,20 @@ struct AppleTranslator: Translator {
     let source: Locale.Language
     let target: Locale.Language
 
-    /// Returns the translation of `text`, checking first that the pack is installed.
+    /// Returns the translation of `text`, asking about the pack only if translating fails,
+    /// so a momentarily wrong availability answer can't block a translation that would work.
     func translate(_ text: String) async throws -> String {
-        switch await LanguageAvailability().status(from: source, to: target) {
-        case .installed:
+        do {
             return try await Self.translate(text, from: source, to: target)
-        case .supported:
-            throw TranslationUnavailable.notInstalled
-        default:
-            throw TranslationUnavailable.unsupported
+        } catch {
+            switch await LanguageAvailability().status(from: source, to: target) {
+            case .installed:
+                throw error
+            case .supported:
+                throw TranslationUnavailable.notInstalled
+            default:
+                throw TranslationUnavailable.unsupported
+            }
         }
     }
 

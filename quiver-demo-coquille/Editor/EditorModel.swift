@@ -778,8 +778,10 @@ final class EditorModel {
                 guard !Task.isCancelled, current == plainText else { return }
                 english = .translated(translated)
             } catch TranslationUnavailable.notInstalled {
+                guard !Task.isCancelled else { return }
                 english = .unavailable("To see English, download French in Coquille's Settings.")
             } catch TranslationUnavailable.unsupported {
+                guard !Task.isCancelled else { return }
                 english = .unavailable("On-device translation from French isn't available on this device.")
             } catch {
                 guard !Task.isCancelled else { return }
