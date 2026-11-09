@@ -74,4 +74,26 @@ struct Workspace {
         }
         defaults?.set(value, forKey: Self.documentKey)
     }
+
+    /// The defaults key for the open exercise's title and hint.
+    static let exerciseKey = "openExercise"
+
+    /// The title and hint of the exercise in the unsaved draft, or `nil` without one.
+    func exerciseDetails() -> (title: String, hint: String?)? {
+        guard let details = defaults?.dictionary(forKey: Self.exerciseKey) as? [String: String],
+              let title = details["title"] else { return nil }
+        return (title, details["hint"])
+    }
+
+    /// Remembers the exercise's title and hint alongside its unsaved draft.
+    func setExerciseDetails(title: String, hint: String?) {
+        var details = ["title": title]
+        details["hint"] = hint
+        defaults?.set(details, forKey: Self.exerciseKey)
+    }
+
+    /// Forgets the exercise once its draft is replaced.
+    func clearExerciseDetails() {
+        defaults?.removeObject(forKey: Self.exerciseKey)
+    }
 }

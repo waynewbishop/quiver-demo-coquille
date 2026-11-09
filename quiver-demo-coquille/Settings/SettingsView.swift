@@ -13,7 +13,25 @@
 
 import AVFoundation
 import SwiftUI
-import Translation
+// TranslationSession isn't Sendable, yet the framework hands one to `.translationTask`,
+// and `prepareDownload` uses it once and lets it go.
+@preconcurrency import Translation
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+extension NotificationCenter {
+    /// Fires when the learner comes back to Coquille, perhaps after changing a system setting.
+    var appBecameActive: NotificationCenter.Publisher {
+        #if os(macOS)
+        publisher(for: NSApplication.didBecomeActiveNotification)
+        #else
+        publisher(for: UIApplication.didBecomeActiveNotification)
+        #endif
+    }
+}
 
 /// Coquille's preferences and the state of Apple's separately installed language assets.
 struct SettingsView: View {
@@ -21,7 +39,9 @@ struct SettingsView: View {
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
     @AppStorage("showsSuggestions") private var showsSuggestions = true
     @AppStorage(SpeechNarrator.voiceStorageKey) private var playbackVoiceID = ""
-    @State private var translationStatus: LanguageAvailability.Status?
+    @State private var translationStatus: TranslationPackStatus?
+    /// Set when the learner asks to download the pack, which starts the system's prompt.
+    @State private var downloadRequest: TranslationSession.Configuration?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -69,10 +89,13 @@ struct SettingsView: View {
 
             Section {
                 LabeledContent("French–English Translation", value: translationStatus?.label ?? "Checking…")
+                if translationStatus?.canDownload == true {
+                    Button("Download French…", action: requestDownload)
+                }
             } header: {
                 Text("Languages")
             } footer: {
-                Text("Translation uses Apple's French–English language pack. To install it, open System Settings, then choose General, Language & Region, and Translation Languages. This is separate from Coquille's bundled French checker.")
+                Text("Translation uses Apple's French–English language pack, which is separate from Coquille's bundled French checker.")
             }
 
             Section("About & Privacy") {
@@ -84,10 +107,41 @@ struct SettingsView: View {
             }
         }
         .task {
-            translationStatus = await LanguageAvailability().status(
-                from: Locale.Language(identifier: "fr"),
-                to: Locale.Language(identifier: "en")
-            )
+            forgetMissingVoice()
+            translationStatus = await TranslationPack.status()
+        }
+        .onReceive(NotificationCenter.default.appBecameActive) { _ in
+            forgetMissingVoice()
+            Task { translationStatus = await TranslationPack.status() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: TranslationPack.didChange)) { _ in
+            Task { translationStatus = await TranslationPack.status() }
+        }
+        .translationTask(downloadRequest, action: Self.prepareDownload)
+    }
+
+    /// Shows the system's download prompt and announces the outcome. The system reports its
+    /// own errors, and declining simply leaves the status unchanged.
+    private nonisolated static func prepareDownload(_ session: TranslationSession) async {
+        try? await session.prepareTranslation()
+        await MainActor.run {
+            NotificationCenter.default.post(name: TranslationPack.didChange, object: nil)
+        }
+    }
+
+    /// Starts the system's download prompt, again if the learner asks a second time.
+    private func requestDownload() {
+        if downloadRequest == nil {
+            downloadRequest = TranslationSession.Configuration(source: TranslationPack.french, target: TranslationPack.english)
+        } else {
+            downloadRequest?.invalidate()
+        }
+    }
+
+    /// Goes back to Automatic when the chosen voice has been deleted, so the picker is never blank.
+    private func forgetMissingVoice() {
+        if !playbackVoiceID.isEmpty, !frenchVoices.contains(where: { $0.identifier == playbackVoiceID }) {
+            playbackVoiceID = ""
         }
     }
 
@@ -99,17 +153,6 @@ struct SettingsView: View {
 
     private static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-    }
-}
-
-private extension LanguageAvailability.Status {
-    var label: String {
-        switch self {
-        case .installed: "Installed"
-        case .supported: "Not Installed"
-        case .unsupported: "Unsupported"
-        @unknown default: "Unavailable"
-        }
     }
 }
 

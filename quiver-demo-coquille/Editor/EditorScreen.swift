@@ -173,6 +173,9 @@ struct EditorScreen: View {
                 if scenePhase != .active { model.saveNow() }
                 if scenePhase == .active { journal.refresh() }
             }
+            // A language pack installed elsewhere, or from Settings, can fill in the English.
+            .onReceive(NotificationCenter.default.appBecameActive) { _ in model.recheckEnglish() }
+            .onReceive(NotificationCenter.default.publisher(for: TranslationPack.didChange)) { _ in model.recheckEnglish() }
     }
 
     /// On the Mac, the journal sidebar beside the editor; elsewhere the editor alone,

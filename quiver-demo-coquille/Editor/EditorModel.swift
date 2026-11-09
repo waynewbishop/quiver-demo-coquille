@@ -529,6 +529,7 @@ final class EditorModel {
         startEntry(Self.guidedEntry(prompts: exercise.prompts, for: date), on: date)
         exerciseTitle = exercise.title
         exerciseHint = exercise.hint
+        workspace?.setExerciseDetails(title: exercise.title, hint: exercise.hint)
     }
 
     /// Replaces the editor with a new unsaved entry and places its requested caret.
@@ -631,6 +632,7 @@ final class EditorModel {
         savedText = saved
         exerciseTitle = nil
         exerciseHint = nil
+        workspace?.clearExerciseDetails()
         bufferedText = nil
         workspace?.setOpenDocument(newDocument)
     }
@@ -774,7 +776,7 @@ final class EditorModel {
                 guard !Task.isCancelled, current == plainText else { return }
                 english = .translated(translated)
             } catch TranslationUnavailable.notInstalled {
-                english = .unavailable("To see English, download French for on-device translation in Settings.")
+                english = .unavailable("To see English, download French in Coquille's Settings.")
             } catch TranslationUnavailable.unsupported {
                 english = .unavailable("On-device translation from French isn't available on this device.")
             } catch {
@@ -782,6 +784,11 @@ final class EditorModel {
                 english = .unavailable("The translation couldn't be made: \(error.localizedDescription)")
             }
         }
+    }
+
+    /// Tries the English again when it was unavailable, as after the language pack is installed.
+    func recheckEnglish() {
+        if case .unavailable = english { refreshEnglish() }
     }
 
     // MARK: - Styling
@@ -896,6 +903,10 @@ final class EditorModel {
         bufferedText = contents
         observedText = contents
         isRehearsal = restored == .unsaved && Self.holdsExample(contents)
+        if restored == .unsaved, !contents.isEmpty, let details = workspace.exerciseDetails() {
+            exerciseTitle = details.title
+            exerciseHint = details.hint
+        }
         text = AttributedString(contents)
     }
 

@@ -19,12 +19,7 @@ struct CoquilleControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.waynebishop.coquille.open") {
             ControlWidgetButton(action: OpenCoquilleIntent()) {
-                Image("ShellControl")
-                    .resizable()
-                    .scaledToFit()
-                    .padding(9)
-                    .foregroundStyle(Color(.systemBackground))
-                    .background(Color.brand, in: Circle())
+                Label("Coquille", image: "ShellControl")
             }
         }
         .displayName("Coquille")

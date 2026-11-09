@@ -28,18 +28,18 @@ only dependency.
 
 Open `quiver-demo-coquille.xcodeproj` in Xcode, pick an iPhone
 simulator or My Mac, and run. Tap **Try an example** to load a
-paragraph with one mistake of each kind.
+short paragraph aimed at one kind of mistake. Each tap picks a different
+one.
 
-Playback uses the system's French voices, and translation needs the
-French language pack for on-device translation. The app can't download
-either itself:
+Playback uses the system's French voices, which the app can't download
+itself, and translation needs Apple's French language pack:
 
 - **Voices.** iPhone and iPad: Settings › Accessibility › Spoken
   Content › Voices › French. Mac: System Settings › Accessibility ›
   Spoken Content › System voice › Manage Voices. The enhanced and
   premium voices sound much more natural.
-- **Translation.** Download French under the system's translation
-  languages. Until it's installed, the English area says so.
+- **Translation.** Choose **Download French…** in Coquille's Settings.
+  Until it's installed, the English area says so.
 
 On a Mac with Apple Intelligence, the window title names the story once
 the French has no errors; otherwise it reads "Coquille".
@@ -268,7 +268,7 @@ Everything is plain folders in one Xcode project:
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 95 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — 220 XCTest cases, including the
   false-positive traps above, correct French that must pass clean,
   phrasebook validation, calendar selection, and hostile-link tests.
 
