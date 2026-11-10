@@ -117,7 +117,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 auxiliaryIssues(in: $0) + reflexiveAuxiliaryIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
-                conjugationIssues(in: $0.tokens)
+                conjugationIssues(in: $0.tokens) + nearFutureIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.siClause", layer: .relationalGrammar, targetLevel: .b1) {
                 siClauseIssues(in: $0.tokens)
@@ -1071,6 +1071,56 @@ nonisolated struct FrenchGrammar: Grammar {
                     "verb": reading.verb,
                     "fix": fix
                 ]),
+                source: "Conjugation rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    /// Words that can sit between aller and its infinitive: "il va peut-être pleuvoir".
+    private static let wordsBeforeNearFutureVerb: Set<String> = [
+        "peut-être", "bien", "encore", "déjà", "toujours", "vraiment", "aussi", "pas", "plus", "jamais"
+    ]
+
+    /// Words Lexique lists as verb forms that aren't verbs after aller: "il va entre les
+    /// arbres", "je vais puis je reviens", "il va soit à Paris, soit à Lyon".
+    private static let notNearFutureVerbs: Set<String> = ["entre", "puis", "soit"]
+
+    /// Flags a conjugated verb where aller needs an infinitive: "il va pleut" → "pleuvoir".
+    ///
+    /// The word must be a verb form and nothing else, with one verb behind it, so "elle va
+    /// mieux" and "je vais lui parler" are never in doubt. Punctuation ends the search,
+    /// which keeps "je vais bien, mange ta soupe" silent.
+    private func nearFutureIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices {
+            guard let person = Self.subjectPersons[tokens[index].normalized], tokens[index].isAdjacentToNext else { continue }
+            var position = index + 1
+            if position < tokens.count, ["ne", "n'"].contains(tokens[position].normalized), tokens[position].isAdjacentToNext {
+                position += 1
+            }
+            guard position < tokens.count, tokens[position].isAdjacentToNext,
+                  lexicon.conjugations(tokens[position].normalized).contains(where: { $0.verb == "aller" && $0.codes.contains("ip" + person) }) else { continue }
+            position += 1
+            while position < tokens.count, Self.wordsBeforeNearFutureVerb.contains(tokens[position].normalized),
+                  tokens[position].isAdjacentToNext {
+                position += 1
+            }
+            guard position < tokens.count else { continue }
+
+            let verbToken = tokens[position]
+            let word = verbToken.normalized
+            // A capital marks a name, and Lexique lists some as verb forms: Marie, Calais, Vienne.
+            guard verbToken.text.first?.isLowercase == true,
+                  !Self.preverbalWords.contains(word), !Self.notNearFutureVerbs.contains(word),
+                  !lexicon.isInfinitive(word), lexicon.noun(word) == nil, lexicon.adjectiveLemmas(of: word).isEmpty else { continue }
+            let readings = lexicon.conjugations(word)
+            guard readings.count == 1, let reading = readings.first else { continue }
+
+            issues.append(issue(
+                .conjugation, .error, from: position, through: position, in: tokens,
+                replacement: matchingCase(of: verbToken.text, reading.verb),
+                explanation: explanations.render(.nearFutureInfinitive, ["fix": reading.verb]),
                 source: "Conjugation rule · Lexique"
             ))
         }

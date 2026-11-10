@@ -33,19 +33,19 @@ enum AppFonts {
 
 /// Text sizes and line spacing for the two languages.
 ///
-/// On the Mac the French and English lines are both 34 points tall, so the
-/// translation lines up beside the sentence it came from.
+/// The French is spaced for the learner to read and correct. The English is read-only,
+/// so it sits closer together.
 enum Typography {
     #if os(macOS)
     static let frenchSize = 17.0
     static let frenchLineSpacing = 12.0
     static let englishSize = 16.0
-    static let englishLineSpacing = 13.0
+    static let englishLineSpacing = 8.0
     #else
     static let frenchSize = 20.0
     static let frenchLineSpacing = 8.0
     static let englishSize = 17.0
-    static let englishLineSpacing = 6.0
+    static let englishLineSpacing = 5.0
     #endif
 }
 

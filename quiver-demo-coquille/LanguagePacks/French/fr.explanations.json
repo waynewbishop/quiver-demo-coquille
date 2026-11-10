@@ -133,6 +133,11 @@
     "template": "With {subject}, {verb} takes the form {fix}.",
     "example": "With je, aller takes the form vais."
   },
+  "nearFutureInfinitive": {
+    "hint": "After aller, the next verb stays in the infinitive.",
+    "template": "After aller, the next verb stays in the infinitive: {fix}.",
+    "example": "After aller, the next verb stays in the infinitive: pleuvoir."
+  },
   "siClause": {
     "hint": "After si meaning if, French doesn't use the future or the conditional.",
     "template": "After si meaning if, French uses the {tense} instead: {fix}.",

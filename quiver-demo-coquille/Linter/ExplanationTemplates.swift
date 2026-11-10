@@ -43,6 +43,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case participleWithEtre
     case generalArticle
     case subjectVerb
+    case nearFutureInfinitive
     case siClause
     case meaning
     case etOrEst
@@ -86,6 +87,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .participleWithEtre: ["subject", "fix"]
         case .generalArticle: ["verb", "fix"]
         case .subjectVerb: ["subject", "verb", "fix"]
+        case .nearFutureInfinitive: ["fix"]
         case .siClause: ["tense", "fix"]
         case .meaning: ["note"]
         case .etOrEst: ["fix"]

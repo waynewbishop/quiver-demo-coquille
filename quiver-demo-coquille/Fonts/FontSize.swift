@@ -47,8 +47,7 @@ enum FontSize: String, CaseIterable, Identifiable {
 
     /// How much this preset scales the `Typography` sizes.
     ///
-    /// Text size and line spacing scale together, so the French and English lines stay
-    /// the same height as each other and the translation still lines up beside its sentence.
+    /// Text size and line spacing scale together, so each preset keeps the same proportions.
     private var scale: Double {
         switch self {
         case .small: 0.85

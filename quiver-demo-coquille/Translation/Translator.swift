@@ -41,7 +41,8 @@ struct AppleTranslator: Translator {
     /// so a momentarily wrong availability answer can't block a translation that would work.
     func translate(_ text: String) async throws -> String {
         do {
-            return try await Self.translate(text, from: source, to: target)
+            let translated = try await Self.translate(text, from: source, to: target)
+            return Self.matchingLineBreaks(of: text, in: translated)
         } catch {
             switch await LanguageAvailability().status(from: source, to: target) {
             case .installed:
@@ -52,6 +53,22 @@ struct AppleTranslator: Translator {
                 throw TranslationUnavailable.unsupported
             }
         }
+    }
+
+    /// Returns `translation` laid out line for line like `source`.
+    ///
+    /// The Translation framework puts a blank line after every line of its output, whether
+    /// the source had a blank line there or not, so the two panes would drift apart. The
+    /// text is still translated whole, to keep the context between lines, and only the
+    /// layout is rebuilt. If the line counts differ, the translation is returned untouched.
+    nonisolated static func matchingLineBreaks(of source: String, in translation: String) -> String {
+        let sourceLines = source.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        let translatedLines = translation.split(whereSeparator: \.isNewline).filter { !$0.allSatisfy(\.isWhitespace) }
+        guard sourceLines.filter({ !$0.allSatisfy(\.isWhitespace) }).count == translatedLines.count else { return translation }
+        var remaining = translatedLines.makeIterator()
+        return sourceLines.map { line in
+            line.allSatisfy(\.isWhitespace) ? "" : String(remaining.next() ?? "")
+        }.joined(separator: "\n")
     }
 
     /// Runs one translation off the main actor. The session isn't Sendable, so it is
