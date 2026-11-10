@@ -641,6 +641,7 @@ struct EditorScreen: View {
     private var frenchPane: some View {
         VStack(spacing: 0) {
             PaneHeader(title: "FRANÇAIS", showsDivider: true)
+                .background(Color.frenchPaper)
                 .overlay(alignment: .trailing) {
                     Menu {
                         saveMenuItems
@@ -850,6 +851,8 @@ struct EditorScreen: View {
             textEditor
             MarkerKeywordBar(model: model)
         }
+        // A slight cream in light mode; the color is clear in dark mode.
+        .background(Color.frenchPaper)
     }
 
     /// The text editor itself, including its placeholder and editing commands.
