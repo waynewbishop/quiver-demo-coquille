@@ -207,6 +207,12 @@ final class EditorModel {
         visibleIssues.first { $0.id == selectedIssueID }
     }
 
+    /// The keywords that could finish the review marker at the caret, if one is being typed.
+    var offeredMarkerKeywords: [String] {
+        guard let caret = caretOffset() else { return [] }
+        return Notes.markerBeingCompleted(at: caret, in: plainText)?.keywords ?? []
+    }
+
     // MARK: - Loading
 
     /// Loads the French pack off the main actor, then wires up the linter and translator.
@@ -267,6 +273,21 @@ final class EditorModel {
         text = closed
         let caret = text.characters.index(text.startIndex, offsetBy: opening.lineBreak + 1 + indent.count)
         selection = AttributedTextSelection(insertionPoint: caret)
+    }
+
+    /// Finishes the review marker at the caret with `keyword` and leaves the caret after it.
+    /// The marker is colored here because replacing the text later would lose the caret.
+    func completeMarker(with keyword: String) {
+        guard let caret = caretOffset(),
+              let marker = Notes.markerBeingCompleted(at: caret, in: plainText),
+              let range = attributedRange(for: marker.range) else { return }
+        let completion = Notes.markerText(for: keyword)
+        var completed = text
+        completed.replaceSubrange(range, with: AttributedString(completion))
+        Self.greyNotes(in: &completed)
+        text = completed
+        let end = text.characters.index(text.startIndex, offsetBy: marker.range.lowerBound + completion.count)
+        selection = AttributedTextSelection(insertionPoint: end)
     }
 
     /// Lints right away if the text changed since the last lint, so play and English
@@ -826,20 +847,26 @@ final class EditorModel {
         }
     }
 
-    /// Clears every text color in `styled`, then colors each note the secondary grey.
+    /// Clears every text color in `styled`, then colors each note the secondary grey and
+    /// each review marker the brand color.
     private static func greyNotes(in styled: inout AttributedString) {
         styled.foregroundColor = nil
-        for note in Notes.ranges(in: String(styled.characters)) {
+        let plain = String(styled.characters)
+        let markers = Set(Notes.markerRanges(in: plain))
+        for note in Notes.ranges(in: plain) {
             let characters = styled.characters
             guard note.upperBound <= characters.count else { continue }
             let lower = characters.index(characters.startIndex, offsetBy: note.lowerBound)
             let upper = characters.index(lower, offsetBy: note.count)
-            styled[lower..<upper].foregroundColor = noteColor
+            styled[lower..<upper].foregroundColor = markers.contains(note) ? markerColor : noteColor
         }
     }
 
     /// The grey of a note: darker than the placeholder's, since the learner reads notes again.
     private static let noteColor = Color.secondary
+
+    /// The color of a review marker, set apart from the grey notes as Xcode sets apart a MARK.
+    private static let markerColor = Color.brand
 
     /// Greys the notes, underlines each visible issue by severity, highlights the open
     /// one, and highlights the word being read aloud.

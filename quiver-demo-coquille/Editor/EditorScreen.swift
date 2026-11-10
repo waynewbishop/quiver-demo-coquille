@@ -563,6 +563,17 @@ struct EditorScreen: View {
     }
 
     #if os(macOS)
+    /// Whether the journal sidebar is open, for the toolbar's Journal button.
+    private var showsJournalSidebar: Binding<Bool> {
+        Binding {
+            columns != .detailOnly
+        } set: { isShowing in
+            withAnimation {
+                columns = isShowing ? .all : .detailOnly
+            }
+        }
+    }
+
     /// The Mac window: French and English side by side with a draggable divider, play
     /// and stop grouped at the toolbar's leading edge as in Xcode, New beside the phrasebook,
     /// the streak, and the theme toggle at its trailing edge, and status and English in the footer.
@@ -582,12 +593,8 @@ struct EditorScreen: View {
         .task(id: titleSource) { await retitle() }
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button("Journal", systemImage: "list.bullet") {
-                    withAnimation {
-                        columns = columns == .detailOnly ? .all : .detailOnly
-                    }
-                }
-                .help(columns == .detailOnly ? "Show the journal" : "Hide the journal")
+                PanelToggle(title: "Journal", systemImage: "list.bullet", isOn: showsJournalSidebar)
+                    .help(columns == .detailOnly ? "Show the journal" : "Hide the journal")
             }
 
             ToolbarItemGroup(placement: .navigation) {
@@ -601,10 +608,8 @@ struct EditorScreen: View {
                     .help("Start a blank page (⌘N)")
                     .disabled(!model.hasText && model.fileURL == nil)
 
-                Button("Phrasebook", systemImage: "book") {
-                    showsPhrasebook.toggle()
-                }
-                .help("Phrasebook")
+                PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
+                    .help("Phrasebook")
             }
 
             ToolbarItem(placement: .primaryAction) {
@@ -615,6 +620,13 @@ struct EditorScreen: View {
                         .labelStyle(.iconOnly)
                 }
                 .help("Your progress")
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                ShareLink(item: model.plainText)
+                    .labelStyle(.iconOnly)
+                    .help("Export this entry to another app")
+                    .disabled(!model.hasText)
             }
 
             ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -836,6 +848,7 @@ struct EditorScreen: View {
                 Divider()
             }
             textEditor
+            MarkerKeywordBar(model: model)
         }
     }
 
@@ -982,7 +995,7 @@ private struct PhrasebookPresentation: ViewModifier {
 }
 
 /// The only attributes the French editor accepts: the issue underlines, the highlights,
-/// and the grey of the learner's notes.
+/// and the colors of the learner's notes and review markers.
 struct EditorAttributes: AttributeScope {
     let underlineStyle: AttributeScopes.SwiftUIAttributes.UnderlineStyleAttribute
     let backgroundColor: AttributeScopes.SwiftUIAttributes.BackgroundColorAttribute

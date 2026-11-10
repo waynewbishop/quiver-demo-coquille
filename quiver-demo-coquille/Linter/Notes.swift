@@ -20,7 +20,14 @@
 /// means nothing: a `/*` after `//` starts nothing, and so does a `//` inside `/* */`.
 /// Unlike Swift, a `/*` with no `*/` is never an error; the note runs to the end.
 /// Notes don't nest.
+///
+/// A review marker is a `//` note that starts its line with `//:` plus a keyword, telling
+/// whoever reviews the entry what to look at in the sentence below. To the checker, it's
+/// a note like any other.
 enum Notes {
+
+    /// The keywords a review marker can start with, as the editor offers them.
+    static let markerKeywords = ["check", "ask", "natural", "todo", "ok"]
 
     /// The character offsets of every note in `text`, in order, each including its markers.
     static func ranges(in text: String) -> [Range<Int>] {
@@ -46,6 +53,35 @@ enum Notes {
             }
         }
         return ranges
+    }
+
+    /// The character offsets of every review marker in `text`: each `//:` note with only
+    /// spaces before it on its line.
+    static func markerRanges(in text: String) -> [Range<Int>] {
+        let characters = Array(text)
+        return ranges(in: text).filter { note in
+            guard note.count >= 3, characters[note.lowerBound + 1] == "/", characters[note.lowerBound + 2] == ":" else {
+                return false
+            }
+            let lineStart = characters[..<note.lowerBound].lastIndex(where: \.isNewline).map { $0 + 1 } ?? 0
+            return characters[lineStart..<note.lowerBound].allSatisfy(\.isWhitespace)
+        }
+    }
+
+    /// The marker ending at `caret` and the keywords that could finish it, or `nil` when
+    /// the caret isn't at the end of a marker whose keyword is still being chosen.
+    static func markerBeingCompleted(at caret: Int, in text: String) -> (range: Range<Int>, keywords: [String])? {
+        guard let marker = markerRanges(in: text).first(where: { $0.upperBound == caret }) else { return nil }
+        let afterColon = Array(text)[(marker.lowerBound + 3)..<marker.upperBound]
+        let typed = String(afterColon.drop(while: \.isWhitespace)).lowercased()
+        guard !typed.contains(where: \.isWhitespace) else { return nil }
+        let keywords = markerKeywords.filter { $0.hasPrefix(typed) && $0 != typed }
+        return keywords.isEmpty ? nil : (marker, keywords)
+    }
+
+    /// The whole marker for `keyword`, with a space after the keywords a topic or question can follow.
+    static func markerText(for keyword: String) -> String {
+        "//: \(keyword)" + (keyword == "check" || keyword == "ask" ? " " : "")
     }
 
     /// `text` with every note's characters turned to spaces, keeping its line breaks, so

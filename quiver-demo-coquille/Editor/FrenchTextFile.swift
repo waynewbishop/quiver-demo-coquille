@@ -110,6 +110,7 @@ struct FileCommands: Commands {
 
     @FocusedValue(\.fileRequest) private var fileRequest
     @FocusedValue(\.fileMenuState) private var state
+    @FocusedValue(\.editorModel) private var model
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
@@ -130,6 +131,8 @@ struct FileCommands: Commands {
             Divider()
             button("Export a Copy…", .export, enabled: state?.canExport == true)
                 .keyboardShortcut("e", modifiers: [.command, .shift])
+            ShareLink(item: model?.plainText ?? "")
+                .disabled(state?.canExport != true)
         }
     }
 

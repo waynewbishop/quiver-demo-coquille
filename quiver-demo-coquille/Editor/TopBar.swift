@@ -70,15 +70,7 @@ struct TopBar: View {
                 .accessibilityLabel("Start a blank page")
                 .disabled(!model.hasText && model.fileURL == nil)
 
-            Button("Phrasebook", systemImage: "book") {
-                hideKeyboard()
-                showsPhrasebook.toggle()
-            }
-            .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
-            .foregroundStyle(.tint)
-            .frame(width: 44, height: 44)
-            .contentShape(Rectangle())
+            PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
 
             Button {
                 hideKeyboard()
@@ -92,6 +84,14 @@ struct TopBar: View {
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
             .accessibilityLabel("Your progress: \(model.stats.stats.streak(asOf: .now)) day streak")
+
+            ShareLink(item: model.plainText)
+                .labelStyle(.iconOnly)
+                .buttonStyle(.plain)
+                .foregroundStyle(.tint)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+                .disabled(!model.hasText)
 
             Button {
                 hideKeyboard()
@@ -140,17 +140,17 @@ struct CompactToolbar: ToolbarContent {
     // opens with the keyboard still covering the bottom of the screen.
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
-            Button("Journal", systemImage: "list.bullet") {
-                hideKeyboard()
-                showsEntries = true
-            }
+            PanelToggle(title: "Journal", systemImage: "list.bullet", isOn: $showsEntries)
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Phrasebook", systemImage: "book") {
-                hideKeyboard()
-                showsPhrasebook.toggle()
-            }
+            PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            ShareLink(item: model.plainText)
+                .labelStyle(.iconOnly)
+                .disabled(!model.hasText)
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -172,7 +172,7 @@ struct CompactToolbar: ToolbarContent {
                         .disabled(!model.hasText)
                 }
                 Section {
-                    Button("Progress · \(plural(streak, "day")) streak", systemImage: "chart.bar.xaxis") {
+                    Button("Progress ·\(plural(streak, "day")) streak", systemImage: "chart.bar.xaxis") {
                         hideKeyboard()
                         showsProgress = true
                     }
@@ -200,6 +200,30 @@ struct CompactToolbar: ToolbarContent {
     }
 }
 #endif
+
+/// An icon button that opens and closes a panel, showing a selected background while the
+/// panel is open, as Apple's guidelines ask of a button that behaves like a toggle.
+///
+/// It hides the keyboard first, so a panel never opens with the keyboard still up.
+struct PanelToggle: View {
+
+    let title: String
+    let systemImage: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Toggle(isOn: Binding {
+            isOn
+        } set: { newValue in
+            hideKeyboard()
+            isOn = newValue
+        }) {
+            Label(title, systemImage: systemImage)
+                .labelStyle(.iconOnly)
+        }
+        .toggleStyle(.button)
+    }
+}
 
 /// "2 errors · 1 warning", "1 warning", or "No issues"; in the gentle style, "3 to look at".
 struct StatusChip: View {
