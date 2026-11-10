@@ -158,10 +158,15 @@ final class EditorModel {
         String(text.characters)
     }
 
-    /// The French alone: the text with every note blanked out, each character at the
-    /// same offset as in `plainText`.
+    /// The French alone: the text with every note and Markdown symbol blanked out, each
+    /// character at the same offset as in `plainText`.
     var frenchText: String {
-        Notes.masked(plainText)
+        Self.frenchOnly(plainText)
+    }
+
+    /// `text` with every note and Markdown symbol blanked out, each character at the same offset.
+    private static func frenchOnly(_ text: String) -> String {
+        Markdown.masked(Notes.masked(text))
     }
 
     /// Issues not ignored, and not suggestions when suggestions are hidden.
@@ -324,14 +329,14 @@ final class EditorModel {
         }
         if !isRehearsal {
             // The errors before a rehearsal ended were the example's, so none of them count as fixed.
-            // Stats see the French alone, so a note is never counted as a sentence or
-            // logged as part of one.
+            // Stats see the French alone, so a note or Markdown symbol is never counted
+            // as a sentence or logged as part of one.
             if !wasRehearsal && countsTypedFixes {
                 for fix in typedFixes(of: previousErrors, from: previousText, to: plain) {
-                    stats.recordFix(byLearner: true, issue: fix, in: Notes.masked(previousText))
+                    stats.recordFix(byLearner: true, issue: fix, in: Self.frenchOnly(previousText))
                 }
             }
-            stats.record(text: Notes.masked(plain), issues: visibleIssues, editingAt: caretOffset())
+            stats.record(text: Self.frenchOnly(plain), issues: visibleIssues, editingAt: caretOffset())
         }
         persist(plain)
         applyStyling()
@@ -792,13 +797,18 @@ final class EditorModel {
             return
         }
         let current = plainText
-        let source = Notes.removed(current)
+        // Each line goes to the translator without its Markdown, which comes back on
+        // the matching English line.
+        let lines = Notes.removed(current)
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map { Markdown.line(String($0)) }
+        let source = lines.map(\.text).joined(separator: "\n")
         english = .translating
         translationTask = Task {
             do {
                 let translated = try await translator.translate(source)
                 guard !Task.isCancelled, current == plainText else { return }
-                english = .translated(translated)
+                english = .translated(Markdown.restyled(translated, like: lines))
             } catch TranslationUnavailable.notInstalled {
                 guard !Task.isCancelled else { return }
                 english = .unavailable("To see English, download French in Coquille's Settings.")
@@ -834,8 +844,8 @@ final class EditorModel {
         return lower..<(lower + spoken[range].count)
     }
 
-    /// Greys the notes, and only the notes, right away, leaving the issue styling for
-    /// the next lint.
+    /// Greys the notes and Markdown symbols, and only those, right away, leaving the
+    /// issue styling for the next lint.
     ///
     /// It runs on every edit because typed text takes on the color of the text before
     /// it: without it, a line typed after a note would stay grey until the lint.
@@ -847,19 +857,27 @@ final class EditorModel {
         }
     }
 
-    /// Clears every text color in `styled`, then colors each note the secondary grey and
-    /// each review marker the brand color.
+    /// Clears every text color in `styled`, then colors each note and Markdown symbol the
+    /// secondary grey and each review marker the brand color.
     private static func greyNotes(in styled: inout AttributedString) {
         styled.foregroundColor = nil
         let plain = String(styled.characters)
         let markers = Set(Notes.markerRanges(in: plain))
         for note in Notes.ranges(in: plain) {
-            let characters = styled.characters
-            guard note.upperBound <= characters.count else { continue }
-            let lower = characters.index(characters.startIndex, offsetBy: note.lowerBound)
-            let upper = characters.index(lower, offsetBy: note.count)
-            styled[lower..<upper].foregroundColor = markers.contains(note) ? markerColor : noteColor
+            color(note, markers.contains(note) ? markerColor : noteColor, in: &styled)
         }
+        for symbol in Markdown.ranges(in: plain) {
+            color(symbol, noteColor, in: &styled)
+        }
+    }
+
+    /// Colors the characters at `range` in `styled`.
+    private static func color(_ range: Range<Int>, _ color: Color, in styled: inout AttributedString) {
+        let characters = styled.characters
+        guard range.upperBound <= characters.count else { return }
+        let lower = characters.index(characters.startIndex, offsetBy: range.lowerBound)
+        let upper = characters.index(lower, offsetBy: range.count)
+        styled[lower..<upper].foregroundColor = color
     }
 
     /// The grey of a note: darker than the placeholder's, since the learner reads notes again.

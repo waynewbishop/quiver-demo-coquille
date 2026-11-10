@@ -50,6 +50,50 @@ struct EnglishPane: View {
         .system(size: size * textScale)
     }
 
+    /// The English with its Markdown shown as formatting: larger bold headings, "•" for
+    /// bullets, and bold or italic lines. It stays one text, so a selection can cross lines.
+    private func formatted(_ english: String) -> AttributedString {
+        let size = fontSize.englishSize
+        var result = AttributedString()
+        let lines = english.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        for (index, raw) in lines.enumerated() {
+            let line = Markdown.line(String(raw))
+            var font = systemFont(size)
+            var marker = ""
+            switch line.block {
+            case .paragraph:
+                break
+            case .heading(let level):
+                font = systemFont(size * Self.headingScale(level)).bold()
+            case .bullet:
+                marker = "•  "
+            case .numbered(let number):
+                marker = number + " "
+            }
+            switch line.emphasis {
+            case .bold: font = font.bold()
+            case .italic: font = font.italic()
+            case nil: break
+            }
+            var piece = AttributedString(marker + line.text)
+            piece.font = font
+            result += piece
+            if index < lines.count - 1 {
+                result += AttributedString("\n")
+            }
+        }
+        return result
+    }
+
+    /// How much larger a heading is than the English text: most for `#`, least from `###` on.
+    private static func headingScale(_ level: Int) -> Double {
+        switch level {
+        case 1: 1.4
+        case 2: 1.25
+        default: 1.1
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         if model.isLocked {
@@ -67,7 +111,7 @@ struct EnglishPane: View {
             case .translating:
                 ProgressView()
             case .translated(let english):
-                Text(english)
+                Text(formatted(english))
                     .font(systemFont(fontSize.englishSize))
                     .lineSpacing(fontSize.englishLineSpacing)
                     .foregroundStyle(.primary.opacity(0.85))
