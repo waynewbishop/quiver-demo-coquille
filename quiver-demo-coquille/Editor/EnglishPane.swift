@@ -25,6 +25,8 @@ struct EnglishPane: View {
     let showsHeaderBar: Bool
     /// The learner's text size, from the View menu.
     @AppStorage(FontSize.storageKey) private var fontSize = FontSize.standard
+    /// The system's text size setting, as a multiplier, so the system font grows with it.
+    @ScaledMetric(relativeTo: .body) private var textScale = 1.0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -37,7 +39,15 @@ struct EnglishPane: View {
                     .padding(.vertical, 20)
             }
         }
+        // A cream a shade darker than the French pane's in light mode; in dark mode the
+        // color is clear, so the secondary background shows through.
+        .background(Color.englishPaper)
         .background(.background.secondary)
+    }
+
+    /// Apple's system font at `size`, scaled with the system's text size setting.
+    private func systemFont(_ size: Double) -> Font {
+        .system(size: size * textScale)
     }
 
     @ViewBuilder
@@ -48,7 +58,7 @@ struct EnglishPane: View {
             } icon: {
                 Image(systemName: "lock")
             }
-            .font(.plexSans(15, relativeTo: .subheadline))
+            .font(systemFont(15))
             .foregroundStyle(.secondary)
         } else {
             switch model.english {
@@ -58,13 +68,13 @@ struct EnglishPane: View {
                 ProgressView()
             case .translated(let english):
                 Text(english)
-                    .font(.plexSans(fontSize.englishSize, relativeTo: .body))
+                    .font(systemFont(fontSize.englishSize))
                     .lineSpacing(fontSize.englishLineSpacing)
                     .foregroundStyle(.primary.opacity(0.85))
                     .textSelection(.enabled)
             case .unavailable(let message):
                 Text(message)
-                    .font(.plexSans(15, relativeTo: .subheadline))
+                    .font(systemFont(15))
                     .foregroundStyle(.secondary)
             }
         }
