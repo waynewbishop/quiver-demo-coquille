@@ -83,7 +83,7 @@ final class Journal {
         entries = urls
             .filter { $0.pathExtension.lowercased() == "txt" }
             .compactMap { url in
-                guard let text = try? FrenchTextFile.text(at: url) else { return nil }
+                guard let text = try? CoordinatedFile.read(url, FrenchTextFile.text(at:)) else { return nil }
                 return entry(for: url, text: text)
             }
         sort()
@@ -129,7 +129,7 @@ final class Journal {
 
     /// Writes an entry's text and updates its place in the list.
     func write(_ text: String, to url: URL) throws {
-        try Data(text.utf8).write(to: url, options: .atomic)
+        try CoordinatedFile.write(Data(text.utf8), to: url)
         entries.removeAll { $0.url == url }
         entries.append(entry(for: url, text: text))
         sort()
@@ -142,7 +142,7 @@ final class Journal {
         let base = Self.baseName(day: day(of: url), title: title)
         guard base != Self.baseWithoutNumber(of: url) else { return url }
         let renamed = uniqueURL(for: base)
-        try FileManager.default.moveItem(at: url, to: renamed)
+        try CoordinatedFile.move(url, to: renamed)
         if let old = entries.firstIndex(where: { $0.url == url }) {
             let text = entries.remove(at: old).text
             entries.append(entry(for: renamed, text: text))
@@ -154,7 +154,7 @@ final class Journal {
     /// Copies an entry under the same date, with "copy" after its title.
     @discardableResult
     func duplicate(_ url: URL) throws -> URL {
-        let text = try FrenchTextFile.text(at: url)
+        let text = try CoordinatedFile.read(url, FrenchTextFile.text(at:))
         let title = [Self.title(of: url), "copy"].compactMap { $0 }.joined(separator: " ")
         let copy = uniqueURL(for: Self.baseName(day: day(of: url), title: title))
         try write(text, to: copy)
@@ -163,7 +163,7 @@ final class Journal {
 
     /// Removes an entry's file.
     func delete(_ url: URL) throws {
-        try FileManager.default.removeItem(at: url)
+        try CoordinatedFile.remove(url)
         entries.removeAll { $0.url == url }
     }
 
