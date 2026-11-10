@@ -219,18 +219,23 @@ nonisolated struct Lexicon: Sendable {
     }
 
     /// Reads a two-letter gender and number code such as "fs" or "mx"; `x` means both.
-    private static func genderAndNumber(_ code: String) -> (gender: Gender?, number: GrammaticalNumber?)? {
+    /// Any other letter makes the code unreadable, rather than a word of every gender.
+    static func genderAndNumber(_ code: String) -> (gender: Gender?, number: GrammaticalNumber?)? {
         let letters = Array(code)
         guard letters.count == 2 else { return nil }
-        let gender: Gender? = switch letters[0] {
-        case "m": .masculine
-        case "f": .feminine
-        default: nil
+        let gender: Gender?
+        switch letters[0] {
+        case "m": gender = .masculine
+        case "f": gender = .feminine
+        case "x": gender = nil
+        default: return nil
         }
-        let number: GrammaticalNumber? = switch letters[1] {
-        case "s": .singular
-        case "p": .plural
-        default: nil
+        let number: GrammaticalNumber?
+        switch letters[1] {
+        case "s": number = .singular
+        case "p": number = .plural
+        case "x": number = nil
+        default: return nil
         }
         return (gender, number)
     }

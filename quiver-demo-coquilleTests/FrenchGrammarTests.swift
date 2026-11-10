@@ -140,6 +140,16 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Ça le marque."), [])
     }
 
+    // The hand rule needs its words together: a pronoun that ends one sentence doesn't make
+    // the next sentence's article a pronoun, while "je le porte" still does.
+    func testHandRuleStopsAtPunctuation() throws {
+        let pack = try XCTUnwrap(Self.pack)
+        let handRuleOnly = FrenchGrammar(lexicon: pack.lexicon, explanations: pack.explanations, genderPredictor: pack.genderModel)
+        XCTAssertEqual(handRuleOnly.check("Je le porte.").map(\.original), [])
+        XCTAssertEqual(handRuleOnly.check("Je. Le porte est ouverte.").map(\.original), ["Le porte"])
+        XCTAssertTrue(try fixes("Je. Le porte est ouverte.").contains("Le porte → La porte"))
+    }
+
     // When the model is sure the word is an article, a real gender error still fires.
     func testArticleModelKeepsRealGenderErrors() throws {
         XCTAssertEqual(try fixes("Il ouvre le porte."), ["le porte → la porte"])

@@ -38,7 +38,12 @@ struct EntriesList: View {
 
     var body: some View {
         List(selection: selection) {
-            if journal.entries.isEmpty {
+            if journal.isUnavailable {
+                Label("Coquille can't read the journal folder right now.", systemImage: "exclamationmark.triangle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .selectionDisabled()
+            } else if journal.entries.isEmpty {
                 Text("Entries you save will appear here.")
                     .font(.callout)
                     .foregroundStyle(.secondary)

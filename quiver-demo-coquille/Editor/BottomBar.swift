@@ -28,6 +28,8 @@ struct BottomBar: View {
                 .fixedSize()
                 .font(.body.weight(.medium))
 
+            if model.cannotKeepDraft { DraftWarning() }
+
             Spacer()
 
             PlayControl(model: model, jumpToFirstError: jumpToFirstError)
@@ -36,6 +38,19 @@ struct BottomBar: View {
         .padding(.vertical, 12)
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
+    }
+}
+
+/// A quiet warning that the writing couldn't be kept for next launch, shown until a
+/// later attempt succeeds. Saving to the journal is unaffected.
+struct DraftWarning: View {
+
+    var body: some View {
+        Image(systemName: "exclamationmark.triangle.fill")
+            .foregroundStyle(.orange)
+            .help("Coquille couldn't keep this writing for next time. Save it to your journal to be safe.")
+            .accessibilityLabel("Writing not kept")
+            .accessibilityHint("Coquille couldn't keep this writing for next time. Save it to your journal to be safe.")
     }
 }
 
@@ -86,6 +101,8 @@ struct CompactBottomBar: View {
             .accessibilityValue(model.isEnglishOn ? "On" : "Off")
             .accessibilityHint("Shows the English translation below the French")
 
+            if model.cannotKeepDraft { DraftWarning() }
+
             Spacer(minLength: 0)
 
             // Shown only while typing, as in Things, so the learner can see the whole page again.
@@ -133,6 +150,8 @@ struct MacBottomBar: View {
             }
             .buttonStyle(.plain)
             .accessibilityHint("Shows every issue")
+
+            if model.cannotKeepDraft { DraftWarning() }
 
             Spacer()
 

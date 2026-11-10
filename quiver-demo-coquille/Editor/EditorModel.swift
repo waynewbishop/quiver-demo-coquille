@@ -80,6 +80,9 @@ final class EditorModel {
     private(set) var hasFinishedLoading = false
     /// The text last kept in `workspace`, so unchanged text isn't written again.
     @ObservationIgnored private var bufferedText: String?
+    /// Whether the last attempt to keep the writing between launches failed. The next
+    /// lint or `saveNow()` tries again, since `bufferedText` still holds the last success.
+    private(set) var cannotKeepDraft = false
     /// The day a new entry's file is named for, set by New Entry.
     @ObservationIgnored private var entryDate = Date.now
     @ObservationIgnored private var translator: (any Translator)?
@@ -623,7 +626,9 @@ final class EditorModel {
         document = .entry(url)
         savedText = plain
         bufferedText = plain
-        workspace?.clearUnsaved()
+        cannotKeepDraft = false
+        // Clearing disowns the old writing even if its file stays, so it's never restored.
+        try? workspace?.clearUnsaved()
         workspace?.setOpenDocument(document)
     }
 
@@ -666,7 +671,9 @@ final class EditorModel {
     /// Replaces the editor's writing with `contents` as `newDocument`. Whatever wasn't
     /// saved is let go, since the learner already chose Save or Don't Save.
     private func show(_ newDocument: EditorDocument, text contents: String, savedText saved: String) {
-        workspace?.clearUnsaved()
+        // Clearing disowns the old writing even if its file stays, so it's never restored.
+        try? workspace?.clearUnsaved()
+        cannotKeepDraft = false
         replaceText(with: contents)
         document = newDocument
         savedText = saved
@@ -939,14 +946,19 @@ final class EditorModel {
         guard let workspace, let journal, !hasText else { return }
         var restored = workspace.openDocument(in: journal)
         var saved = ""
-        var contents = workspace.unsavedText() ?? ""
+        let draft = workspace.unsavedDraft()
+        var contents = draft?.text ?? ""
         if case .entry(let url) = restored {
             if let file = try? FrenchTextFile.text(at: url) {
                 saved = file
-                contents = workspace.unsavedText() ?? file
+                contents = draft?.text ?? file
             } else {
                 restored = .unsaved
             }
+        }
+        // A guided entry begun before midnight keeps the day it was begun.
+        if restored == .unsaved, let date = draft?.entryDate {
+            entryDate = date
         }
         document = restored
         savedText = saved
@@ -963,14 +975,24 @@ final class EditorModel {
     /// Keeps the writing between launches, as the Notebook keeps its editor: unsaved
     /// writing as it stands, or an entry's changes until they're saved or discarded.
     /// Nothing here touches the journal.
+    ///
+    /// `bufferedText` only moves on once the writing is kept, so a failed write is tried
+    /// again on the next call rather than skipped as unchanged.
     private func persist(_ plain: String) {
-        guard plain != bufferedText else { return }
-        bufferedText = plain
+        guard plain != bufferedText, let workspace else { return }
         if document == .unsaved || isEdited {
-            workspace?.writeUnsaved(plain)
+            do {
+                try workspace.writeUnsaved(plain, for: document, entryDate: entryDate)
+            } catch {
+                cannotKeepDraft = true
+                return
+            }
         } else {
-            workspace?.clearUnsaved()
+            // Clearing disowns the old writing even if its file stays, so it's never restored.
+            try? workspace.clearUnsaved()
         }
+        bufferedText = plain
+        cannotKeepDraft = false
     }
 
     /// Whether `text` would still block play: an error the linter finds in it, or `nil`

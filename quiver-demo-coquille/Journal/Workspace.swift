@@ -42,20 +42,55 @@ struct Workspace {
 
     private var unsavedURL: URL { folderURL.appending(path: "Unsaved Writing.txt") }
 
-    /// The editor's writing since it was last saved, or `nil` without any.
-    func unsavedText() -> String? {
-        try? FrenchTextFile.text(at: unsavedURL)
+    /// The defaults key for the document the unsaved writing belongs to, and its entry date.
+    static let draftKey = "unsavedDraft"
+
+    /// The editor's writing since it was last saved, and the day a new entry from it is
+    /// named for, or `nil` without any.
+    ///
+    /// Writing kept for one document is never handed to another: if forgetting it ever
+    /// failed, it stays on disk but no longer matches what the editor has open.
+    func unsavedDraft() -> (text: String, entryDate: Date?)? {
+        guard let text = try? FrenchTextFile.text(at: unsavedURL) else { return nil }
+        // Writing kept before drafts named their document belongs to whatever is open.
+        guard let draft = defaults?.dictionary(forKey: Self.draftKey) else { return (text, nil) }
+        guard draft["document"] as? String == storedDocument else { return nil }
+        return (text, (draft["entryDate"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:)))
     }
 
-    /// Keeps the editor's writing until the learner saves or discards it.
-    func writeUnsaved(_ text: String) {
-        try? FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        try? Data(text.utf8).write(to: unsavedURL, options: .atomic)
+    /// Keeps the editor's writing for `document` until the learner saves or discards it.
+    func writeUnsaved(_ text: String, for document: EditorDocument, entryDate: Date) throws {
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        try Data(text.utf8).write(to: unsavedURL, options: .atomic)
+        defaults?.set(
+            ["document": Self.storedValue(for: document), "entryDate": entryDate.timeIntervalSinceReferenceDate],
+            forKey: Self.draftKey
+        )
     }
 
     /// Forgets the editor's writing, once it's saved or discarded.
-    func clearUnsaved() {
-        try? FileManager.default.removeItem(at: unsavedURL)
+    func clearUnsaved() throws {
+        // Disown the writing first, so writing a failed removal leaves behind is never restored.
+        defaults?.set(["document": "discarded"], forKey: Self.draftKey)
+        do {
+            try FileManager.default.removeItem(at: unsavedURL)
+        } catch CocoaError.fileNoSuchFile {
+            // Nothing was kept, which is what forgetting asks for.
+        }
+        defaults?.removeObject(forKey: Self.draftKey)
+    }
+
+    /// What the editor last had open, as stored in defaults.
+    private var storedDocument: String {
+        defaults?.string(forKey: Self.documentKey) ?? Self.storedValue(for: .unsaved)
+    }
+
+    /// The defaults value naming `document`.
+    private static func storedValue(for document: EditorDocument) -> String {
+        switch document {
+        case .unsaved: "unsaved"
+        case .entry(let url): "entry:" + url.lastPathComponent
+        }
     }
 
     /// What the editor had open, or unsaved writing when that entry is gone.
@@ -67,12 +102,7 @@ struct Workspace {
 
     /// Remembers what the editor has open.
     func setOpenDocument(_ document: EditorDocument) {
-        let value: String
-        switch document {
-        case .unsaved: value = "unsaved"
-        case .entry(let url): value = "entry:" + url.lastPathComponent
-        }
-        defaults?.set(value, forKey: Self.documentKey)
+        defaults?.set(Self.storedValue(for: document), forKey: Self.documentKey)
     }
 
     /// The defaults key for the open exercise's title and hint.

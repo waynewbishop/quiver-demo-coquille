@@ -39,6 +39,16 @@ final class LearnerStatsTests: XCTestCase {
         flagged.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
         XCTAssertEqual(flagged.cleanFraction(lastSevenDaysFrom: try day(27), calendar: calendar), 0.0)
         XCTAssertEqual(flagged.weakSpots.first?.kind, .gender)
+
+        // A clean sentence relinted with a mistake stops being clean, and starts again once fixed.
+        var relinted = LearnerStats()
+        relinted.record(text: "Un une fromage.", issues: [], on: try day(27), calendar: calendar)
+        XCTAssertEqual(relinted.cleanFraction(lastSevenDaysFrom: try day(27), calendar: calendar), 1.0)
+        relinted.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
+        relinted.record(text: "Un une fromage.", issues: [genderIssue], on: try day(27), calendar: calendar)
+        XCTAssertEqual(relinted.cleanFraction(lastSevenDaysFrom: try day(27), calendar: calendar), 0.0)
+        relinted.record(text: "Un une fromage.", issues: [], on: try day(27), calendar: calendar)
+        XCTAssertEqual(relinted.cleanFraction(lastSevenDaysFrom: try day(27), calendar: calendar), 1.0)
     }
 
     // Relinting the same text never counts the same mistake twice.

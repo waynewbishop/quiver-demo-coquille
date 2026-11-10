@@ -73,13 +73,28 @@ final class Journal {
 
     // MARK: - Listing
 
+    /// Whether the last `refresh()` couldn't read the folder, so `entries` is the last
+    /// listing that could, rather than what's there now.
+    private(set) var isUnavailable = false
+
     /// Reads the folder again, for files added, changed or removed outside Coquille.
-    func refresh() {
-        let urls = (try? FileManager.default.contentsOfDirectory(
-            at: folderURL,
-            includingPropertiesForKeys: [.contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
+    ///
+    /// A folder that can't be read keeps its last listing, since an unreadable journal
+    /// isn't an empty one; an entry that alone can't be read is left out.
+    @discardableResult
+    func refresh() -> Bool {
+        let urls: [URL]
+        do {
+            urls = try FileManager.default.contentsOfDirectory(
+                at: folderURL,
+                includingPropertiesForKeys: [.contentModificationDateKey],
+                options: [.skipsHiddenFiles]
+            )
+        } catch {
+            isUnavailable = true
+            return false
+        }
+        isUnavailable = false
         entries = urls
             .filter { $0.pathExtension.lowercased() == "txt" }
             .compactMap { url in
@@ -87,6 +102,7 @@ final class Journal {
                 return entry(for: url, text: text)
             }
         sort()
+        return true
     }
 
     /// The listed entry for a file, if it's in the journal.

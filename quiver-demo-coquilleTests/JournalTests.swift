@@ -116,4 +116,21 @@ final class JournalTests: XCTestCase {
         try journal.createEntry(text: text, on: try day(11, 2))
         XCTAssertEqual(journal.entries.first?.preview, "Il fait froid.")
     }
+
+    // A folder that can't be read keeps its last listing, rather than looking like an empty journal.
+    func testUnreadableFolderKeepsItsListing() throws {
+        let journal = try makeJournal()
+        try journal.createEntry(text: "Il pleut.", on: try day(10, 31))
+        XCTAssertTrue(journal.refresh())
+
+        try FileManager.default.removeItem(at: folder)
+        XCTAssertFalse(journal.refresh())
+        XCTAssertTrue(journal.isUnavailable)
+        XCTAssertEqual(journal.entries.count, 1)
+
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        XCTAssertTrue(journal.refresh())
+        XCTAssertFalse(journal.isUnavailable)
+        XCTAssertTrue(journal.entries.isEmpty)
+    }
 }

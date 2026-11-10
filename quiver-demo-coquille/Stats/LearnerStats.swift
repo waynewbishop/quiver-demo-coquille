@@ -74,8 +74,11 @@ nonisolated struct LearnerStats: Codable, Equatable, Sendable {
             if let caret, sentence.range.lowerBound < caret, caret < sentence.range.upperBound { continue }
             let flagged = issues.filter { $0.severity != .suggestion && sentence.range.overlaps($0.range) }
             day.checked.insert(sentence.text)
+            // A sentence relinted with a new mistake, as when a rule changes, is no longer clean.
             if flagged.isEmpty {
                 day.clean.insert(sentence.text)
+            } else {
+                day.clean.remove(sentence.text)
             }
             for issue in flagged where !countedIssues.contains(sentence.text + "|" + issue.ignoreKey) {
                 countedIssues.insert(sentence.text + "|" + issue.ignoreKey)

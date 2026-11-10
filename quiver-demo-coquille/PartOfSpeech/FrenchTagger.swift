@@ -89,9 +89,12 @@ nonisolated struct FrenchTagger: Sendable {
     }
 
     /// The hand rule: le or la before a verb is a pronoun after a subject or object
-    /// pronoun, or after a preposition when the verb is an infinitive.
+    /// pronoun, or after a preposition when the verb is an infinitive. The three words
+    /// must sit together, so a pronoun ending one sentence ("Je. Le porte…") never counts.
     private func handRuleSaysPronoun(_ tokens: [Token], at index: Int) -> Bool {
         guard index > 0, index + 1 < tokens.count else { return false }
+        guard tokens[index - 1].gap.allSatisfy(\.isWhitespace),
+              tokens[index].gap.allSatisfy(\.isWhitespace) else { return false }
         let word = tokens[index + 1].normalized
         guard lexicon.isVerb(word) else { return false }
         let previous = tokens[index - 1].normalized
