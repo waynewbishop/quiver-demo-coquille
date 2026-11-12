@@ -130,7 +130,10 @@ nonisolated struct FrenchGrammar: Grammar {
                 conjugationIssues(in: $0.tokens) + nearFutureIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.siClause", layer: .relationalGrammar, targetLevel: .b1) {
-                siClauseIssues(in: $0.tokens)
+                siClauseIssues(in: $0.tokens) + siResultIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.futureAfterQuand", layer: .relationalGrammar, targetLevel: .b1) {
+                futureAfterQuandIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.participle", layer: .relationalGrammar, targetLevel: .a2) {
                 participleWithEtreIssues(in: $0.tokens)
@@ -627,6 +630,18 @@ nonisolated struct FrenchGrammar: Grammar {
                     .elision, .error, from: index, through: index + 1, in: tokens,
                     replacement: matchingCase(of: token.text, fix) + next.text,
                     explanation: explanations.render(.elisionContraction, ["word": word, "fix": fix + nextWord]),
+                    source: "Elision rule"
+                ))
+                continue
+            }
+
+            // Si elides only before il and ils: "s'il", but "si elle", "si on".
+            if word == "si" {
+                guard ["il", "ils"].contains(nextWord) else { continue }
+                issues.append(issue(
+                    .elision, .error, from: index, through: index + 1, in: tokens,
+                    replacement: matchingCase(of: token.text, "s'") + next.text,
+                    explanation: explanations.render(.elision, ["word": word, "fix": "s'" + nextWord]),
                     source: "Elision rule"
                 ))
                 continue
@@ -1174,6 +1189,184 @@ nonisolated struct FrenchGrammar: Grammar {
                 replacement: matchingCase(of: verbToken.text, fix),
                 explanation: explanations.render(.siClause, ["tense": isFuture ? "present" : "imperfect", "fix": fix]),
                 source: "Si clause rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    /// Verbs after which si or quand opens a question, not a condition or a time: "je ne sais
+    /// pas si tu viendras", "je te dirai quand il arrive", "on verra si ça marche".
+    private static let questionVerbs: Set<String> = [
+        "savoir", "demander", "voir", "dire", "ignorer", "vérifier", "regarder", "comprendre",
+        "décider", "deviner", "expliquer", "examiner", "juger", "chercher", "douter", "préciser",
+        "indiquer", "annoncer", "révéler", "apprendre", "découvrir", "interroger", "hésiter"
+    ]
+
+    /// Verbs whose conditional softens a request or a suggestion, which is correct after
+    /// si + present: "si tu veux, on pourrait aller au cinéma", "si tu as mal, tu devrais dormir".
+    private static let politeConditionalVerbs: Set<String> = [
+        "pouvoir", "vouloir", "devoir", "aimer", "falloir", "préférer", "valoir"
+    ]
+
+    /// Returns the subject pronoun at `index` and its verb, looking past ne and object
+    /// pronouns, as in "je t'appellerai" or "il ne le fera pas"; nil when no pronoun opens there.
+    private func subjectAndVerb(at index: Int, in tokens: [Token]) -> (subject: Int, verb: Int, person: String)? {
+        guard index < tokens.count - 1, tokens[index].isAdjacentToNext,
+              let person = Self.subjectPersons[tokens[index].normalized] else { return nil }
+        var verb = index + 1
+        while verb < tokens.count - 1, verb < index + 4,
+              Self.preverbalWords.contains(tokens[verb].normalized), tokens[verb].isAdjacentToNext {
+            verb += 1
+        }
+        guard !Self.preverbalWords.contains(tokens[verb].normalized), !tokens[verb].normalized.hasSuffix("'") else { return nil }
+        return (index, verb, person)
+    }
+
+    /// Returns the verb's one reading, or nil when Lexique gives it more than one verb.
+    private func onlyReading(of token: Token) -> Lexicon.Conjugation? {
+        let readings = lexicon.conjugations(token.normalized)
+        guard readings.count == 1 else { return nil }
+        return readings.first
+    }
+
+    /// Whether every code of `reading` is in `tense`, one of them for `person`: "achèterai" is
+    /// only ever the future, so it is surely "if" for "1s".
+    private func isOnly(_ reading: Lexicon.Conjugation, _ tense: String, for person: String) -> Bool {
+        reading.codes.allSatisfy { $0.hasPrefix(tense) } && reading.codes.contains(tense + person)
+    }
+
+    /// Returns the index of the first word of the clause that holds `index`: the word after
+    /// the last punctuation mark or line break before it, or the first word of the text.
+    private func clauseStart(before index: Int, in tokens: [Token]) -> Int {
+        var start = index
+        while start > 0, !tokens[start - 1].endsClause { start -= 1 }
+        return start
+    }
+
+    /// Returns the index of the word after the first comma at or after `index`, or nil when
+    /// the sentence ends first.
+    private func clauseAfterComma(from index: Int, in tokens: [Token]) -> Int? {
+        var position = index
+        while position < tokens.count - 1 {
+            if tokens[position].endsClause {
+                return TaggedText.mark(in: tokens[position].gap) == "," ? position + 1 : nil
+            }
+            position += 1
+        }
+        return nil
+    }
+
+    /// Returns the other clause's subject and verb for a si or quand clause whose first word
+    /// is at `start` and whose verb is at `verb`: after the comma when the clause opens the
+    /// sentence, or at the start of the clause before it otherwise. A main verb that asks a
+    /// question, as in "je ne sais pas si", returns nil.
+    private func otherClause(
+        ofClauseAt start: Int, verb: Int, in tokens: [Token]
+    ) -> (subject: Int, verb: Int, person: String)? {
+        if start == 0 || tokens[start - 1].endsClause {
+            guard let next = clauseAfterComma(from: verb, in: tokens) else { return nil }
+            return subjectAndVerb(at: next, in: tokens)
+        }
+        guard tokens[start - 1].isAdjacentToNext,
+              let main = subjectAndVerb(at: clauseStart(before: start, in: tokens), in: tokens),
+              main.verb < start,
+              let reading = onlyReading(of: tokens[main.verb]),
+              !Self.questionVerbs.contains(reading.verb) else { return nil }
+        return main
+    }
+
+    /// Flags the other half of a si sentence when its tense doesn't match the si clause:
+    /// "si j'avais plus d'argent, j'achèterai" → "achèterais", "si j'ai le temps, je
+    /// marcherais" → "marcherai", in either order.
+    ///
+    /// Si + imperfect takes the conditional, so only a future after it is flagged. Si + present
+    /// takes the present, future or imperative, so only a conditional is flagged, unless it is
+    /// a polite one ("on pourrait"). Both verbs must have a single, certain reading, the other
+    /// clause must open with a subject pronoun, and même si, comme si and si after a verb such
+    /// as savoir are left alone.
+    private func siResultIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            let si = tokens[index]
+            let subject = tokens[index + 1]
+            let isSi = si.normalized == "si" || (si.normalized == "s'" && ["il", "ils"].contains(subject.normalized))
+            guard isSi, si.isAdjacentToNext,
+                  index == 0 || tokens[index - 1].endsClause
+                    || !["même", "comme"].contains(tokens[index - 1].normalized),
+                  let siClause = subjectAndVerb(at: index + 1, in: tokens),
+                  let siReading = onlyReading(of: tokens[siClause.verb]) else { continue }
+            let isImperfect = isOnly(siReading, "ii", for: siClause.person)
+            let isPresent = siReading.codes.contains("ip" + siClause.person)
+                && !siReading.codes.contains { $0.hasPrefix("ii") || $0.hasPrefix("if") || $0.hasPrefix("cp") }
+            guard isImperfect || isPresent,
+                  let other = otherClause(ofClauseAt: index, verb: siClause.verb, in: tokens),
+                  other.verb != siClause.verb else { continue }
+
+            let verbToken = tokens[other.verb]
+            guard let reading = onlyReading(of: verbToken) else { continue }
+            let wrongTense = isImperfect ? "if" : "cp"
+            let rightTense = isImperfect ? "cp" : "if"
+            guard isOnly(reading, wrongTense, for: other.person),
+                  isImperfect || !Self.politeConditionalVerbs.contains(reading.verb),
+                  let fix = lexicon.conjugate(reading.verb, rightTense + other.person),
+                  fix != verbToken.normalized else { continue }
+            issues.append(issue(
+                .siClause, .error, from: other.verb, through: other.verb, in: tokens,
+                replacement: matchingCase(of: verbToken.text, fix),
+                explanation: explanations.render(.siClauseResult, [
+                    "tense": isImperfect ? "imperfect" : "present",
+                    "other": isImperfect ? "conditional" : "future",
+                    "fix": fix
+                ]),
+                source: "Si clause rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Future after quand
+
+    /// Returns the time word that opens a clause at `index`, with the index of its first word:
+    /// quand, lorsque, dès que or aussitôt que. Returns nil for any other word.
+    private func quandTrigger(at index: Int, in tokens: [Token]) -> (name: String, start: Int)? {
+        let word = tokens[index].normalized
+        if word == "quand" { return ("quand", index) }
+        if word == "lorsque" || word == "lorsqu'" { return ("lorsque", index) }
+        guard ["que", "qu'"].contains(word), index > 0, tokens[index - 1].isAdjacentToNext else { return nil }
+        let previous = tokens[index - 1].normalized
+        return ["dès", "aussitôt"].contains(previous) ? (previous + " que", index - 1) : nil
+    }
+
+    /// Flags the present after quand, lorsque, dès que or aussitôt que when the other clause is
+    /// in the future: "quand j'arrive demain, je t'appellerai" → "arriverai".
+    ///
+    /// French puts both actions in the future where English uses the present. A present in
+    /// the other clause is a habit ("quand il pleut, je cours"), so it stays silent, as does
+    /// quand after a verb such as savoir or dire, where it asks a question.
+    private func futureAfterQuandIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            guard tokens[index].isAdjacentToNext,
+                  let trigger = quandTrigger(at: index, in: tokens),
+                  let clause = subjectAndVerb(at: index + 1, in: tokens) else { continue }
+            let verbToken = tokens[clause.verb]
+            guard let reading = onlyReading(of: verbToken),
+                  reading.codes.contains("ip" + clause.person),
+                  !reading.codes.contains(where: { $0.hasPrefix("ii") || $0.hasPrefix("if") || $0.hasPrefix("cp") }),
+                  let other = otherClause(ofClauseAt: trigger.start, verb: clause.verb, in: tokens),
+                  other.verb != clause.verb,
+                  let otherReading = onlyReading(of: tokens[other.verb]),
+                  isOnly(otherReading, "if", for: other.person),
+                  let fix = lexicon.conjugate(reading.verb, "if" + clause.person),
+                  fix != verbToken.normalized,
+                  // "quand j'arrive" keeps its elision only before a vowel.
+                  tokens[clause.subject].normalized != "j'" || fix.first.map({ "aeiouyàâéèêëîïôûh".contains($0) }) == true
+            else { continue }
+            issues.append(issue(
+                .futureAfterQuand, .error, from: clause.verb, through: clause.verb, in: tokens,
+                replacement: matchingCase(of: verbToken.text, fix),
+                explanation: explanations.render(.futureAfterQuand, ["trigger": trigger.name, "fix": fix]),
+                source: "Future after quand rule · Lexique"
             ))
         }
         return issues

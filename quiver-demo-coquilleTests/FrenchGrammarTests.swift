@@ -799,6 +799,43 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Il faut que je suis le cours."), [])
     }
 
+    // MARK: - Si and quand clauses
+
+    // Si elides only before il and ils, never before another vowel or a name.
+    func testSiElidesOnlyBeforeIl() throws {
+        XCTAssertEqual(try fixes("Je viens si il pleut."), ["si il → s'il"])
+        XCTAssertEqual(try fixes("Je viens si elle vient."), [])
+        XCTAssertEqual(try fixes("Je viens si on veut."), [])
+        XCTAssertEqual(try fixes("Je viens si Isabelle vient."), [])
+        XCTAssertEqual(try fixes("Oui, si !"), [])
+    }
+
+    // The hint names the si clause's tense and the other clause's, not the answer.
+    func testSiResultHintNamesTheTenses() throws {
+        let issue = try XCTUnwrap(grammar().check("Si j'avais plus d'argent, j'achèterai un chalet.").first)
+        XCTAssertEqual(issue.kind, .siClause)
+        XCTAssertEqual(issue.hint, "With si + imperfect, the other half of the sentence uses the conditional.")
+        XCTAssertEqual(issue.replacement, "achèterais")
+    }
+
+    // A polite conditional, même si, comme si and si after savoir stay silent.
+    func testSiResultStaysSilentWhenInDoubt() throws {
+        XCTAssertEqual(try fixes("Si tu veux, on pourrait aller au cinéma."), [])
+        XCTAssertEqual(try fixes("Il parlera comme s'il savait tout."), [])
+        XCTAssertEqual(try fixes("Je viendrai même s'il pleuvait."), [])
+        XCTAssertEqual(try fixes("Je saurai demain s'il avait raison."), [])
+    }
+
+    // Lorsque and dès que work like quand, and quand after dire asks a question.
+    func testFutureAfterQuandTriggers() throws {
+        XCTAssertEqual(try fixes("Dès que tu arrives, nous mangerons."), ["arrives → arriveras"])
+        XCTAssertEqual(try fixes("Lorsqu'il vient, nous partirons."), ["vient → viendra"])
+        XCTAssertEqual(try fixes("Je te dirai quand il arrive."), [])
+        let issue = try XCTUnwrap(grammar().check("Je t'appellerai quand j'arrive.").first)
+        XCTAssertEqual(issue.kind, .futureAfterQuand)
+        XCTAssertEqual(issue.hint, "When the action is still to come, French uses the future after quand.")
+    }
+
     // MARK: - Object pronouns
 
     // Lui before a vowel has one fix, since le and la both elide; before a consonant the

@@ -143,6 +143,16 @@
     "template": "After si meaning if, French uses the {tense} instead: {fix}.",
     "example": "After si meaning if, French uses the present instead: viens."
   },
+  "siClauseResult": {
+    "hint": "With si + {tense}, the other half of the sentence uses the {other}.",
+    "template": "With si + {tense}, the other half of the sentence uses the {other}: {fix}.",
+    "example": "With si + imperfect, the other half of the sentence uses the conditional: achèterais."
+  },
+  "futureAfterQuand": {
+    "hint": "When the action is still to come, French uses the future after {trigger}.",
+    "template": "When the action is still to come, French uses the future after {trigger}: {fix}.",
+    "example": "When the action is still to come, French uses the future after quand: arriverai."
+  },
   "subjunctive": {
     "hint": "After {trigger}, French uses the subjunctive.",
     "template": "After {trigger}, French uses the subjunctive: {fix}.",

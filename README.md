@@ -91,7 +91,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Run-together words | jesuis → je suis, jaime → j'aime | Warning | System spellchecker, split by Lexique |
 | Article gender | une fromage → un fromage, ce maison → cette maison, quel maison → quelle maison | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
-| Elision | je aime → j'aime, au école → à l'école | Error | Elision rule |
+| Elision | je aime → j'aime, au école → à l'école, si il → s'il | Error | Elision rule |
 | Possessives | mon mère → ma mère, ma amie → mon amie | Error | Lexique, known noun |
 | Adjective agreement | des pommes rouge → rouges | Error | Lexique adjective forms |
 | Look-alike words | comment cava → comment ça va | Error | Look-alike list |
@@ -101,7 +101,8 @@ Nous avons acheté une fromage et des pommes rouge.
 | Être or avoir | j'ai allé → je suis allé, il s'a trompé → il s'est trompé | Error | Auxiliary rule, Lexique participles |
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
 | Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
-| Si clauses | si tu viendras → si tu viens | Error | Si clause rule, Lexique verb forms |
+| Si clauses | si tu viendras → si tu viens, si j'avais le temps, je viendrai → je viendrais | Error | Si clause rule, Lexique verb forms |
+| Future after quand | quand j'arrive demain, je t'appellerai → quand j'arriverai | Error | Future after quand rule, Lexique verb forms |
 | Subjunctive | il faut que je fais → il faut que je fasse, je veux que tu viens → je veux que tu viennes | Error | Subjunctive rule, Lexique verb forms |
 | Object pronouns | je lui ai vu → je l'ai vu, je le téléphone → je lui téléphone | Error | Object pronoun rule, Lexique verb forms |
 | Relative pronouns | un ami qui je connais → un ami que je connais, le livre que j'ai besoin → le livre dont j'ai besoin | Error | Relative pronoun rule, part-of-speech tagger |

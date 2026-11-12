@@ -551,7 +551,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 25)
+        XCTAssertEqual(tuning.count, 26)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }

@@ -27,6 +27,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case article
     case conjugation
     case siClause
+    case futureAfterQuand
     case subjunctive
     case objectPronoun
     case relativePronoun
@@ -55,6 +56,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .article: "ARTICLE"
         case .conjugation: "CONJUGATION"
         case .siClause: "SI CLAUSE"
+        case .futureAfterQuand: "QUAND + FUTURE"
         case .subjunctive: "SUBJUNCTIVE"
         case .objectPronoun: "OBJECT PRONOUN"
         case .relativePronoun: "RELATIVE PRONOUN"
@@ -85,6 +87,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .article: "Articles (j'aime le fromage)"
         case .conjugation: "Conjugation (je vais)"
         case .siClause: "Si clauses (si tu viens)"
+        case .futureAfterQuand: "Future after quand (quand j'arriverai)"
         case .subjunctive: "Subjunctive (il faut que je fasse)"
         case .objectPronoun: "Object pronouns (je l'ai vu)"
         case .relativePronoun: "Relative pronouns (le livre dont je parle)"
