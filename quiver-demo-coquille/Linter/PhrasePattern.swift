@@ -88,6 +88,12 @@ nonisolated struct PhrasePattern: Decodable, Equatable, Sendable {
     /// Why the phrase is flagged, without the answer.
     let note: String
 
+    /// Whether the phrase swaps être for avoir, as "@être $avoirNoun" → "@avoir $avoirNoun"
+    /// does, so its card teaches the avoir expression rather than a general word choice.
+    var swapsEtreForAvoir: Bool {
+        match.hasPrefix("@être ") && fix?.hasPrefix("@avoir ") == true
+    }
+
     /// The pattern words of `match`, split as the tokenizer splits text.
     var matchWords: [String] {
         Self.words(of: match)

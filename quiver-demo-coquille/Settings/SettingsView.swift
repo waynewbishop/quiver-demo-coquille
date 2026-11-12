@@ -62,6 +62,15 @@ struct SettingsView: View {
         #endif
     }
 
+    /// Where the system keeps its French voices, as each platform's settings name it.
+    private static var voiceInstallHelp: String {
+        #if os(macOS)
+        "To install more voices, open System Settings › Accessibility › Read & Speak, then click the ⓘ button next to System voice."
+        #else
+        "To install more voices, open Settings › Accessibility › Spoken Content › Voices › French."
+        #endif
+    }
+
     private var form: some View {
         Form {
             Section("General") {
@@ -84,7 +93,7 @@ struct SettingsView: View {
             } header: {
                 Text("Playback")
             } footer: {
-                Text("Choose the voice for French playback and the phrasebook. To install more voices, open the system's Accessibility settings, then choose Spoken Content and Voices. Playback voices are separate from translation downloads.")
+                Text("Choose the voice for French playback and the phrasebook. \(Self.voiceInstallHelp) Playback voices are separate from translation downloads.")
             }
 
             Section {
@@ -100,7 +109,7 @@ struct SettingsView: View {
 
             Section("About & Privacy") {
                 LabeledContent("Version", value: Self.version)
-                Text("Your entries, progress, and translations stay on this device.")
+                Text("Your entries, progress, and translations stay private, on your devices.")
                 Text("Word data from [Lexique 3.83](http://www.lexique.org) by Boris New and Christophe Pallier, licensed CC BY-SA 4.0.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)

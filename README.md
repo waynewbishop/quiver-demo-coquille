@@ -36,8 +36,8 @@ itself, and translation needs Apple's French language pack:
 
 - **Voices.** iPhone and iPad: Settings › Accessibility › Spoken
   Content › Voices › French. Mac: System Settings › Accessibility ›
-  Spoken Content › System voice › Manage Voices. The enhanced and
-  premium voices sound much more natural.
+  Read & Speak, then the ⓘ button next to System voice. The enhanced
+  and premium voices sound much more natural.
 - **Translation.** Choose **Download French…** in Coquille's Settings.
   Until it's installed, the English area says so.
 
@@ -102,7 +102,8 @@ Nous avons acheté une fromage et des pommes rouge.
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
 | Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
 | Si clauses | si tu viendras → si tu viens | Error | Si clause rule, Lexique verb forms |
-| Word choice | je suis faim → j'ai faim, je suis 20 ans → j'ai 20 ans, beaucoup des gens → beaucoup de gens | Error | Word-choice list and age rule |
+| Avoir expressions | je suis faim → j'ai faim, je suis 20 ans → j'ai 20 ans | Error | Word-choice list and age rule |
+| Word choice | j'ai demandé une question → posé une question, beaucoup des gens → beaucoup de gens | Error | Word-choice list |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |
 | Idioms | ça fait du sens → ça a du sens | Suggestion | Idiom list |
 | Unknown nouns | un influenceuse → une influenceuse | Warning | Quiver model, from the word's ending |

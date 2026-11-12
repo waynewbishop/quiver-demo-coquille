@@ -1576,7 +1576,7 @@ nonisolated struct FrenchGrammar: Grammar {
             for position in (index + 1)..<years { age += tokens[position].text + tokens[position].gap }
             let fix = (isJe ? "j'" : subject.normalized + " ") + avoir + age + tokens[years].text
             issues.append(issue(
-                .wordChoice, .error, from: first, through: index, in: tokens,
+                .avoirExpression, .error, from: first, through: index, in: tokens,
                 replacement: replacement,
                 explanation: explanations.render(.wordChoice, [
                     "note": "French gives an age with avoir: you have your years.", "fix": fix
@@ -1667,8 +1667,9 @@ nonisolated struct FrenchGrammar: Grammar {
             switch list.kind {
             case .lookAlike, .wordChoice:
                 let isLookAlike = list.kind == .lookAlike
+                let kind: IssueKind = isLookAlike ? .lookAlike : entry.swapsEtreForAvoir ? .avoirExpression : .wordChoice
                 return issue(
-                    isLookAlike ? .lookAlike : .wordChoice, .error, from: first, through: last, in: tokens,
+                    kind, .error, from: first, through: last, in: tokens,
                     replacement: caseMatched,
                     explanation: explanations.render(isLookAlike ? .lookAlike : .wordChoice, ["note": entry.note, "fix": replacement]),
                     source: isLookAlike ? "Look-alike list" : "Word-choice list"

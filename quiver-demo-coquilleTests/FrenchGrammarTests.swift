@@ -748,9 +748,19 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("J'ai demandé une question."), ["demandé une question → posé une question"])
         XCTAssertEqual(try fixes("Il habite à Canada."), ["à Canada → au Canada"])
         XCTAssertEqual(try fixes("Je suis tard."), ["Je suis tard → Je suis en retard"])
-        let issue = try XCTUnwrap(grammar().check("Je suis faim.").first)
+        let issue = try XCTUnwrap(grammar().check("J'ai demandé une question.").first)
         XCTAssertEqual(issue.kind, .wordChoice)
         XCTAssertEqual(issue.severity, .error)
+    }
+
+    // Être where French says avoir, for a feeling or an age, is its own kind, so the card
+    // and the weak spots name the avoir expression.
+    func testAvoirExpressionsHaveTheirOwnKind() throws {
+        let hunger = try XCTUnwrap(grammar().check("Je suis faim.").first)
+        XCTAssertEqual(hunger.kind, .avoirExpression)
+        XCTAssertEqual(hunger.severity, .error)
+        let age = try XCTUnwrap(grammar().check("Mon frère est 12 ans.").first)
+        XCTAssertEqual(age.kind, .avoirExpression)
     }
 
     // The French phrasing raises nothing.

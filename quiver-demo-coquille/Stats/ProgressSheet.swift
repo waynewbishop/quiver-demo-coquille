@@ -165,7 +165,7 @@ struct ProgressSheet: View {
     /// Privacy note and the Lexique credit its license requires.
     private var footer: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Your stats stay on this device.")
+            Text("Your stats stay private, on your devices.")
             Text("Word data from [Lexique 3.83](http://www.lexique.org) by Boris New and Christophe Pallier, licensed CC BY-SA 4.0.")
         }
         .font(.footnote)

@@ -53,6 +53,8 @@ struct EditorScreen: View {
     @State private var showsCorrections = false
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
+    /// Reopens the welcome tour, from the empty page on iPhone and iPad.
+    @Environment(\.showWelcomeTour) private var showWelcomeTour
     #if os(macOS)
     @Environment(\.openWindow) private var openWindow
     #endif
@@ -902,6 +904,17 @@ struct EditorScreen: View {
                     .padding(.vertical, placeholderTopInset)
                 }
             }
+            #if !os(macOS)
+            // The Mac keeps the tour in the Help menu instead.
+            .overlay(alignment: .bottom) {
+                if !model.hasText && model.loadFailure == nil && !editorIsFocused {
+                    Button("Replay the tour") { showWelcomeTour() }
+                        .font(.plexSans(13, relativeTo: .footnote))
+                        .frame(minHeight: 44)
+                        .padding(.bottom, 8)
+                }
+            }
+            #endif
             .onChange(of: model.text) { model.textDidChange() }
             .onChange(of: model.selection) { model.selectionDidChange() }
             .onChange(of: model.narrator.spokenRange) { model.spokenWordDidChange() }

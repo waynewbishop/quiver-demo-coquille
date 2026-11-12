@@ -146,7 +146,7 @@ struct MacBottomBar: View {
             Button {
                 showsIssueList = true
             } label: {
-                StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count)
+                StatusChip(errors: model.blockingIssues.count, warnings: model.warnings.count, isGentle: true)
             }
             .buttonStyle(.plain)
             .accessibilityHint("Shows every issue")
