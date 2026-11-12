@@ -13,13 +13,14 @@
 
 import SwiftUI
 
-/// The status chip, the file menu with the journal, New beside the phrasebook, the progress button, and the theme toggle.
+/// The status chip, the file menu with the journal, New beside Explain and the phrasebook, the progress button, and the theme toggle.
 struct TopBar: View {
 
     let model: EditorModel
     @Binding var showsIssueList: Bool
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
+    @Binding var showsExplanation: Bool
     @Binding var showsEntries: Bool
     @Binding var showsSettings: Bool
     /// Hands a File menu command to the editor, which asks about unsaved changes first.
@@ -69,6 +70,8 @@ struct TopBar: View {
                 .buttonStyle(.bordered)
                 .accessibilityLabel("Start a blank page")
                 .disabled(!model.hasText && model.fileURL == nil)
+
+            ExplainToggle(model: model, isOn: $showsExplanation)
 
             PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
 
@@ -124,13 +127,14 @@ struct TopBar: View {
 }
 
 #if !os(macOS)
-/// The iPhone navigation bar's buttons: the journal on the leading edge, then the
-/// phrasebook and a More menu holding the file commands, progress, font size, and the theme.
+/// The iPhone navigation bar's buttons: the journal on the leading edge, then Explain,
+/// the phrasebook and a More menu holding the file commands, progress, font size, and the theme.
 struct CompactToolbar: ToolbarContent {
 
     let model: EditorModel
     @Binding var showsProgress: Bool
     @Binding var showsPhrasebook: Bool
+    @Binding var showsExplanation: Bool
     @Binding var showsEntries: Bool
     @Binding var showsSettings: Bool
     /// Hands a file command to the editor, which asks about unsaved changes first.
@@ -141,6 +145,10 @@ struct CompactToolbar: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             PanelToggle(title: "Journal", systemImage: "list.bullet", isOn: $showsEntries)
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            ExplainToggle(model: model, isOn: $showsExplanation)
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -222,6 +230,31 @@ struct PanelToggle: View {
                 .labelStyle(.iconOnly)
         }
         .toggleStyle(.button)
+    }
+}
+
+/// The Explain toggle. Like play, it's enabled only for French with no errors, and
+/// greyed out rather than hidden without Apple Intelligence so learners know it's there.
+///
+/// An open panel can always be closed, even once an error appears and the panel locks.
+struct ExplainToggle: View {
+
+    let model: EditorModel
+    @Binding var isOn: Bool
+
+    var body: some View {
+        PanelToggle(title: "Explain", systemImage: "lightbulb", isOn: $isOn)
+            .disabled(!isOn && reason != nil)
+            .help(reason ?? "Explain this French")
+            .accessibilityHint(reason ?? "Explains the phrases in this French")
+    }
+
+    /// Why there's nothing to explain yet, or `nil` when there is.
+    private var reason: String? {
+        if !PassageExplainer.isAvailable { return "Explain needs Apple Intelligence." }
+        if !model.hasFrench { return "Write some French to explain it." }
+        if model.isLocked { return "Explain unlocks when the French is correct." }
+        return nil
     }
 }
 

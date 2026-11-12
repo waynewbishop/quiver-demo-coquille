@@ -48,7 +48,8 @@ struct EditorScreen: View {
     /// names unsaved writing in the window and fills in the title when it's saved.
     @State private var storyTitle: String?
     @State private var showsProgress = false
-    @State private var showsPhrasebook = false
+    /// The panel beside the French, the phrasebook or the explanation, if one is open.
+    @State private var sidePanel: SidePanel?
     @State private var showsSettings = false
     @State private var showsCorrections = false
     @FocusState private var editorIsFocused: Bool
@@ -263,7 +264,7 @@ struct EditorScreen: View {
                 .tint(.brand)
             }
             #endif
-            .modifier(PhrasebookPresentation(isPresented: $showsPhrasebook, model: model))
+            .modifier(SidePanelPresentation(panel: $sidePanel, model: model, french: titleSource))
     }
 
     // MARK: - Saving and moving between writing
@@ -339,7 +340,7 @@ struct EditorScreen: View {
             // Never a save question on the way to writing: carry on, or start today's entry.
             if model.hasText { editorIsFocused = true } else { move(.todaysEntry) }
         case .phrasebook:
-            showsPhrasebook = true
+            sidePanel = .phrasebook
         case .journal:
             #if os(macOS)
             columns = .all
@@ -604,13 +605,17 @@ struct EditorScreen: View {
                 MacStopButton(model: model)
             }
 
+            ToolbarItem(placement: .navigation) {
+                ExplainToggle(model: model, isOn: showsPanel(.explanation))
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 Button("New", systemImage: "square.and.pencil") { move(.new) }
                     .labelStyle(.iconOnly)
                     .help("Start a blank page (⌘N)")
                     .disabled(!model.hasText && model.fileURL == nil)
 
-                PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
+                PanelToggle(title: "Phrasebook", systemImage: "book", isOn: showsPanel(.phrasebook))
                     .help("Phrasebook")
             }
 
@@ -714,12 +719,12 @@ struct EditorScreen: View {
             .toolbarVisibility(isLandscapePhone && editorIsFocused ? .hidden : .automatic, for: .navigationBar)
             .animation(.snappy(duration: 0.2), value: editorIsFocused)
             .toolbar {
-                CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
+                CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: showsPanel(.phrasebook), showsExplanation: showsPanel(.explanation), showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
             }
-            // Going back to the French brings the keyboard up, so the phrasebook sheet
-            // steps down rather than sharing the screen with it.
+            // Going back to the French brings the keyboard up, so the phrasebook or
+            // explanation sheet steps down rather than sharing the screen with it.
             .onChange(of: editorIsFocused) {
-                if editorIsFocused { showsPhrasebook = false }
+                if editorIsFocused { sidePanel = nil }
             }
             .task(id: titleSource) { await retitle() }
         }
@@ -771,7 +776,7 @@ struct EditorScreen: View {
         GeometryReader { geometry in
             let isWide = geometry.size.width >= Self.splitWidth
             VStack(spacing: 0) {
-                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
+                TopBar(model: model, showsIssueList: $showsIssueList, showsProgress: $showsProgress, showsPhrasebook: showsPanel(.phrasebook), showsExplanation: showsPanel(.explanation), showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
 
                 if isWide {
                     HStack(spacing: 0) {
@@ -807,6 +812,20 @@ struct EditorScreen: View {
         }
     }
     #endif
+
+    /// Whether `panel` is the one open beside the French, for its toolbar toggle. Opening
+    /// one panel closes the other, since they share the space.
+    private func showsPanel(_ panel: SidePanel) -> Binding<Bool> {
+        Binding {
+            sidePanel == panel
+        } set: { isOn in
+            if isOn {
+                sidePanel = panel
+            } else if sidePanel == panel {
+                sidePanel = nil
+            }
+        }
+    }
 
     /// The text to title: the French, without the notes, once it's linted with no errors, otherwise `nil`.
     private var titleSource: String? {
@@ -970,43 +989,77 @@ extension EditorScreen {
     }
 }
 
-/// Shows the phrasebook: a side panel on the Mac and iPad, and on iPhone a half-height
-/// sheet the editor stays usable under.
+/// The panels that open beside the French. They share the space, so only one is open.
+enum SidePanel {
+    case phrasebook
+    case explanation
+}
+
+/// Shows the phrasebook or the explanation: a side panel on the Mac and iPad, and on
+/// iPhone a half-height sheet the editor stays usable under.
 ///
 /// iPhone always gets the sheet. An inspector there reopens on its own when a Pro Max
 /// launches in landscape, where it's a column rather than a sheet, even while closed.
-private struct PhrasebookPresentation: ViewModifier {
+private struct SidePanelPresentation: ViewModifier {
 
-    @Binding var isPresented: Bool
+    @Binding var panel: SidePanel?
     let model: EditorModel
+    /// The French for the explanation, or `nil` while it isn't correct yet.
+    let french: String?
+    /// The panel last shown, so it stays on screen while it slides away.
+    @State private var lastPanel = SidePanel.phrasebook
 
     func body(content: Content) -> some View {
+        presented(content)
+            .onChange(of: panel) {
+                if let panel { lastPanel = panel }
+            }
+    }
+
+    @ViewBuilder
+    private func presented(_ content: Content) -> some View {
         #if os(macOS)
         inspector(on: content)
         #else
         // The idiom never changes while the app runs, so the editor's identity is stable.
         if UIDevice.current.userInterfaceIdiom == .phone {
-            content.sheet(isPresented: $isPresented) { phrasebook }
+            content.sheet(isPresented: isPresented) { panelView }
         } else {
             inspector(on: content)
         }
         #endif
     }
 
-    /// The phrasebook as an inspector.
+    /// Whether either panel is open; closing it closes whichever one it is.
+    private var isPresented: Binding<Bool> {
+        Binding {
+            panel != nil
+        } set: { isOn in
+            if !isOn { panel = nil }
+        }
+    }
+
+    /// The panel as an inspector.
     private func inspector(on content: Content) -> some View {
-        content.inspector(isPresented: $isPresented) {
-            phrasebook
+        content.inspector(isPresented: isPresented) {
+            panelView
                 .inspectorColumnWidth(min: 280, ideal: 360, max: 520)
         }
     }
 
-    /// The phrasebook with its sheet sizes, which only apply where it's a sheet.
-    private var phrasebook: some View {
-        PhrasebookView(model: model)
-            .tint(.brand)
-            .presentationDetents([.medium, .large])
-            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+    /// The open panel with its sheet sizes, which only apply where it's a sheet.
+    private var panelView: some View {
+        Group {
+            switch panel ?? lastPanel {
+            case .phrasebook:
+                PhrasebookView(model: model)
+            case .explanation:
+                ExplanationPanel(model: model, french: french)
+            }
+        }
+        .tint(.brand)
+        .presentationDetents([.medium, .large])
+        .presentationBackgroundInteraction(.enabled(upThrough: .medium))
     }
 }
 
