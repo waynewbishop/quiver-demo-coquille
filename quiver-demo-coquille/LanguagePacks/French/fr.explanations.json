@@ -143,6 +143,11 @@
     "template": "After si meaning if, French uses the {tense} instead: {fix}.",
     "example": "After si meaning if, French uses the present instead: viens."
   },
+  "subjunctive": {
+    "hint": "After {trigger}, French uses the subjunctive.",
+    "template": "After {trigger}, French uses the subjunctive: {fix}.",
+    "example": "After il faut que, French uses the subjunctive: fasse."
+  },
   "etOrEst": {
     "hint": "Et means and; est means is. Which one does this sentence need?",
     "template": "Et means and; est means is. This sentence needs {fix}.",

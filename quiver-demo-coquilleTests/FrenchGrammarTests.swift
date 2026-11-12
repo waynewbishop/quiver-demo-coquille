@@ -763,6 +763,42 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(age.kind, .avoirExpression)
     }
 
+    // MARK: - Subjunctive
+
+    // The subjunctive rule runs before the conjugation rule, so "je va" after il faut que
+    // gets the subjunctive, and the learner's je takes its elision before the vowel.
+    func testSubjunctiveWinsOverConjugation() throws {
+        XCTAssertEqual(try fixes("Il faut que je va au travail."), ["je va → j'aille"])
+        let issue = try XCTUnwrap(grammar().check("Il faut que je va au travail.").first)
+        XCTAssertEqual(issue.kind, .subjunctive)
+        XCTAssertEqual(issue.severity, .error)
+        XCTAssertEqual(issue.source, "Subjunctive rule")
+    }
+
+    // The hint names the trigger and the rule but never the answer.
+    func testSubjunctiveHintNamesTheTriggerNotTheFix() throws {
+        let issue = try XCTUnwrap(grammar().check("Je veux que tu viens avec moi.").first)
+        XCTAssertEqual(issue.hint, "After vouloir que, French uses the subjunctive.")
+        XCTAssertFalse(issue.hint.contains("viennes"))
+        XCTAssertEqual(issue.replacement, "viennes")
+    }
+
+    // Ne and object pronouns can sit between the subject and the verb.
+    func testSubjunctiveLooksPastPronouns() throws {
+        XCTAssertEqual(try fixes("Il faut que tu me dis la vérité."), ["dis → dises"])
+        XCTAssertEqual(try fixes("Bien qu'il y a du soleil, il fait froid."), ["a → ait"])
+    }
+
+    // Restrictive ne… que, bien que mid-clause, a subjunctive already in place, and a form
+    // shared by two verbs with different subjunctives all stay silent.
+    func testSubjunctiveStaysSilentWhenInDoubt() throws {
+        XCTAssertEqual(try fixes("Je ne veux que du pain."), [])
+        XCTAssertEqual(try fixes("Je sais bien que tu viens demain."), [])
+        XCTAssertEqual(try fixes("Il faut que nous partions avant qu'il ne pleuve."), [])
+        XCTAssertEqual(try fixes("Je voulais qu'il vînt."), [])
+        XCTAssertEqual(try fixes("Il faut que je suis le cours."), [])
+    }
+
     // The French phrasing raises nothing.
     func testCorrectWordChoicePasses() throws {
         XCTAssertEqual(try fixes("J'ai faim et je suis en retard."), [])

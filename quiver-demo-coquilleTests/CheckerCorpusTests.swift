@@ -144,7 +144,7 @@ final class CheckerCorpusTests: XCTestCase {
         XCTAssertEqual(Set(cases.map(\.id)).count, cases.count, "Case ids must be unique")
 
         for item in cases {
-            XCTAssertTrue(["A1", "A2"].contains(item.level), "\(item.id): unknown level \(item.level)")
+            XCTAssertTrue(["A1", "A2", "B1"].contains(item.level), "\(item.id): unknown level \(item.level)")
             XCTAssertFalse(item.topic.isEmpty, "\(item.id): needs a topic")
             switch item.expect {
             case "pass":

@@ -102,6 +102,7 @@ Nous avons acheté une fromage et des pommes rouge.
 | Participle agreement | il a mangée → mangé, elles sont allé → allées | Error | Participle rule, Lexique participles |
 | Articles for things in general | j'aime fromage → j'aime le fromage | Error | Article rule, Lexique gender |
 | Si clauses | si tu viendras → si tu viens | Error | Si clause rule, Lexique verb forms |
+| Subjunctive | il faut que je fais → il faut que je fasse, je veux que tu viens → je veux que tu viennes | Error | Subjunctive rule, Lexique verb forms |
 | Avoir expressions | je suis faim → j'ai faim, je suis 20 ans → j'ai 20 ans | Error | Word-choice list and age rule |
 | Word choice | j'ai demandé une question → posé une question, beaucoup des gens → beaucoup de gens | Error | Word-choice list |
 | Missing ne | il dort plus → il ne dort plus | Warning | Negation rule |

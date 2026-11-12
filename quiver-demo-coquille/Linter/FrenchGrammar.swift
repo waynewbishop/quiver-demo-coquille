@@ -116,6 +116,10 @@ nonisolated struct FrenchGrammar: Grammar {
             GrammarRule(identifier: "grammar.auxiliary", layer: .relationalGrammar, targetLevel: .a2) {
                 auxiliaryIssues(in: $0) + reflexiveAuxiliaryIssues(in: $0.tokens)
             },
+            // Before conjugation, so "il faut que je va" gets the subjunctive aille, not vais.
+            GrammarRule(identifier: "grammar.subjunctive", layer: .relationalGrammar, targetLevel: .b1) {
+                subjunctiveIssues(in: $0.tokens)
+            },
             GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
                 conjugationIssues(in: $0.tokens) + nearFutureIssues(in: $0.tokens)
             },
@@ -1172,6 +1176,151 @@ nonisolated struct FrenchGrammar: Grammar {
     /// Whether the pronoun at `index` is only part of the subject, as elle in "lui et elle sont partis".
     private func isCoordinated(_ tokens: [Token], subjectAt index: Int) -> Bool {
         index > 0 && tokens[index - 1].isAdjacentToNext && ["et", "ou", "ni"].contains(tokens[index - 1].normalized)
+    }
+
+    // MARK: - Subjunctive
+
+    /// Fixed phrases that put the verb after their que in the subjunctive, as the words
+    /// before que, with the name the explanation gives each one.
+    ///
+    /// Bien que is left out here: "je sais bien que tu viens" is correct, so it only counts
+    /// at the start of a clause, which `subjunctiveTrigger(before:in:)` checks.
+    private static let subjunctivePhrases: [(words: [String], name: String)] = [
+        (["il", "faut"], "il faut que"),
+        (["pour"], "pour que"),
+        (["avant"], "avant que"),
+        (["sans"], "sans que"),
+        (["à", "moins"], "à moins que"),
+        (["jusqu'", "à", "ce"], "jusqu'à ce que"),
+        (["il", "est", "important"], "il est important que"),
+        (["il", "est", "nécessaire"], "il est nécessaire que"),
+        (["c'", "est", "dommage"], "c'est dommage que")
+    ]
+
+    /// Adjectives of feeling that take the subjunctive after être and que, by the name the
+    /// explanation gives each.
+    private static let subjunctiveFeelings: [String: String] = [
+        "content": "être content que", "contente": "être content que",
+        "contents": "être content que", "contentes": "être content que",
+        "triste": "être triste que", "tristes": "être triste que"
+    ]
+
+    /// Returns the `count` words just before `index`, when nothing but spaces separates
+    /// them from each other and from the word at `index`; returns nil otherwise.
+    private func adjacentWords(_ count: Int, before index: Int, in tokens: [Token]) -> [String]? {
+        guard index - count >= 0 else { return nil }
+        let range = (index - count)..<index
+        guard range.allSatisfy({ tokens[$0].isAdjacentToNext }) else { return nil }
+        return range.map { tokens[$0].normalized }
+    }
+
+    /// Returns the name of the subjunctive trigger that ends right before the que or qu' at
+    /// `index`, such as "il faut que" or "vouloir que", or nil when there is none.
+    ///
+    /// The list is closed and every phrase must sit directly before que, so penser que,
+    /// espérer que, après que and a relative que ("le livre que je lis") never match. A
+    /// vouloir or aimer after ne is the restrictive ne… que ("je ne veux que du pain"), so
+    /// it doesn't count.
+    private func subjunctiveTrigger(before index: Int, in tokens: [Token]) -> String? {
+        for phrase in Self.subjunctivePhrases where adjacentWords(phrase.words.count, before: index, in: tokens) == phrase.words {
+            return phrase.name
+        }
+        guard let previous = adjacentWords(1, before: index, in: tokens)?.first else { return nil }
+
+        // Bien que only at the start of a clause: "Bien qu'il ait froid, il court."
+        if previous == "bien", index == 1 || tokens[index - 2].endsClause {
+            return "bien que"
+        }
+        let isAfterNe = (1...2).contains { distance in
+            adjacentWords(distance, before: index - 1, in: tokens).map { ["ne", "n'"].contains($0[0]) } == true
+        }
+        if isForm(previous, of: "vouloir"), !isAfterNe {
+            return "vouloir que"
+        }
+        if ["aimerais", "aimerait"].contains(previous), !isAfterNe {
+            return "aimer que"
+        }
+        guard let before = adjacentWords(2, before: index, in: tokens)?.first else { return nil }
+        if previous == "peur", isForm(before, of: "avoir") {
+            return "avoir peur que"
+        }
+        if let feeling = Self.subjunctiveFeelings[previous], isForm(before, of: "être") {
+            return feeling
+        }
+        if previous == "doute", before == "je" {
+            return "douter que"
+        }
+        return nil
+    }
+
+    /// Returns the present subjunctive of `verb` for `person`, such as "fasse" for faire and "1s".
+    ///
+    /// With nous and vous, the present subjunctive of nearly every verb is spelled like the
+    /// imperfect (nous allions, vous parliez), and Lexique tags most of those forms as
+    /// imperfect only. The imperfect stands in when no subjunctive is listed, except for the
+    /// verbs whose forms differ. Lexique tags fassions and soyez, but not refassions, so
+    /// their whole families are left out.
+    private func presentSubjunctive(of verb: String, _ person: String) -> String? {
+        if let form = lexicon.conjugate(verb, "sp" + person) { return form }
+        guard ["1p", "2p"].contains(person),
+              !Self.irregularSubjunctiveEndings.contains(where: { verb.hasSuffix($0) }) else { return nil }
+        return lexicon.conjugate(verb, "ii" + person)
+    }
+
+    /// Infinitive endings of the verbs whose nous and vous subjunctive isn't the imperfect:
+    /// faire and its compounds (satisfaire), pouvoir, savoir, être and avoir.
+    private static let irregularSubjunctiveEndings = ["faire", "pouvoir", "savoir", "être", "avoir"]
+
+    /// Flags an indicative verb where a trigger needs the present subjunctive: "il faut que je
+    /// fais" → "fasse", "je veux que tu viens" → "viennes".
+    ///
+    /// The subject must be a pronoun right after que, with only ne or object pronouns before
+    /// the verb. A form with any subjunctive reading is left alone, so "il faut que je parle"
+    /// (the same in both moods), a literary "qu'il vînt" and a subjunctive in the wrong person,
+    /// which the conjugation rule fixes, are never flagged. When the verb could belong to two
+    /// verbs whose subjunctives differ, as suis (être or suivre), the rule stays silent.
+    private func subjunctiveIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            let que = tokens[index]
+            let subjectIndex = index + 1
+            let subject = tokens[subjectIndex]
+            guard ["que", "qu'"].contains(que.normalized), que.isAdjacentToNext, subject.isAdjacentToNext,
+                  let person = Self.subjectPersons[subject.normalized],
+                  let trigger = subjunctiveTrigger(before: index, in: tokens) else { continue }
+
+            // Look past ne and object pronouns: "avant que je ne parte", "pour que tu me le dises".
+            var verbIndex = subjectIndex + 1
+            while verbIndex < tokens.count - 1, verbIndex < subjectIndex + 4,
+                  Self.preverbalWords.contains(tokens[verbIndex].normalized), tokens[verbIndex].isAdjacentToNext {
+                verbIndex += 1
+            }
+            let verbToken = tokens[verbIndex]
+            guard !Self.preverbalWords.contains(verbToken.normalized), !verbToken.normalized.hasSuffix("'") else { continue }
+            let readings = lexicon.conjugations(verbToken.normalized)
+            guard !readings.isEmpty,
+                  !readings.contains(where: { $0.codes.contains { $0.hasPrefix("sp") || $0.hasPrefix("si") } }) else { continue }
+            let fixes = Set(readings.map { presentSubjunctive(of: $0.verb, person) })
+            guard fixes.count == 1, let only = fixes.first, let fix = only, fix != verbToken.normalized else { continue }
+
+            // "que je va" becomes "que j'aille", and "que j'" loses its elision before a consonant.
+            let fixStartsWithVowel = fix.first.map { "aeiouyàâéèêëîïôûh".contains($0) } == true
+            let changesElision = verbIndex == subjectIndex + 1
+                && (subject.normalized == "je" && fixStartsWithVowel || subject.normalized == "j'" && !fixStartsWithVowel)
+            let first = changesElision ? subjectIndex : verbIndex
+            let replacement = !changesElision
+                ? matchingCase(of: verbToken.text, fix)
+                : subject.normalized == "je"
+                    ? matchingCase(of: subject.text, "j'") + fix
+                    : matchingCase(of: subject.text, "je") + " " + fix
+            issues.append(issue(
+                .subjunctive, .error, from: first, through: verbIndex, in: tokens,
+                replacement: replacement,
+                explanation: explanations.render(.subjunctive, ["trigger": trigger, "fix": fix]),
+                source: "Subjunctive rule"
+            ))
+        }
+        return issues
     }
 
     // MARK: - Participle agreement with être

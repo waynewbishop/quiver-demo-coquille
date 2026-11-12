@@ -27,6 +27,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case article
     case conjugation
     case siClause
+    case subjunctive
     case wordChoice
     case avoirExpression
     case negation
@@ -52,6 +53,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .article: "ARTICLE"
         case .conjugation: "CONJUGATION"
         case .siClause: "SI CLAUSE"
+        case .subjunctive: "SUBJUNCTIVE"
         case .wordChoice: "WORD CHOICE"
         case .avoirExpression: "AVOIR EXPRESSION"
         case .negation: "NEGATION"
@@ -79,6 +81,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .article: "Articles (j'aime le fromage)"
         case .conjugation: "Conjugation (je vais)"
         case .siClause: "Si clauses (si tu viens)"
+        case .subjunctive: "Subjunctive (il faut que je fasse)"
         case .wordChoice: "Word choice (poser une question)"
         case .avoirExpression: "Avoir expressions (j'ai faim)"
         case .negation: "Negation (ne… plus)"

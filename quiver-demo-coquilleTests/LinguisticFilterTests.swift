@@ -39,7 +39,7 @@ final class LinguisticFilterTests: XCTestCase {
         XCTAssertEqual(filters.map(\.identifier), [
             "orthography.spelling",
             "grammar.gender", "grammar.gender.predicted", "grammar.contraction", "grammar.elision", "grammar.accent",
-            "grammar.auxiliary", "grammar.conjugation", "grammar.siClause", "grammar.participle",
+            "grammar.auxiliary", "grammar.subjunctive", "grammar.conjugation", "grammar.siClause", "grammar.participle",
             "grammar.article", "grammar.articleNumber", "grammar.agreement", "grammar.lookAlike", "grammar.wordChoice",
             "grammar.negation", "grammar.idiom", "grammar.meaning", "grammar.etOrEst",
             "grammar.preposition", "grammar.sentenceCapital", "grammar.lowercase", "grammar.number"
