@@ -46,6 +46,10 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case nearFutureInfinitive
     case siClause
     case subjunctive
+    case objectPronounDirect
+    case objectPronounIndirect
+    case relativeQue
+    case relativeDont
     case meaning
     case etOrEst
     case preposition
@@ -91,6 +95,9 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .nearFutureInfinitive: ["fix"]
         case .siClause: ["tense", "fix"]
         case .subjunctive: ["trigger", "fix"]
+        case .objectPronounDirect, .objectPronounIndirect: ["verb", "fix"]
+        case .relativeQue: ["subject"]
+        case .relativeDont: ["phrase"]
         case .meaning: ["note"]
         case .etOrEst: ["fix"]
         case .elision, .elisionContraction: ["word", "fix"]

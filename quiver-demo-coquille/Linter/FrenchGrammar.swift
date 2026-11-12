@@ -120,6 +120,12 @@ nonisolated struct FrenchGrammar: Grammar {
             GrammarRule(identifier: "grammar.subjunctive", layer: .relationalGrammar, targetLevel: .b1) {
                 subjunctiveIssues(in: $0.tokens)
             },
+            GrammarRule(identifier: "grammar.objectPronoun", layer: .relationalGrammar, targetLevel: .b1) {
+                objectPronounIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.relativePronoun", layer: .relationalGrammar, targetLevel: .b1) {
+                relativeQuiIssues(in: $0) + relativeDontIssues(in: $0)
+            },
             GrammarRule(identifier: "grammar.conjugation", layer: .relationalGrammar, targetLevel: .a1) {
                 conjugationIssues(in: $0.tokens) + nearFutureIssues(in: $0.tokens)
             },
@@ -1318,6 +1324,290 @@ nonisolated struct FrenchGrammar: Grammar {
                 replacement: replacement,
                 explanation: explanations.render(.subjunctive, ["trigger": trigger, "fix": fix]),
                 source: "Subjunctive rule"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Object pronouns
+
+    /// Verbs whose person is only ever a direct object: "je l'aide", never "je lui aide".
+    private static let directOnlyVerbs: Set<String> = [
+        "voir", "regarder", "aider", "appeler", "écouter", "attendre", "chercher", "inviter",
+        "remercier", "connaître", "rencontrer", "aimer"
+    ]
+
+    /// Verbs whose person only ever comes after à: "je lui téléphone", never "je le téléphone".
+    /// Verbs that take both, such as donner, dire or parler, are left out on purpose.
+    private static let indirectOnlyVerbs: Set<String> = [
+        "téléphoner", "ressembler", "sourire", "plaire", "obéir", "mentir"
+    ]
+
+    /// Words that can follow a direct-only verb when lui or leur before it is surely wrong.
+    /// Any other word may be the thing in "je lui cherche un cadeau" or "je lui appelle un
+    /// taxi", where lui is correct, so the rule stays silent.
+    private static let wordsAfterDirectVerb: Set<String> = [
+        "hier", "aujourd'hui", "demain", "souvent", "toujours", "encore", "déjà", "bien", "vraiment",
+        "maintenant", "à", "au", "aux", "avec", "dans", "pour", "quand", "et", "mais", "parce", "si",
+        "depuis", "pendant", "après", "avant", "chez", "en"
+    ]
+
+    /// Negation words that can follow avoir or the verb: "je ne l'ai pas vu".
+    private static let negationWords: Set<String> = ["pas", "jamais", "plus"]
+
+    /// Returns the verb at `index`, or the participle after avoir there, with its one lemma
+    /// and the index of its last word. Returns nil when Lexique gives more than one lemma.
+    private func objectVerb(at index: Int, in tokens: [Token]) -> (verb: String, end: Int)? {
+        if Self.avoirTenses[tokens[index].normalized] != nil {
+            guard tokens[index].isAdjacentToNext, index + 1 < tokens.count else { return nil }
+            var position = index + 1
+            if Self.negationWords.contains(tokens[position].normalized), tokens[position].isAdjacentToNext,
+               position + 1 < tokens.count {
+                position += 1
+            }
+            let verbs = Set(lexicon.participles(tokens[position].normalized).map(\.verb))
+            guard verbs.count == 1, let verb = verbs.first else { return nil }
+            return (verb, position)
+        }
+        let verbs = Set(lexicon.conjugations(tokens[index].normalized).map(\.verb))
+        guard verbs.count == 1, let verb = verbs.first else { return nil }
+        return (verb, index)
+    }
+
+    /// Whether nothing that could be the verb's own object follows the word at `index`: the
+    /// clause ends, or a time word or preposition comes next, after at most one negation word.
+    private func endsWithoutObject(at index: Int, in tokens: [Token]) -> Bool {
+        var position = index
+        if position + 1 < tokens.count, tokens[position].isAdjacentToNext,
+           Self.negationWords.contains(tokens[position + 1].normalized) {
+            position += 1
+        }
+        guard position + 1 < tokens.count, !tokens[position].endsClause else { return true }
+        return tokens[position].isAdjacentToNext && Self.wordsAfterDirectVerb.contains(tokens[position + 1].normalized)
+    }
+
+    /// Flags lui or leur before a verb that takes a direct object ("je lui ai vu" → "je l'ai
+    /// vu"), and le, la or les before a verb that takes à ("je le téléphone" → "je lui téléphone").
+    ///
+    /// Only a pronoun between a subject pronoun (and an optional ne) and the verb, or avoir and
+    /// its participle, is judged, so "avec lui", "c'est lui" and "lui, il…" are never in doubt.
+    /// Lui before a consonant could be le or la, so the learner picks between them.
+    private func objectPronounIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) {
+            let subject = tokens[index]
+            guard Self.subjectPersons[subject.normalized] != nil, subject.isAdjacentToNext,
+                  index == 0 || !tokens[index - 1].isAdjacentToNext
+                    || !Self.notBeforeSubject.contains(tokens[index - 1].normalized) else { continue }
+            var pronounIndex = index + 1
+            if ["ne", "n'"].contains(tokens[pronounIndex].normalized), tokens[pronounIndex].isAdjacentToNext {
+                pronounIndex += 1
+            }
+            guard pronounIndex + 1 < tokens.count else { continue }
+            let pronoun = tokens[pronounIndex]
+            let verbIndex = pronounIndex + 1
+            guard ["le", "la", "l'", "les", "lui", "leur"].contains(pronoun.normalized), pronoun.isAdjacentToNext,
+                  let (verb, end) = objectVerb(at: verbIndex, in: tokens) else { continue }
+            let verbToken = tokens[verbIndex]
+            let name = verb.prefix(1).uppercased() + verb.dropFirst()
+
+            if ["lui", "leur"].contains(pronoun.normalized) {
+                guard Self.directOnlyVerbs.contains(verb), endsWithoutObject(at: end, in: tokens) else { continue }
+                let isSingular = pronoun.normalized == "lui"
+                if isSingular && !verbToken.startsWithVowelOrH {
+                    // "je lui regarde": him or her, so the learner chooses.
+                    var question = issue(
+                        .objectPronoun, .error, from: pronounIndex, through: verbIndex, in: tokens,
+                        replacement: nil,
+                        explanation: explanations.render(.objectPronounDirect, ["verb": name, "fix": "le or la"]),
+                        source: "Object pronoun rule · Lexique"
+                    )
+                    question.choices = [("le", "him, or a masculine thing"), ("la", "her, or a feminine thing")].map {
+                        Choice(text: matchingCase(of: pronoun.text, $0.0) + " " + verbToken.text, meaning: $0.1)
+                    }
+                    issues.append(question)
+                    continue
+                }
+                let fix = isSingular ? "l'" : "les"
+                issues.append(issue(
+                    .objectPronoun, .error, from: pronounIndex, through: verbIndex, in: tokens,
+                    replacement: matchingCase(of: pronoun.text, fix) + (isSingular ? "" : " ") + verbToken.text,
+                    explanation: explanations.render(.objectPronounDirect, ["verb": name, "fix": fix]),
+                    source: "Object pronoun rule · Lexique"
+                ))
+            } else if Self.indirectOnlyVerbs.contains(verb) {
+                let fix = pronoun.normalized == "les" ? "leur" : "lui"
+                issues.append(issue(
+                    .objectPronoun, .error, from: pronounIndex, through: verbIndex, in: tokens,
+                    replacement: matchingCase(of: pronoun.text, fix) + " " + verbToken.text,
+                    explanation: explanations.render(.objectPronounIndirect, ["verb": name, "fix": fix]),
+                    source: "Object pronoun rule · Lexique"
+                ))
+            }
+        }
+        return issues
+    }
+
+    // MARK: - Relative pronouns
+
+    /// Subject pronouns that can't be an object right after qui. Nous and vous are left out,
+    /// since "l'homme qui nous regarde" is correct.
+    private static let subjectsOnly: Set<String> = ["je", "j'", "tu", "il", "elle", "on", "ils", "elles"]
+
+    /// Nouns that a conjunction que often follows, as in "le fait que j'ai peur", where que
+    /// is not a relative pronoun and dont would be wrong.
+    private static let nounsBeforeConjunctionQue: Set<String> = [
+        "fait", "idée", "impression", "sentiment", "preuve", "espoir", "certitude", "conviction",
+        "nouvelle", "signe", "pensée", "crainte", "peur", "doute", "hypothèse", "possibilité",
+        "chance", "risque", "temps", "moment", "jour", "façon", "manière", "point", "sorte"
+    ]
+
+    /// Avoir expressions whose noun takes de: "j'ai besoin de ce livre".
+    private static let avoirDeNouns: Set<String> = ["besoin", "envie", "peur"]
+
+    /// Reflexive verbs that take de, with the name the explanation gives each.
+    private static let reflexiveDeVerbs: [String: String] = [
+        "souvenir": "se souvenir", "occuper": "s'occuper", "servir": "se servir"
+    ]
+
+    /// Indirect pronouns that make parler mean "talk to someone about": "je t'ai parlé".
+    private static let indirectPronouns: Set<String> = ["me", "m'", "te", "t'", "lui", "nous", "vous", "leur"]
+
+    /// Words after which the de the verb needs is already there, as in "le livre que j'ai
+    /// besoin de lire", where que is the object of lire.
+    private static let wordsAfterDeVerb: Set<String> = ["de", "d'", "du", "des", "que", "qu'"]
+
+    /// Whether the word at `index` is a noun after a determiner, as in "un ami" or "le livre".
+    ///
+    /// Where Lexique also lists the word as an adjective, the tagger must be sure it is a noun.
+    /// Where it also lists a verb form, as livre (livrer), the article model has already ruled
+    /// out "je le livre", so the tagger need only lean toward the noun.
+    private func isNounAfterDeterminer(at index: Int, in text: TaggedText) -> Bool {
+        let tokens = text.tokens
+        guard index > 0, tokens[index - 1].isAdjacentToNext, tokens[index].isAdjacentToNext,
+              Self.determiners[tokens[index - 1].normalized] != nil, !text.mayBePronoun[index - 1],
+              tokens[index].text.first?.isLowercase == true,
+              lexicon.noun(tokens[index].normalized) != nil else { return false }
+        return (text.adjectiveProbability[index] == nil || text.isNoun(index, certainty: Self.tagCertainty))
+            && (text.verbProbability[index] ?? 0) < 0.5
+    }
+
+    /// Flags qui before a subject pronoun after a noun, where the noun is the object and French
+    /// needs que: "un ami qui je connais" → "que", "la photo qui tu as prise" → "que".
+    ///
+    /// After a preposition ("l'ami à qui je parle") or a verb ("je sais qui il est"), qui is
+    /// correct, so the word before it must be a noun after a determiner.
+    private func relativeQuiIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() where index >= 2 {
+            let qui = tokens[index]
+            let subject = tokens[index + 1]
+            guard qui.normalized == "qui", qui.isAdjacentToNext, Self.subjectsOnly.contains(subject.normalized),
+                  isNounAfterDeterminer(at: index - 1, in: text) else { continue }
+            // "qui il" becomes "qu'il".
+            let elides = subject.startsWithVowel
+            let replacement = elides ? matchingCase(of: qui.text, "qu'") + subject.text : matchingCase(of: qui.text, "que")
+            issues.append(issue(
+                .relativePronoun, .error, from: index, through: elides ? index + 1 : index, in: tokens,
+                replacement: replacement,
+                explanation: explanations.render(.relativeQue, ["subject": subject.normalized == "j'" ? "je" : subject.normalized]),
+                source: "Relative pronoun rule"
+            ))
+        }
+        return issues
+    }
+
+    /// Returns the verb phrase that needs de after the subject at `subjectIndex`, such as
+    /// "avoir besoin", with the index of its last word, or nil when there is none.
+    private func deVerbPhrase(afterSubjectAt subjectIndex: Int, in tokens: [Token]) -> (phrase: String, end: Int)? {
+        var position = subjectIndex + 1
+        if position < tokens.count - 1, ["ne", "n'"].contains(tokens[position].normalized), tokens[position].isAdjacentToNext {
+            position += 1
+        }
+        guard position < tokens.count - 1, tokens[position].isAdjacentToNext else { return nil }
+        let word = tokens[position].normalized
+
+        // Skips avoir or être and a negation word, returning the index of the word after them.
+        func afterHelper(at index: Int) -> Int? {
+            guard index < tokens.count - 1, tokens[index].isAdjacentToNext else { return nil }
+            var next = index + 1
+            if Self.negationWords.contains(tokens[next].normalized), tokens[next].isAdjacentToNext, next + 1 < tokens.count {
+                next += 1
+            }
+            return next
+        }
+
+        // "que j'ai besoin", "que je n'ai pas envie"
+        if Self.avoirTenses[word] != nil, let noun = afterHelper(at: position),
+           Self.avoirDeNouns.contains(tokens[noun].normalized) {
+            return ("avoir " + tokens[noun].normalized, noun)
+        }
+        // "que je me souviens", "que je me suis occupé"
+        let subject = tokens[subjectIndex].normalized == "j'" ? "je" : tokens[subjectIndex].normalized
+        if Self.reflexivePronouns[subject]?.contains(word) == true {
+            let verbIndex = position + 1
+            if let verb = lexicon.conjugations(tokens[verbIndex].normalized).first?.verb,
+               lexicon.conjugations(tokens[verbIndex].normalized).allSatisfy({ $0.verb == verb }),
+               let phrase = Self.reflexiveDeVerbs[verb] {
+                return (phrase, verbIndex)
+            }
+            if isForm(tokens[verbIndex].normalized, of: "être"), let participle = afterHelper(at: verbIndex) {
+                let verbs = Set(lexicon.participles(tokens[participle].normalized).map(\.verb))
+                if verbs.count == 1, let verb = verbs.first, let phrase = Self.reflexiveDeVerbs[verb] {
+                    return (phrase, participle)
+                }
+            }
+        }
+        // "que je t'ai parlé", "que je lui parle"
+        if Self.indirectPronouns.contains(word) {
+            let verbIndex = position + 1
+            let readings = lexicon.conjugations(tokens[verbIndex].normalized)
+            if !readings.isEmpty, readings.allSatisfy({ $0.verb == "parler" }) {
+                return ("parler", verbIndex)
+            }
+            if Self.avoirTenses[tokens[verbIndex].normalized] != nil, let participle = afterHelper(at: verbIndex),
+               tokens[participle].normalized == "parlé" {
+                return ("parler", participle)
+            }
+        }
+        return nil
+    }
+
+    /// Flags que where the verb after it takes de and French needs dont: "le livre que j'ai
+    /// besoin" → "dont", "le livre que je t'ai parlé" → "dont".
+    ///
+    /// The list is closed: avoir besoin, avoir envie, avoir peur, se souvenir, s'occuper, se
+    /// servir, and parler after an indirect pronoun. "La langue que je parle" has no indirect
+    /// pronoun, so it stays silent. Que must follow a noun or ce, but not a noun such as fait
+    /// that a conjunction que follows, and the rule is silent when de comes after the verb.
+    private func relativeDontIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast(2) where index >= 1 {
+            let que = tokens[index]
+            let subjectIndex = index + 1
+            let antecedent = tokens[index - 1]
+            // "de ce que je me souviens": the de is already there, before ce.
+            let hasDeBeforeCe = index >= 2 && ["de", "d'"].contains(tokens[index - 2].normalized) && tokens[index - 2].isAdjacentToNext
+            guard ["que", "qu'"].contains(que.normalized), que.isAdjacentToNext, tokens[subjectIndex].isAdjacentToNext,
+                  Self.subjectPersons[tokens[subjectIndex].normalized] != nil,
+                  ["ce", "celui", "celle", "ceux", "celles"].contains(antecedent.normalized) && antecedent.isAdjacentToNext
+                    && !hasDeBeforeCe
+                    || isNounAfterDeterminer(at: index - 1, in: text)
+                    && !Self.nounsBeforeConjunctionQue.contains(antecedent.normalized),
+                  let (phrase, end) = deVerbPhrase(afterSubjectAt: subjectIndex, in: tokens) else { continue }
+            if end + 1 < tokens.count, tokens[end].isAdjacentToNext,
+               Self.wordsAfterDeVerb.contains(tokens[end + 1].normalized) { continue }
+
+            // "qu'il a besoin" becomes "dont il a besoin".
+            let isElided = que.normalized == "qu'"
+            let subject = tokens[subjectIndex]
+            issues.append(issue(
+                .relativePronoun, .error, from: index, through: isElided ? subjectIndex : index, in: tokens,
+                replacement: matchingCase(of: que.text, "dont") + (isElided ? " " + subject.text : ""),
+                explanation: explanations.render(.relativeDont, ["phrase": phrase]),
+                source: "Relative pronoun rule"
             ))
         }
         return issues

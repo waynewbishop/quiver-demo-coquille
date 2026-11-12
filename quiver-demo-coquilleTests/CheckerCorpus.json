@@ -105,5 +105,22 @@
   {"id":"subj-010","level":"B1","topic":"subjunctive-guard-correct","text":"Je veux qu'il vienne.","expect":"pass","flags":[],"note":"Already in the subjunctive."},
   {"id":"subj-011","level":"B1","topic":"subjunctive-guard-apres-que","text":"Après qu'il est parti, j'ai bu un thé.","expect":"pass","flags":[],"note":"Après que takes the indicative."},
   {"id":"subj-012","level":"B1","topic":"subjunctive-guard-relative","text":"C'est le livre que je veux.","expect":"pass","flags":[],"note":"A relative que is not a trigger."},
-  {"id":"subj-013","level":"B1","topic":"subjunctive-guard-infinitive","text":"Il faut partir maintenant.","expect":"pass","flags":[],"note":"Il faut with an infinitive has no que."}
+  {"id":"subj-013","level":"B1","topic":"subjunctive-guard-infinitive","text":"Il faut partir maintenant.","expect":"pass","flags":[],"note":"Il faut with an infinitive has no que."},
+  {"id":"obj-001","level":"B1","topic":"object-pronoun-direct","rule":"grammar.objectPronoun","text":"Mon fils ? Je lui ai vu hier au match.","expect":"flag","flags":[{"find":"lui ai","fix":"l'ai","severity":"error"}],"note":"Voir takes a direct object; le elides before ai."},
+  {"id":"obj-002","level":"B1","topic":"object-pronoun-indirect","rule":"grammar.objectPronoun","text":"Ma femme ? Je le téléphone tous les jours.","expect":"flag","flags":[{"find":"le téléphone","fix":"lui téléphone","severity":"error"}],"note":"Téléphoner takes à + a person."},
+  {"id":"obj-003","level":"B1","topic":"object-pronoun-direct","rule":"grammar.objectPronoun","text":"Je ne lui ai pas vu.","expect":"flag","flags":[{"find":"lui ai","fix":"l'ai","severity":"error"}],"note":"Ne before the pronoun and pas after avoir don't change the rule."},
+  {"id":"obj-004","level":"B1","topic":"object-pronoun-indirect","rule":"grammar.objectPronoun","text":"Mes amis ? Je les téléphone souvent.","expect":"flag","flags":[{"find":"les téléphone","fix":"leur téléphone","severity":"error"}],"note":"Les becomes leur for an indirect object."},
+  {"id":"obj-005","level":"B1","topic":"object-pronoun-guard-direct","text":"Je l'ai vu hier.","expect":"pass","flags":[],"note":"Voir with a direct object."},
+  {"id":"obj-006","level":"B1","topic":"object-pronoun-guard-indirect","text":"Je lui téléphone tous les jours.","expect":"pass","flags":[],"note":"Téléphoner with an indirect object."},
+  {"id":"obj-007","level":"B1","topic":"object-pronoun-guard-both","text":"Je les donne à mon fils.","expect":"pass","flags":[],"note":"Donner takes both kinds."},
+  {"id":"obj-008","level":"B1","topic":"object-pronoun-guard-both","text":"Je le dis souvent.","expect":"pass","flags":[],"note":"Dire takes both kinds."},
+  {"id":"obj-009","level":"B1","topic":"object-pronoun-guard-stressed","text":"Je vais avec lui au match.","expect":"pass","flags":[],"note":"Lui after a preposition is a stressed pronoun."},
+  {"id":"obj-010","level":"B1","topic":"object-pronoun-guard-stressed","text":"C'est lui.","expect":"pass","flags":[],"note":"Lui after c'est is a stressed pronoun."},
+  {"id":"rel-001","level":"B1","topic":"relative-dont-parler","rule":"grammar.relativePronoun","text":"C'est le livre que je t'ai parlé.","expect":"flag","flags":[{"find":"que","fix":"dont","severity":"error"}],"note":"Parler de quelque chose à quelqu'un takes dont."},
+  {"id":"rel-002","level":"B1","topic":"relative-dont-besoin","rule":"grammar.relativePronoun","text":"C'est le livre que j'ai besoin.","expect":"flag","flags":[{"find":"que","fix":"dont","severity":"error"}],"note":"Avoir besoin de takes dont."},
+  {"id":"rel-003","level":"B1","topic":"relative-que","rule":"grammar.relativePronoun","text":"C'est un ami qui je connais depuis longtemps.","expect":"flag","flags":[{"find":"qui","fix":"que","severity":"error"}],"note":"The noun is the object of connaître, so the pronoun is que."},
+  {"id":"rel-004","level":"B1","topic":"relative-guard-direct","text":"La langue que je parle est le français.","expect":"pass","flags":[],"note":"Parler une langue is direct."},
+  {"id":"rel-005","level":"B1","topic":"relative-guard-preposition","text":"L'ami à qui je parle habite à Lyon.","expect":"pass","flags":[],"note":"Qui after a preposition is correct."},
+  {"id":"rel-006","level":"B1","topic":"relative-guard-question","text":"Je sais qui il est.","expect":"pass","flags":[],"note":"Qui after a verb is a question word."},
+  {"id":"rel-007","level":"B1","topic":"relative-guard-dont","text":"C'est le livre dont je t'ai parlé.","expect":"pass","flags":[],"note":"Already dont."}
 ]

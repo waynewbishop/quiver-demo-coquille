@@ -28,6 +28,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case conjugation
     case siClause
     case subjunctive
+    case objectPronoun
+    case relativePronoun
     case wordChoice
     case avoirExpression
     case negation
@@ -54,6 +56,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .conjugation: "CONJUGATION"
         case .siClause: "SI CLAUSE"
         case .subjunctive: "SUBJUNCTIVE"
+        case .objectPronoun: "OBJECT PRONOUN"
+        case .relativePronoun: "RELATIVE PRONOUN"
         case .wordChoice: "WORD CHOICE"
         case .avoirExpression: "AVOIR EXPRESSION"
         case .negation: "NEGATION"
@@ -82,6 +86,8 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .conjugation: "Conjugation (je vais)"
         case .siClause: "Si clauses (si tu viens)"
         case .subjunctive: "Subjunctive (il faut que je fasse)"
+        case .objectPronoun: "Object pronouns (je l'ai vu)"
+        case .relativePronoun: "Relative pronouns (le livre dont je parle)"
         case .wordChoice: "Word choice (poser une question)"
         case .avoirExpression: "Avoir expressions (j'ai faim)"
         case .negation: "Negation (ne… plus)"

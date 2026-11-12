@@ -799,6 +799,51 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("Il faut que je suis le cours."), [])
     }
 
+    // MARK: - Object pronouns
+
+    // Lui before a vowel has one fix, since le and la both elide; before a consonant the
+    // learner chooses between le and la.
+    func testDirectObjectPronounFixes() throws {
+        XCTAssertEqual(try fixes("Je lui aide."), ["lui aide → l'aide"])
+        XCTAssertEqual(try fixes("Je leur invite."), ["leur invite → les invite"])
+        let question = try XCTUnwrap(grammar().check("Je lui regarde.").first)
+        XCTAssertEqual(question.kind, .objectPronoun)
+        XCTAssertEqual(question.severity, .error)
+        XCTAssertNil(question.replacement)
+        XCTAssertEqual(question.choices.map(\.text), ["le regarde", "la regarde"])
+        XCTAssertEqual(question.hint, "Regarder takes a direct object: le, la or les.")
+    }
+
+    // Lui with a direct-only verb and a thing after it is correct French: the thing is the
+    // object, and lui says who it is for.
+    func testObjectPronounSilentBeforeAThing() throws {
+        XCTAssertEqual(try fixes("Je lui cherche un cadeau."), [])
+        XCTAssertEqual(try fixes("Je lui appelle un taxi."), [])
+        XCTAssertEqual(try fixes("Il lui plaît beaucoup."), [])
+        XCTAssertEqual(try fixes("Il nous le dit."), [])
+    }
+
+    // MARK: - Relative pronouns
+
+    // Qui before il becomes qu'il, and the hint names the subject, not the answer.
+    func testRelativeQuiElidesBeforeAVowel() throws {
+        XCTAssertEqual(try fixes("Voici la photo qui il a prise."), ["qui il → qu'il"])
+        let issue = try XCTUnwrap(grammar().check("La photo qui tu as prise est belle.").first)
+        XCTAssertEqual(issue.kind, .relativePronoun)
+        XCTAssertEqual(issue.replacement, "que")
+        XCTAssertEqual(issue.hint, "Here tu is the subject, so the relative pronoun can't be qui.")
+    }
+
+    // Que stays when it is a conjunction, when de follows the verb, or when nous is an object.
+    func testRelativePronounStaysSilentWhenInDoubt() throws {
+        XCTAssertEqual(try fixes("Le fait que j'ai peur me gêne."), [])
+        XCTAssertEqual(try fixes("C'est le livre que j'ai envie de lire."), [])
+        XCTAssertEqual(try fixes("L'homme qui nous regarde est grand."), [])
+        XCTAssertEqual(try fixes("Je me demande qui tu es."), [])
+        XCTAssertEqual(try fixes("C'est la chose qu'il a besoin."), ["qu'il → dont il"])
+        XCTAssertEqual(try fixes("De ce que je me souviens, il pleuvait."), [])
+    }
+
     // The French phrasing raises nothing.
     func testCorrectWordChoicePasses() throws {
         XCTAssertEqual(try fixes("J'ai faim et je suis en retard."), [])
