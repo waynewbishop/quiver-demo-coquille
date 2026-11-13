@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "count": 60,
+  "count": 61,
   "cases": [
     {"id": "E01", "category": "faux_amis", "french": "J'ai assisté à la réunion ce matin.", "reference_english": "I attended the meeting this morning.", "must_mention": ["assister à means to attend / be present at"], "must_not_say": ["says 'assisted' (helped)"]},
     {"id": "E02", "category": "faux_amis", "french": "Ma librairie préférée est près du lac.", "reference_english": "My favourite bookshop is near the lake.", "must_mention": ["librairie = bookshop", "library is bibliothèque"], "must_not_say": ["translates librairie as 'library'"]},
@@ -61,6 +61,7 @@
     {"id": "E57", "category": "culture", "french": "À tout à l'heure !", "reference_english": "See you later (today)!", "must_mention": ["later the same day", "compare à plus tard, à demain"], "must_not_say": ["says 'see you tomorrow'"]},
     {"id": "E58", "category": "travel", "french": "Je voudrais un aller-retour pour Annecy.", "reference_english": "I'd like a return ticket to Annecy.", "must_mention": ["aller-retour = return / round-trip ticket", "aller simple = one way"], "must_not_say": ["says it means going back and forth"]},
     {"id": "E59", "category": "travel", "french": "Le téléphérique est fermé à cause du vent.", "reference_english": "The cable car is closed because of the wind.", "must_mention": ["téléphérique = cable car", "à cause de = because of (often a negative cause), du = de + le"], "must_not_say": ["translates téléphérique as 'telephone'"]},
-    {"id": "E60", "category": "travel", "french": "Il faut réserver le refuge à l'avance.", "reference_english": "You have to book the mountain hut in advance.", "must_mention": ["refuge = mountain hut", "il faut + infinitive = it's necessary to / you have to", "à l'avance = in advance"], "must_not_say": ["translates refuge as a refugee shelter"]}
+    {"id": "E60", "category": "travel", "french": "Il faut réserver le refuge à l'avance.", "reference_english": "You have to book the mountain hut in advance.", "must_mention": ["refuge = mountain hut", "il faut + infinitive = it's necessary to / you have to", "à l'avance = in advance"], "must_not_say": ["translates refuge as a refugee shelter"]},
+    {"id": "E61", "category": "tense", "french": "Aujourd'hui, je porte des chaussures de course.", "reference_english": "Today I'm wearing running shoes.", "must_mention": ["je porte = I'm wearing / I wear (French has one present tense)", "chaussures de course = running shoes"], "must_not_say": ["calls je porte a contraction or short for je suis portant"]}
   ]
 }

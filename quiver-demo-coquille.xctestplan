@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "099191E7-0F94-4A0C-880E-55D27B42DD2D",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:quiver-demo-coquille.xcodeproj",
+        "identifier" : "DA2705F73091505900F81D2D",
+        "name" : "quiver-demo-coquilleTests"
+      }
+    }
+  ],
+  "version" : 1
+}

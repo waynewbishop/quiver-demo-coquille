@@ -25,8 +25,8 @@ struct ExplanationPanel: View {
     /// or `nil` while that isn't so.
     let french: String?
 
-    /// The last answer and the French it explains, kept while the learner edits so the
-    /// phrases don't vanish with every keystroke.
+    /// The last answer and the French it explains. It's shown only while it matches the
+    /// French, so an edit clears the panel to the spinner until the new answer arrives.
     @State private var explained: Explained?
 
     /// An answer from the model, for one version of the French.
@@ -49,12 +49,15 @@ struct ExplanationPanel: View {
                     .padding(.vertical, 18)
             }
 
-            Text("Explained on your device. It can make mistakes.")
-                .font(.plexSans(12, relativeTo: .caption))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
+            // Hidden with the phrases while the spinner shows, as the English pane clears.
+            if !isWorking {
+                Text("Explained on your device. It can make mistakes.")
+                    .font(.plexSans(12, relativeTo: .caption))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task(id: french) { await explainIfNeeded() }
@@ -95,18 +98,11 @@ struct ExplanationPanel: View {
         } else if !model.hasFrench {
             // Blank, like the English pane, until there's French to explain.
             EmptyView()
-        } else {
-            VStack(alignment: .leading, spacing: 14) {
-                // The English pane's spinner, while new French waits for its explanation.
-                if isWorking {
-                    ProgressView()
-                }
-                if let explained {
-                    outcome(explained.outcome)
-                        // Out of date while the learner edits, until the new French is explained.
-                        .opacity(explained.french == french ? 1 : 0.5)
-                }
-            }
+        } else if isWorking {
+            // Only the spinner, as in the English pane, while new French waits for its explanation.
+            ProgressView()
+        } else if let explained {
+            outcome(explained.outcome)
         }
     }
 

@@ -3,6 +3,9 @@ build/
 .build/
 DerivedData/
 
+# Explain evaluation reports from Tools/explain-eval.sh
+Artifacts/
+
 # Xcode per-user state
 xcuserdata/
 *.xcuserstate

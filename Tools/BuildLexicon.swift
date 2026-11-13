@@ -157,7 +157,8 @@ for line in lines {
 /// The hand-checked genders in `fr.noun-gender-overrides.json`.
 struct GenderOverrides: Codable {
     let note: String
-    /// Singular noun → "m" or "f".
+    /// Singular noun → "m" or "f", or "x" for a noun Lexique gives one gender that
+    /// really takes either, such as le chèvre (the cheese) and la chèvre (the goat).
     let nouns: [String: String]
 }
 
@@ -166,16 +167,17 @@ var overridden = 0
 if let overridesData = FileManager.default.contents(atPath: overridesPath) {
     let overrides = try JSONDecoder().decode(GenderOverrides.self, from: overridesData)
     for (noun, gender) in overrides.nouns {
-        guard let letter = gender.first, gender.count == 1, "mf".contains(letter), nounGenders[noun] != nil else {
+        guard let letter = gender.first, gender.count == 1, "mfx".contains(letter), nounGenders[noun] != nil else {
             FileHandle.standardError.write(Data("bad override \(noun): \(gender)\n".utf8))
             exit(1)
         }
-        nounGenders[noun] = [letter]
+        let genders: Set<Character> = letter == "x" ? ["m", "f"] : [letter]
+        nounGenders[noun] = genders
         overridden += 1
         // The regular plural shares the gender, as in maisons; souris and pas are their own plural.
         let plural = noun + "s"
         if !noun.hasSuffix("s"), nounGenders[plural] != nil {
-            nounGenders[plural] = [letter]
+            nounGenders[plural] = genders
         }
     }
 } else if arguments.count == 4 {

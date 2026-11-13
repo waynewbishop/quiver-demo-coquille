@@ -49,4 +49,15 @@ final class PassageOrderTests: XCTestCase {
             ["le samedi", "après", "être en train de"]
         )
     }
+
+    // Phrases longer than five words are dropped, and an elision counts as one word.
+    func testPhrasesOverFiveWordsAreDropped() {
+        XCTAssertEqual(
+            PassageExplainer.shortPhrases(
+                ["J'ai hâte de voir le match", "j'ai hâte de voir", "au stade"],
+                french: { $0 }
+            ),
+            ["j'ai hâte de voir", "au stade"]
+        )
+    }
 }

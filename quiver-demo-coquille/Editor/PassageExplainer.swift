@@ -31,13 +31,16 @@ enum PassageExplainer {
     /// One phrase from the passage and what it means.
     @Generable
     struct Phrase {
-        @Guide(description: "The French phrase as it appears in the passage, or a verb idiom in its dictionary form, such as avoir hâte de.")
+        @Guide(description: "The French phrase as it appears in the passage, or a verb idiom in its dictionary form, such as avoir hâte de. At most five words.")
         let french: String
         @Guide(description: "What the phrase means in natural English, in a few words, with no final punctuation.")
         let meaning: String
-        @Guide(description: "One short sentence on why it's worth noticing, such as an idiom, a contraction or a tense.")
+        @Guide(description: "One short sentence on why it's worth noticing, such as an idiom or a tense.")
         let note: String
     }
+
+    /// The most words a phrase can have and still be shown.
+    static let maximumWords = 5
 
     /// What came of asking the model to explain a passage.
     enum Outcome {
@@ -59,18 +62,31 @@ enum PassageExplainer {
         guard isAvailable else { return .failed }
         let session = LanguageModelSession(instructions: """
             An English speaker learning French wrote this passage, and its French is \
-            correct. Pick the phrases most worth explaining: idioms, contractions, tenses, \
-            and words whose meaning differs from English. Explain each in plain English. \
-            Never correct, rewrite or translate the whole passage.
+            correct. Pick the phrases most worth explaining: idioms, tenses, and words \
+            whose meaning differs from English. Keep each phrase to five words or fewer. \
+            Explain each in plain English. French has one present tense, so je mange \
+            means both I eat and I'm eating. Call something a contraction only when two \
+            words have merged in the passage, such as du for de + le. Never say where a \
+            word comes from or what it is short for. Never correct, rewrite or translate \
+            the whole passage.
             """)
         do {
             let response = try await session.respond(to: text, generating: Explanation.self)
-            return .explained(inPassageOrder(response.content.phrases, french: \.french, in: text))
+            let short = shortPhrases(response.content.phrases, french: \.french)
+            return .explained(inPassageOrder(short, french: \.french, in: text))
         } catch LanguageModelError.contextSizeExceeded {
             return .tooLong
         } catch {
             return .failed
         }
+    }
+
+    /// Keeps only the items whose French is `maximumWords` words or fewer, since the
+    /// model doesn't always follow its guide.
+    ///
+    /// Words are split on spaces, so an elision such as "j'ai" counts as one word.
+    static func shortPhrases<Item>(_ items: [Item], french: (Item) -> String) -> [Item] {
+        items.filter { french($0).split(whereSeparator: \.isWhitespace).count <= maximumWords }
     }
 
     /// Puts `items` in the order their French first appears in `text`, so the bullets

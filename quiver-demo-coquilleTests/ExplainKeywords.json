@@ -58,5 +58,6 @@
   "E57": {"mention": [["later", "see you soon", "in a bit", "in a while"], ["today", "same day"]], "notInMeaning": ["tomorrow"]},
   "E58": {"mention": [["return", "round-trip", "round trip"], ["aller simple", "one-way", "one way"]], "notInMeaning": ["back and forth"]},
   "E59": {"mention": [["cable car", "cable-car", "gondola", "cableway", "aerial tramway"], ["because of"], ["de + le", "de and le", "du"]], "notInMeaning": ["telephone", "phone"]},
-  "E60": {"mention": [["hut", "shelter"], ["necessary", "have to", "must", "need to"], ["in advance", "ahead"]], "notInMeaning": ["refugee"]}
+  "E60": {"mention": [["hut", "shelter"], ["necessary", "have to", "must", "need to"], ["in advance", "ahead"]], "notInMeaning": ["refugee"]},
+  "E61": {"mention": [["wear", "wearing"], ["present"], ["running shoes", "running shoe", "sneakers", "trainers"]], "notInMeaning": ["carry", "carrying"], "notAnywhere": ["contraction", "je suis portant", "short for"]}
 }

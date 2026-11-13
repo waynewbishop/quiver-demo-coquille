@@ -1,0 +1,47 @@
+{
+  "configurations" : [
+    {
+      "id" : "0B4B49D4-87C7-4D13-A407-373110C9E3AD",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "COQUILLE_EXPLAIN_EVAL",
+        "value" : "1"
+      },
+      {
+        "key" : "COQUILLE_EXPLAIN_MODE",
+        "value" : "release"
+      },
+      {
+        "enabled" : false,
+        "key" : "COQUILLE_EXPLAIN_CASES",
+        "value" : "E43"
+      },
+      {
+        "enabled" : false,
+        "key" : "COQUILLE_EXPLAIN_CATEGORY",
+        "value" : "tense"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "selectedTests" : [
+        "ExplainEvaluationTests"
+      ],
+      "target" : {
+        "containerPath" : "container:quiver-demo-coquille.xcodeproj",
+        "identifier" : "DA2705F73091505900F81D2D",
+        "name" : "quiver-demo-coquilleTests"
+      }
+    }
+  ],
+  "version" : 1
+}

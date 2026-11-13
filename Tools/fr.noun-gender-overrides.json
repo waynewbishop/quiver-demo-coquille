@@ -1,6 +1,7 @@
 {
-  "note": "Common nouns Lexique 3.83 lists with a blank gender, which BuildLexicon would otherwise store as both genders. Each has one everyday gender, hand-checked by Wayne Bishop on 2026-10-29. Nouns that really take either gender (enfant, artiste, livre, tour) are left out on purpose.",
+  "note": "Common nouns Lexique 3.83 lists with a blank gender, which BuildLexicon would otherwise store as both genders. Each has one everyday gender, hand-checked by Wayne Bishop on 2026-10-29. Nouns that really take either gender (enfant, artiste, livre, tour) are left out on purpose. An x marks the reverse case, a noun Lexique gives one gender that also takes the other: chèvre (added 2026-11-12) is la chèvre, the goat, and le chèvre, the cheese.",
   "nouns": {
+    "chèvre": "x",
     "auto": "f",
     "barbe": "f",
     "carrière": "f",

@@ -1,0 +1,1328 @@
+{
+  "about": "Every place name Coquille knows, nested country › region › city, with the article that settles its preposition. Countries and regions: la and l' take en, le takes au, les takes aux. Cities take à, unless a city has its own article: le → au (au Havre), les → aux, la and l' stay (à La Rochelle). An empty article means the name is known but usage varies, so the checker leaves it alone. A name listed in more than one place is judged only when every listing agrees on the preposition.",
+  "sources": {
+    "countries": "Copied unchanged from fr.patterns.json: French Wikipedia, “Liste des pays du monde” (wikitext retrieved 2026-11-01), CC BY-SA 4.0.",
+    "regions and cities": "Written by hand on 2026-11-12, not yet reviewed. Needs a check by a French teacher before the checker uses it."
+  },
+  "places": {
+    "Afrique du Sud": {
+      "article": "l'"
+    },
+    "Albanie": {
+      "article": "l'"
+    },
+    "Algérie": {
+      "article": "l'",
+      "cities": [
+        "Alger"
+      ]
+    },
+    "Allemagne": {
+      "article": "l'",
+      "regions": {
+        "Bavière": {
+          "article": "la",
+          "cities": [
+            "Munich"
+          ]
+        }
+      },
+      "cities": [
+        "Berlin",
+        "Cologne",
+        "Francfort",
+        "Hambourg"
+      ]
+    },
+    "Andorre": {
+      "article": "l'"
+    },
+    "Angola": {
+      "article": "l'"
+    },
+    "Antigua-et-Barbuda": {
+      "article": ""
+    },
+    "Arabie saoudite": {
+      "article": "l'"
+    },
+    "Argentine": {
+      "article": "l'",
+      "cities": [
+        "Buenos Aires"
+      ]
+    },
+    "Arménie": {
+      "article": "l'"
+    },
+    "Australie": {
+      "article": "l'",
+      "cities": [
+        "Melbourne",
+        "Sydney"
+      ]
+    },
+    "Autriche": {
+      "article": "l'",
+      "cities": [
+        "Innsbruck",
+        "Salzbourg",
+        "Vienne"
+      ]
+    },
+    "Azerbaïdjan": {
+      "article": "l'"
+    },
+    "Bahamas": {
+      "article": "les"
+    },
+    "Bahreïn": {
+      "article": ""
+    },
+    "Bangladesh": {
+      "article": "le"
+    },
+    "Barbade": {
+      "article": "la"
+    },
+    "Bélarus": {
+      "article": "le"
+    },
+    "Belgique": {
+      "article": "la",
+      "regions": {
+        "Flandre": {
+          "article": "la"
+        },
+        "Wallonie": {
+          "article": "la"
+        }
+      },
+      "cities": [
+        "Anvers",
+        "Bruges",
+        "Bruxelles",
+        "Gand",
+        "Liège"
+      ]
+    },
+    "Belize": {
+      "article": "le"
+    },
+    "Bénin": {
+      "article": "le"
+    },
+    "Bhoutan": {
+      "article": "le"
+    },
+    "Birmanie": {
+      "article": "la"
+    },
+    "Bolivie": {
+      "article": "la"
+    },
+    "Bosnie-Herzégovine": {
+      "article": "la"
+    },
+    "Botswana": {
+      "article": "le"
+    },
+    "Brésil": {
+      "article": "le",
+      "cities": [
+        "Rio de Janeiro",
+        "São Paulo"
+      ]
+    },
+    "Brunei": {
+      "article": "le"
+    },
+    "Bulgarie": {
+      "article": "la"
+    },
+    "Burkina": {
+      "article": "le"
+    },
+    "Burundi": {
+      "article": "le"
+    },
+    "Cambodge": {
+      "article": "le"
+    },
+    "Cameroun": {
+      "article": "le"
+    },
+    "Canada": {
+      "article": "le",
+      "regions": {
+        "Alberta": {
+          "article": "l'",
+          "cities": [
+            "Banff",
+            "Calgary",
+            "Edmonton"
+          ]
+        },
+        "Colombie-Britannique": {
+          "article": "la",
+          "cities": [
+            "Vancouver",
+            "Victoria",
+            "Whistler"
+          ]
+        },
+        "Île-du-Prince-Édouard": {
+          "article": "l'"
+        },
+        "Manitoba": {
+          "article": "le",
+          "cities": [
+            "Winnipeg"
+          ]
+        },
+        "Nouveau-Brunswick": {
+          "article": "le"
+        },
+        "Nouvelle-Écosse": {
+          "article": "la",
+          "cities": [
+            "Halifax"
+          ]
+        },
+        "Nunavut": {
+          "article": "le"
+        },
+        "Ontario": {
+          "article": "l'",
+          "cities": [
+            "Ottawa",
+            "Toronto"
+          ]
+        },
+        "Québec": {
+          "article": "le",
+          "cities": [
+            "Gatineau",
+            "Mont-Tremblant",
+            "Montréal",
+            "Québec"
+          ]
+        },
+        "Saskatchewan": {
+          "article": "la"
+        },
+        "Terre-Neuve-et-Labrador": {
+          "article": ""
+        },
+        "Territoires du Nord-Ouest": {
+          "article": "les"
+        },
+        "Yukon": {
+          "article": "le"
+        }
+      }
+    },
+    "Cap-Vert": {
+      "article": "le"
+    },
+    "Chili": {
+      "article": "le"
+    },
+    "Chine": {
+      "article": "la",
+      "cities": [
+        "Pékin",
+        "Shanghai"
+      ]
+    },
+    "Chypre": {
+      "article": ""
+    },
+    "Colombie": {
+      "article": "la"
+    },
+    "Comores": {
+      "article": "les"
+    },
+    "Congo": {
+      "article": "le"
+    },
+    "Corée du Nord": {
+      "article": "la"
+    },
+    "Corée du Sud": {
+      "article": "la"
+    },
+    "Costa Rica": {
+      "article": "le"
+    },
+    "Côte d'Ivoire": {
+      "article": "la",
+      "cities": [
+        "Abidjan"
+      ]
+    },
+    "Croatie": {
+      "article": "la",
+      "cities": [
+        "Dubrovnik",
+        "Split"
+      ]
+    },
+    "Cuba": {
+      "article": "",
+      "cities": [
+        {
+          "name": "Havane",
+          "article": "la"
+        }
+      ]
+    },
+    "Danemark": {
+      "article": "le",
+      "cities": [
+        "Copenhague"
+      ]
+    },
+    "Dominique": {
+      "article": "la"
+    },
+    "Égypte": {
+      "article": "l'",
+      "cities": [
+        {
+          "name": "Caire",
+          "article": "le"
+        }
+      ]
+    },
+    "Émirats arabes unis": {
+      "article": "les"
+    },
+    "Équateur": {
+      "article": "l'"
+    },
+    "Érythrée": {
+      "article": "l'"
+    },
+    "Espagne": {
+      "article": "l'",
+      "regions": {
+        "Andalousie": {
+          "article": "l'",
+          "cities": [
+            "Grenade"
+          ]
+        },
+        "Catalogne": {
+          "article": "la",
+          "cities": [
+            "Barcelone"
+          ]
+        }
+      },
+      "cities": [
+        "Bilbao",
+        "Madrid",
+        "Malaga",
+        "Séville",
+        "Valence"
+      ]
+    },
+    "Estonie": {
+      "article": "l'"
+    },
+    "Eswatini": {
+      "article": "l'"
+    },
+    "États-Unis": {
+      "article": "les",
+      "regions": {
+        "Alabama": {
+          "article": "l'"
+        },
+        "Alaska": {
+          "article": "l'",
+          "cities": [
+            "Anchorage"
+          ]
+        },
+        "Arizona": {
+          "article": "l'",
+          "cities": [
+            "Phoenix"
+          ]
+        },
+        "Arkansas": {
+          "article": "l'"
+        },
+        "Californie": {
+          "article": "la",
+          "cities": [
+            "Los Angeles",
+            "Sacramento",
+            "San Diego",
+            "San Francisco"
+          ]
+        },
+        "Caroline du Nord": {
+          "article": "la"
+        },
+        "Caroline du Sud": {
+          "article": "la"
+        },
+        "Colorado": {
+          "article": "le",
+          "cities": [
+            "Aspen",
+            "Denver",
+            "Vail"
+          ]
+        },
+        "Connecticut": {
+          "article": "le"
+        },
+        "Dakota du Nord": {
+          "article": "le"
+        },
+        "Dakota du Sud": {
+          "article": "le"
+        },
+        "Delaware": {
+          "article": "le"
+        },
+        "Floride": {
+          "article": "la",
+          "cities": [
+            "Miami",
+            "Orlando"
+          ]
+        },
+        "Géorgie": {
+          "article": "la",
+          "cities": [
+            "Atlanta"
+          ]
+        },
+        "Hawaï": {
+          "article": "",
+          "cities": [
+            "Honolulu"
+          ]
+        },
+        "Idaho": {
+          "article": "l'"
+        },
+        "Illinois": {
+          "article": "l'",
+          "cities": [
+            "Chicago"
+          ]
+        },
+        "Indiana": {
+          "article": "l'"
+        },
+        "Iowa": {
+          "article": "l'"
+        },
+        "Kansas": {
+          "article": "le"
+        },
+        "Kentucky": {
+          "article": "le"
+        },
+        "Louisiane": {
+          "article": "la",
+          "cities": [
+            {
+              "name": "Nouvelle-Orléans",
+              "article": "la"
+            }
+          ]
+        },
+        "Maine": {
+          "article": "le"
+        },
+        "Maryland": {
+          "article": "le"
+        },
+        "Massachusetts": {
+          "article": "le",
+          "cities": [
+            "Boston"
+          ]
+        },
+        "Michigan": {
+          "article": "le",
+          "cities": [
+            "Détroit"
+          ]
+        },
+        "Minnesota": {
+          "article": "le"
+        },
+        "Mississippi": {
+          "article": "le"
+        },
+        "Missouri": {
+          "article": "le"
+        },
+        "Montana": {
+          "article": "le"
+        },
+        "Nebraska": {
+          "article": "le"
+        },
+        "Nevada": {
+          "article": "le",
+          "cities": [
+            "Las Vegas"
+          ]
+        },
+        "New Hampshire": {
+          "article": "le"
+        },
+        "New Jersey": {
+          "article": "le"
+        },
+        "New York": {
+          "article": "",
+          "cities": [
+            "New York"
+          ]
+        },
+        "Nouveau-Mexique": {
+          "article": "le"
+        },
+        "Ohio": {
+          "article": "l'"
+        },
+        "Oklahoma": {
+          "article": "l'"
+        },
+        "Oregon": {
+          "article": "l'",
+          "cities": [
+            "Bend",
+            "Eugene",
+            "Portland"
+          ]
+        },
+        "Pennsylvanie": {
+          "article": "la",
+          "cities": [
+            "Philadelphie"
+          ]
+        },
+        "Rhode Island": {
+          "article": "le"
+        },
+        "Tennessee": {
+          "article": "le"
+        },
+        "Texas": {
+          "article": "le",
+          "cities": [
+            "Austin",
+            "Dallas",
+            "Houston",
+            "San Antonio"
+          ]
+        },
+        "Utah": {
+          "article": "l'",
+          "cities": [
+            "Park City",
+            "Salt Lake City"
+          ]
+        },
+        "Vermont": {
+          "article": "le"
+        },
+        "Virginie": {
+          "article": "la"
+        },
+        "Virginie-Occidentale": {
+          "article": "la"
+        },
+        "Washington": {
+          "article": "",
+          "cities": [
+            "Seattle",
+            "Spokane",
+            "Tacoma"
+          ]
+        },
+        "Wisconsin": {
+          "article": "le"
+        },
+        "Wyoming": {
+          "article": "le"
+        }
+      },
+      "cities": [
+        "Washington"
+      ]
+    },
+    "Éthiopie": {
+      "article": "l'"
+    },
+    "Fidji": {
+      "article": "les"
+    },
+    "Finlande": {
+      "article": "la"
+    },
+    "France": {
+      "article": "la",
+      "regions": {
+        "Auvergne-Rhône-Alpes": {
+          "article": "l'",
+          "regions": {
+            "Auvergne": {
+              "article": "l'"
+            },
+            "Haute-Savoie": {
+              "article": "la",
+              "cities": [
+                "Annecy",
+                "Chamonix",
+                "Évian-les-Bains",
+                "Megève"
+              ]
+            },
+            "Savoie": {
+              "article": "la",
+              "cities": [
+                "Chambéry",
+                "Courchevel",
+                "Méribel",
+                "Val-d'Isère"
+              ]
+            }
+          },
+          "cities": [
+            "Clermont-Ferrand",
+            "Grenoble",
+            "Lyon",
+            "Saint-Étienne"
+          ]
+        },
+        "Bourgogne-Franche-Comté": {
+          "article": "la",
+          "regions": {
+            "Bourgogne": {
+              "article": "la"
+            }
+          },
+          "cities": [
+            "Beaune",
+            "Besançon",
+            "Dijon"
+          ]
+        },
+        "Bretagne": {
+          "article": "la",
+          "cities": [
+            "Brest",
+            "Quimper",
+            "Rennes",
+            "Saint-Malo",
+            "Vannes"
+          ]
+        },
+        "Centre-Val de Loire": {
+          "article": "",
+          "cities": [
+            "Amboise",
+            "Blois",
+            "Chartres",
+            "Orléans",
+            "Tours"
+          ]
+        },
+        "Corse": {
+          "article": "la",
+          "cities": [
+            "Ajaccio",
+            "Bastia",
+            "Bonifacio"
+          ]
+        },
+        "Grand Est": {
+          "article": "",
+          "regions": {
+            "Alsace": {
+              "article": "l'"
+            },
+            "Champagne": {
+              "article": "la"
+            },
+            "Lorraine": {
+              "article": "la"
+            }
+          },
+          "cities": [
+            "Colmar",
+            "Metz",
+            "Nancy",
+            "Reims",
+            "Strasbourg"
+          ]
+        },
+        "Guadeloupe": {
+          "article": "la",
+          "cities": [
+            "Pointe-à-Pitre"
+          ]
+        },
+        "Guyane": {
+          "article": "la",
+          "cities": [
+            "Cayenne"
+          ]
+        },
+        "Hauts-de-France": {
+          "article": "",
+          "regions": {
+            "Picardie": {
+              "article": "la"
+            }
+          },
+          "cities": [
+            "Amiens",
+            "Calais",
+            "Dunkerque",
+            "Lille"
+          ]
+        },
+        "Île-de-France": {
+          "article": "l'",
+          "cities": [
+            "Fontainebleau",
+            "Paris",
+            "Versailles"
+          ]
+        },
+        "La Réunion": {
+          "article": ""
+        },
+        "Martinique": {
+          "article": "la",
+          "cities": [
+            "Fort-de-France"
+          ]
+        },
+        "Mayotte": {
+          "article": ""
+        },
+        "Normandie": {
+          "article": "la",
+          "cities": [
+            "Caen",
+            "Deauville",
+            "Giverny",
+            {
+              "name": "Havre",
+              "article": "le"
+            },
+            "Honfleur",
+            {
+              "name": "Mont-Saint-Michel",
+              "article": "le"
+            },
+            "Rouen"
+          ]
+        },
+        "Nouvelle-Aquitaine": {
+          "article": "la",
+          "regions": {
+            "Dordogne": {
+              "article": "la",
+              "cities": [
+                "Sarlat-la-Canéda"
+              ]
+            }
+          },
+          "cities": [
+            "Biarritz",
+            "Bordeaux",
+            "Limoges",
+            "Poitiers",
+            {
+              "name": "Rochelle",
+              "article": "la"
+            }
+          ]
+        },
+        "Occitanie": {
+          "article": "l'",
+          "cities": [
+            {
+              "name": "Arles",
+              "article": ""
+            },
+            "Carcassonne",
+            "Lourdes",
+            "Montpellier",
+            "Nîmes",
+            "Perpignan",
+            "Toulouse"
+          ]
+        },
+        "Pays de la Loire": {
+          "article": "",
+          "cities": [
+            "Angers",
+            {
+              "name": "Mans",
+              "article": "le"
+            },
+            "Nantes"
+          ]
+        },
+        "Provence-Alpes-Côte d'Azur": {
+          "article": "la",
+          "regions": {
+            "Provence": {
+              "article": "la"
+            }
+          },
+          "cities": [
+            "Aix-en-Provence",
+            "Antibes",
+            {
+              "name": "Avignon",
+              "article": ""
+            },
+            "Briançon",
+            "Cannes",
+            "Marseille",
+            "Menton",
+            "Nice",
+            "Saint-Tropez",
+            "Toulon"
+          ]
+        }
+      }
+    },
+    "Gabon": {
+      "article": "le"
+    },
+    "Gambie": {
+      "article": "la"
+    },
+    "Géorgie": {
+      "article": "la"
+    },
+    "Ghana": {
+      "article": "le"
+    },
+    "Grèce": {
+      "article": "la",
+      "cities": [
+        "Athènes"
+      ]
+    },
+    "Guinée": {
+      "article": "la"
+    },
+    "Guinée équatoriale": {
+      "article": "la"
+    },
+    "Guinée-Bissau": {
+      "article": "la"
+    },
+    "Guyana": {
+      "article": "le"
+    },
+    "Haïti": {
+      "article": ""
+    },
+    "Honduras": {
+      "article": "le"
+    },
+    "Hongrie": {
+      "article": "la",
+      "cities": [
+        "Budapest"
+      ]
+    },
+    "Îles Cook": {
+      "article": "les"
+    },
+    "Îles Salomon": {
+      "article": "les"
+    },
+    "Inde": {
+      "article": "l'",
+      "cities": [
+        "Bombay",
+        "Delhi"
+      ]
+    },
+    "Indonésie": {
+      "article": "l'"
+    },
+    "Irak": {
+      "article": "l'"
+    },
+    "Iran": {
+      "article": "l'"
+    },
+    "Irlande": {
+      "article": "l'",
+      "cities": [
+        "Dublin"
+      ]
+    },
+    "Islande": {
+      "article": "l'"
+    },
+    "Israël": {
+      "article": "",
+      "cities": [
+        "Jérusalem",
+        "Tel Aviv"
+      ]
+    },
+    "Italie": {
+      "article": "l'",
+      "regions": {
+        "Lombardie": {
+          "article": "la",
+          "cities": [
+            "Milan"
+          ]
+        },
+        "Sardaigne": {
+          "article": "la"
+        },
+        "Sicile": {
+          "article": "la",
+          "cities": [
+            "Palerme"
+          ]
+        },
+        "Toscane": {
+          "article": "la",
+          "cities": [
+            "Florence",
+            "Pise",
+            "Sienne"
+          ]
+        },
+        "Vénétie": {
+          "article": "la",
+          "cities": [
+            "Venise",
+            "Vérone"
+          ]
+        }
+      },
+      "cities": [
+        "Bologne",
+        "Naples",
+        "Rome",
+        "Turin"
+      ]
+    },
+    "Jamaïque": {
+      "article": "la"
+    },
+    "Japon": {
+      "article": "le",
+      "cities": [
+        "Kyoto",
+        "Osaka",
+        "Tokyo"
+      ]
+    },
+    "Jordanie": {
+      "article": "la"
+    },
+    "Kazakhstan": {
+      "article": "le"
+    },
+    "Kenya": {
+      "article": "le"
+    },
+    "Kiribati": {
+      "article": ""
+    },
+    "Laos": {
+      "article": "le"
+    },
+    "Lesotho": {
+      "article": "le"
+    },
+    "Lettonie": {
+      "article": "la"
+    },
+    "Liban": {
+      "article": "le"
+    },
+    "Libéria": {
+      "article": "le"
+    },
+    "Libye": {
+      "article": "la"
+    },
+    "Liechtenstein": {
+      "article": "le"
+    },
+    "Lituanie": {
+      "article": "la"
+    },
+    "Macédoine du Nord": {
+      "article": "la"
+    },
+    "Madagascar": {
+      "article": ""
+    },
+    "Malaisie": {
+      "article": "la"
+    },
+    "Malawi": {
+      "article": "le"
+    },
+    "Maldives": {
+      "article": "les"
+    },
+    "Mali": {
+      "article": "le"
+    },
+    "Malte": {
+      "article": ""
+    },
+    "Maroc": {
+      "article": "le",
+      "cities": [
+        "Casablanca",
+        "Fès",
+        "Marrakech",
+        "Rabat"
+      ]
+    },
+    "Marshall": {
+      "article": "les"
+    },
+    "Maurice": {
+      "article": ""
+    },
+    "Mauritanie": {
+      "article": "la"
+    },
+    "Mexique": {
+      "article": "le",
+      "cities": [
+        "Cancún",
+        "Mexico"
+      ]
+    },
+    "Micronésie": {
+      "article": "la"
+    },
+    "Moldavie": {
+      "article": "la"
+    },
+    "Mongolie": {
+      "article": "la"
+    },
+    "Monténégro": {
+      "article": "le"
+    },
+    "Mozambique": {
+      "article": "le"
+    },
+    "Namibie": {
+      "article": "la"
+    },
+    "Nauru": {
+      "article": ""
+    },
+    "Népal": {
+      "article": "le"
+    },
+    "Nicaragua": {
+      "article": "le"
+    },
+    "Niger": {
+      "article": "le"
+    },
+    "Nigéria": {
+      "article": "le"
+    },
+    "Niue": {
+      "article": ""
+    },
+    "Norvège": {
+      "article": "la",
+      "cities": [
+        "Oslo"
+      ]
+    },
+    "Nouvelle-Zélande": {
+      "article": "la"
+    },
+    "Oman": {
+      "article": ""
+    },
+    "Ouganda": {
+      "article": "l'"
+    },
+    "Ouzbékistan": {
+      "article": "l'"
+    },
+    "Pakistan": {
+      "article": "le"
+    },
+    "Palaos": {
+      "article": "les"
+    },
+    "Papouasie-Nouvelle-Guinée": {
+      "article": "la"
+    },
+    "Paraguay": {
+      "article": "le"
+    },
+    "Pays-Bas": {
+      "article": "les",
+      "cities": [
+        "Amsterdam",
+        {
+          "name": "Haye",
+          "article": "la"
+        },
+        "Rotterdam"
+      ]
+    },
+    "Pérou": {
+      "article": "le"
+    },
+    "Philippines": {
+      "article": "les"
+    },
+    "Pologne": {
+      "article": "la",
+      "cities": [
+        "Cracovie",
+        "Varsovie"
+      ]
+    },
+    "Portugal": {
+      "article": "le",
+      "cities": [
+        "Lisbonne",
+        "Porto"
+      ]
+    },
+    "Qatar": {
+      "article": "le"
+    },
+    "République centrafricaine": {
+      "article": "la"
+    },
+    "République démocratique du Congo": {
+      "article": "la"
+    },
+    "République dominicaine": {
+      "article": "la"
+    },
+    "Roumanie": {
+      "article": "la"
+    },
+    "Royaume-Uni": {
+      "article": "le",
+      "regions": {
+        "Angleterre": {
+          "article": "l'",
+          "cities": [
+            "Cambridge",
+            "Liverpool",
+            "Londres",
+            "Manchester",
+            "Oxford"
+          ]
+        },
+        "Écosse": {
+          "article": "l'",
+          "cities": [
+            "Édimbourg",
+            "Glasgow"
+          ]
+        },
+        "Irlande du Nord": {
+          "article": "l'",
+          "cities": [
+            "Belfast"
+          ]
+        },
+        "Pays de Galles": {
+          "article": "le",
+          "cities": [
+            "Cardiff"
+          ]
+        }
+      }
+    },
+    "Russie": {
+      "article": "la",
+      "cities": [
+        "Moscou",
+        "Saint-Pétersbourg"
+      ]
+    },
+    "Rwanda": {
+      "article": "le"
+    },
+    "Saint-Christophe-et-Niévès": {
+      "article": ""
+    },
+    "Saint-Vincent-et-les Grenadines": {
+      "article": ""
+    },
+    "Sainte-Lucie": {
+      "article": ""
+    },
+    "Samoa": {
+      "article": "les"
+    },
+    "Sao Tomé-et-Principe": {
+      "article": ""
+    },
+    "Sénégal": {
+      "article": "le",
+      "cities": [
+        "Dakar"
+      ]
+    },
+    "Serbie": {
+      "article": "la"
+    },
+    "Seychelles": {
+      "article": "les"
+    },
+    "Sierra Leone": {
+      "article": "la"
+    },
+    "Slovaquie": {
+      "article": "la"
+    },
+    "Slovénie": {
+      "article": "la"
+    },
+    "Somalie": {
+      "article": "la"
+    },
+    "Soudan": {
+      "article": "le"
+    },
+    "Sri Lanka": {
+      "article": ""
+    },
+    "Suède": {
+      "article": "la",
+      "cities": [
+        "Stockholm"
+      ]
+    },
+    "Suisse": {
+      "article": "la",
+      "cities": [
+        "Bâle",
+        "Berne",
+        "Genève",
+        "Lausanne",
+        "Montreux",
+        "Verbier",
+        "Zermatt",
+        "Zurich"
+      ]
+    },
+    "Suriname": {
+      "article": "le"
+    },
+    "Syrie": {
+      "article": "la"
+    },
+    "Tadjikistan": {
+      "article": "le"
+    },
+    "Tanzanie": {
+      "article": "la"
+    },
+    "Tchad": {
+      "article": "le"
+    },
+    "Tchéquie": {
+      "article": "la",
+      "cities": [
+        "Prague"
+      ]
+    },
+    "Thaïlande": {
+      "article": "la",
+      "cities": [
+        "Bangkok"
+      ]
+    },
+    "Timor oriental": {
+      "article": "le"
+    },
+    "Togo": {
+      "article": "le"
+    },
+    "Tonga": {
+      "article": "les"
+    },
+    "Trinité-et-Tobago": {
+      "article": ""
+    },
+    "Tunisie": {
+      "article": "la",
+      "cities": [
+        "Tunis"
+      ]
+    },
+    "Turkménistan": {
+      "article": "le"
+    },
+    "Turquie": {
+      "article": "la",
+      "cities": [
+        "Istanbul"
+      ]
+    },
+    "Tuvalu": {
+      "article": "les"
+    },
+    "Ukraine": {
+      "article": "l'"
+    },
+    "Uruguay": {
+      "article": "l'"
+    },
+    "Vanuatu": {
+      "article": "le"
+    },
+    "Vatican": {
+      "article": "le"
+    },
+    "Venezuela": {
+      "article": "le"
+    },
+    "Viêt Nam": {
+      "article": "le"
+    },
+    "Yémen": {
+      "article": "le"
+    },
+    "Zambie": {
+      "article": "la"
+    },
+    "Zimbabwe": {
+      "article": "le"
+    }
+  }
+}
