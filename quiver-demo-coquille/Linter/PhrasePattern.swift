@@ -32,9 +32,6 @@ nonisolated struct PhrasePatterns: Decodable, Sendable {
     /// Named word lists that `$class` pattern words refer to.
     var classes: [String: [String]] = [:]
     var entries: [PhrasePattern] = []
-    /// Each country's name and the article it takes, such as "Canada": "le", which settles
-    /// its preposition: au Canada, en France, aux États-Unis, en Iran.
-    var countries: [String: String] = [:]
 
     /// The entries of one kind, in file order.
     func entries(of kind: PhrasePattern.Kind) -> [PhrasePattern] {

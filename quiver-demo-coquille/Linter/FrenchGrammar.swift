@@ -38,6 +38,8 @@ nonisolated struct FrenchGrammar: Grammar {
     var nounOrVerbModel: ContextDecider? = nil
     /// Every listed phrase, from `fr.patterns.json`: look-alikes, word choices, idioms and meaning questions.
     var patterns = PhrasePatterns()
+    /// Every place name, from `fr.places.json`. Only its countries are judged so far.
+    var places = PlaceCatalog()
     /// Decides whether et or est belongs from the words around it; `nil` leaves both unchecked.
     var etOrEstModel: EtOrEstModel? = nil
 
@@ -94,7 +96,7 @@ nonisolated struct FrenchGrammar: Grammar {
             let entries = patterns.entries(of: kind)
             return (kind: kind, entries: entries, trie: PhraseTrie(phrases: entries.map(\.matchWords)))
         }
-        let countries = patterns.countries.sorted { $0.key < $1.key }
+        let countries = places.countries.sorted { $0.key < $1.key }
         let countryTrie = PhraseTrie(phrases: countries.map { PhrasePattern.words(of: $0.key) })
         return [
             GrammarRule(identifier: "grammar.gender", layer: .localMorphosyntax, targetLevel: .a1) {
@@ -265,7 +267,7 @@ nonisolated struct FrenchGrammar: Grammar {
     /// A capitalised country takes its gender from its own article, whatever Lexique says
     /// about the common noun: Lexique lists canada as feminine, but it's le Canada.
     private func knownGender(of noun: Token) -> Gender? {
-        if noun.text.first?.isUppercase == true, let article = patterns.countries[noun.text] {
+        if noun.text.first?.isUppercase == true, let article = places.countries[noun.text] {
             switch article {
             case "le": return .masculine
             case "la": return .feminine
@@ -488,8 +490,8 @@ nonisolated struct FrenchGrammar: Grammar {
             if noun.startsWithVowelOrH || Self.superlativeMarkers.contains(word) || lexicon.isInfinitive(word) { continue }
             // "à la mi-2009" is a fixed phrase, and "à la l'…" is a typo with no noun to judge.
             if word == "mi" || word.hasSuffix("'") { continue }
-            // A capital inside a sentence is a name, unless it's a country the patterns know.
-            if noun.text.first?.isUppercase == true, patterns.countries[noun.text] == nil { continue }
+            // A capital inside a sentence is a name, unless it's a listed country.
+            if noun.text.first?.isUppercase == true, places.countries[noun.text] == nil { continue }
             if !lexicon.adjectiveLemmas(of: word).isEmpty, !text.isNoun(index + 1, certainty: Self.tagCertainty) { continue }
             guard let gender = knownGender(of: noun), gender != marked else { continue }
 

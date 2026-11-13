@@ -1,7 +1,7 @@
 {
   "about": "Every place name Coquille knows, nested country › region › city, with the article that settles its preposition. Countries and regions: la and l' take en, le takes au, les takes aux. Cities take à, unless a city has its own article: le → au (au Havre), les → aux, la and l' stay (à La Rochelle). An empty article means the name is known but usage varies, so the checker leaves it alone. A name listed in more than one place is judged only when every listing agrees on the preposition.",
   "sources": {
-    "countries": "Copied unchanged from fr.patterns.json: French Wikipedia, “Liste des pays du monde” (wikitext retrieved 2026-11-01), CC BY-SA 4.0.",
+    "countries": "Article of each country's short name, from the French Wikipedia article “Liste des pays du monde” (wikitext retrieved 2026-11-01), CC BY-SA 4.0. Left out: names that are also a city or a person (Luxembourg, Panama, Guatemala, Grenade, Salvador, Koweït, Djibouti, Singapour, Monaco, Saint-Marin)",
     "regions and cities": "Written by hand on 2026-11-12, not yet reviewed. Needs a check by a French teacher before the checker uses it."
   },
   "places": {

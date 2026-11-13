@@ -47,6 +47,7 @@ nonisolated struct LanguagePack: Sendable {
         let lexicon = try Lexicon(contentsOf: url(of: "fr.lexicon", in: bundle))
         let explanations = try ExplanationTemplates(data: Data(contentsOf: url(of: "fr.explanations", in: bundle)))
         let patterns = try JSONDecoder().decode(PhrasePatterns.self, from: Data(contentsOf: url(of: "fr.patterns", in: bundle)))
+        let places = try JSONDecoder().decode(PlaceCatalog.self, from: Data(contentsOf: url(of: "fr.places", in: bundle)))
         // The phrasebook is extra content: if its file is missing or broken, the editor and
         // linter still load, with an empty phrasebook. The tests require the bundled one to decode.
         let phrases = bundle.url(forResource: "fr.phrases", withExtension: "json").flatMap {
@@ -85,6 +86,7 @@ nonisolated struct LanguagePack: Sendable {
                 helperOrMainModel: try decider("fr.helper-main-model"),
                 nounOrVerbModel: try decider("fr.noun-verb-model"),
                 patterns: patterns,
+                places: places,
                 etOrEstModel: etOrEstModel
             ),
             genderModel: genderModel,
