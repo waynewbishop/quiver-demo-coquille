@@ -971,6 +971,48 @@ final class FrenchGrammarTests: XCTestCase {
         XCTAssertEqual(try fixes("J'aime la Canada."), ["la Canada → le Canada"])
     }
 
+    // MARK: - Articles after a negative
+
+    // After ne and pas, jamais or plus, un, une, du, de la, de l' and des become de.
+    func testArticleAfterNegativeBecomesDe() throws {
+        XCTAssertEqual(try fixes("Je ne mange pas du pain."), ["du pain → de pain"])
+        XCTAssertEqual(try fixes("Je n'ai pas une voiture."), ["une voiture → de voiture"])
+        XCTAssertEqual(try fixes("Je ne mange jamais des bretzels."), ["des bretzels → de bretzels"])
+        XCTAssertEqual(try fixes("Il n'y a plus de la salade."), ["de la salade → de salade"])
+        XCTAssertEqual(try fixes("Je ne bois pas de l'eau."), ["de l'eau → d'eau"])
+        XCTAssertEqual(try fixes("Il ne porte jamais des lunettes."), ["des lunettes → de lunettes"])
+        let issue = try XCTUnwrap(grammar().check("Je ne mange pas du pain.").first)
+        XCTAssertEqual(issue.kind, .article)
+        XCTAssertEqual(issue.severity, .warning)
+        XCTAssertEqual(issue.reason, "After pas, du becomes de, or d' before a vowel: de pain. Être is the exception: ce n'est pas du pain.")
+    }
+
+    // Correct French that keeps its article after a negative raises nothing from this rule.
+    func testArticleAfterNegativeExceptionsPass() throws {
+        /// The issues the negative-article rule raises in `text`.
+        func negativeArticleIssues(_ text: String) throws -> [String] {
+            try grammar().check(text).filter { $0.source.hasPrefix("Negative article rule") }.map(\.original)
+        }
+        for text in [
+            "Ce n'est pas du pain, c'est du gâteau.",
+            "Je ne parle pas des problèmes.",
+            "Je ne joue pas du piano.",
+            "Je ne parle pas de la guerre.",
+            "Je ne mange plus que du pain.",
+            "Il n'y a pas un bruit, c'est le silence.",
+            "Utilisez un crayon, pas un stylo.",
+            "Je ne mange pas du tout.",
+            "Je n'ai pas un seul ami ici.",
+            "Je ne mange pas du pain, mais du riz.",
+            "Il ne le fait pas de la même façon.",
+            "Je n'en veux pas une.",
+            // The dû typo isn't an article: "de partir" would be wrong.
+            "Je n'ai pas du partir."
+        ] {
+            XCTAssertEqual(try negativeArticleIssues(text), [], text)
+        }
+    }
+
     // MARK: - Elision
 
     // Je, le, la, de, ne and que lose their vowel before a vowel sound, and au and du become à l' and de l'.

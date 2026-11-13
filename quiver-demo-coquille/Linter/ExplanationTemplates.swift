@@ -31,6 +31,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case enArticle
     case wordChoice
     case negation
+    case negativeArticle
     case idiom
     case accentAfterVerb
     case accentAfterJusqu
@@ -84,6 +85,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .placePreposition: ["place", "reason", "fix"]
         case .enArticle: ["fix"]
         case .negation: ["corrected"]
+        case .negativeArticle: ["article", "negation", "fix"]
         case .idiom: ["suggestion", "note"]
         case .accentAfterVerb: ["verb"]
         case .accentAfterJusqu, .accentAfterDans, .graveInIlYA: []

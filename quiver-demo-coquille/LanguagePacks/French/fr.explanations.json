@@ -78,6 +78,11 @@
     "template": "In writing, “no longer” is ne… plus: {corrected}. Without ne, this reads as “more.”",
     "example": "In writing, “no longer” is ne… plus: il ne dort plus. Without ne, this reads as “more.”"
   },
+  "negativeArticle": {
+    "hint": "After a negative such as pas, jamais or plus, {article} usually becomes de.",
+    "template": "After {negation}, {article} becomes de, or d' before a vowel: {fix}. Être is the exception: ce n'est pas du pain.",
+    "example": "After pas, du becomes de, or d' before a vowel: de pain. Être is the exception: ce n'est pas du pain."
+  },
   "accentAfterVerb": {
     "hint": "a without an accent is the verb avoir, which can't follow another verb like {verb}.",
     "template": "a without an accent is the verb avoir, which can't follow another verb like {verb}. Here it's the preposition à.",

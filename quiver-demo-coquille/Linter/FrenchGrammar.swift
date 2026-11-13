@@ -141,7 +141,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 participleWithEtreIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.article", layer: .localMorphosyntax, targetLevel: .a2) {
-                generalArticleIssues(in: $0.tokens)
+                generalArticleIssues(in: $0.tokens) + negativeArticleIssues(in: $0.tokens)
             },
             GrammarRule(identifier: "grammar.articleNumber", layer: .localMorphosyntax, targetLevel: .a1) {
                 articleNumberIssues(in: $0)
@@ -2222,6 +2222,84 @@ nonisolated struct FrenchGrammar: Grammar {
     }
 
     // MARK: - Negation
+
+    /// Verbs whose object loses its article after a negative: "je ne mange pas de pain".
+    ///
+    /// Être keeps the article ("ce n'est pas du pain"), and verbs that take de, such as
+    /// parler and jouer, aren't listed, since there du and des are de + le and de + les.
+    /// Voir is left out too: it mostly takes specific things, as in "ils ne voyaient pas
+    /// des choses qui me paraissaient évidentes".
+    private static let negativeArticleVerbs = [
+        "avoir", "manger", "boire", "acheter", "prendre", "vouloir", "faire", "trouver", "chercher", "porter"
+    ]
+
+    /// Object pronouns that can stand between ne and the verb: "je n'en mange pas", "il n'y a pas".
+    private static let pronounsAfterNe: Set<String> = [
+        "me", "m'", "te", "t'", "se", "s'", "le", "la", "l'", "les", "lui", "leur", "nous", "vous", "y", "en"
+    ]
+
+    /// Warns on un, une, du, de la, de l' or des after a negative, where French uses de:
+    /// "je ne mange pas du pain" → "pas de pain", "il n'y a plus des croissants" → "plus de croissants".
+    ///
+    /// Only right after ne, a listed verb and pas, jamais or plus. Left alone: du tout, un
+    /// seul, de la même façon, a word Lexique lists as an infinitive (the dû typo in "je n'ai
+    /// pas du partir"), nouns starting with h, un or une after il y a, which means "not a
+    /// single one" ("il n'y a pas un bruit"), and a contrast with mais later in the sentence
+    /// ("je ne mange pas du pain, mais du riz"). It's a warning, since a specific une can
+    /// keep its article: "les États qui n'avaient pas une limite".
+    private func negativeArticleIssues(in tokens: [Token]) -> [Issue] {
+        tokens.indices.dropFirst(2).compactMap { index -> Issue? in
+            guard ["pas", "jamais", "plus"].contains(tokens[index].normalized), tokens[index].isAdjacentToNext,
+                  index + 2 < tokens.count else { return nil }
+
+            // The article is one word, or de with la or l'.
+            let first = index + 1
+            let article = tokens[first].normalized
+            var last = first
+            if article == "de", tokens[first].isAdjacentToNext, ["la", "l'"].contains(tokens[first + 1].normalized) {
+                last = first + 1
+            } else if !["un", "une", "du", "des"].contains(article) {
+                return nil
+            }
+            let noun = last + 1
+            guard noun < tokens.count, tokens[last].isAdjacentToNext else { return nil }
+            let next = tokens[noun].normalized
+            if article == "du", next == "tout" { return nil }
+            if ["un", "une"].contains(article), ["seul", "seule"].contains(next) { return nil }
+            if next == "même" || next.first == "h" || lexicon.isInfinitive(next) { return nil }
+
+            // The verb, then any object pronouns, then ne.
+            let verb = index - 1
+            guard tokens[verb].isAdjacentToNext,
+                  Self.negativeArticleVerbs.contains(where: { isForm(tokens[verb].normalized, of: $0) }) else { return nil }
+            var before = verb - 1
+            var afterY = false
+            while before >= 0, tokens[before].isAdjacentToNext, Self.pronounsAfterNe.contains(tokens[before].normalized) {
+                afterY = afterY || tokens[before].normalized == "y"
+                before -= 1
+            }
+            guard before >= 0, tokens[before].isAdjacentToNext, ["ne", "n'"].contains(tokens[before].normalized) else { return nil }
+            if afterY, isForm(tokens[verb].normalized, of: "avoir"), ["un", "une"].contains(article) { return nil }
+
+            // "Pas du pain, mais du riz" contrasts two things, and both keep their article.
+            var later = noun
+            while later + 1 < tokens.count, !tokens[later].gap.contains(where: { ".!?…\n".contains($0) }) {
+                later += 1
+                if tokens[later].normalized == "mais" { return nil }
+            }
+
+            let articleText = last > first ? "de " + tokens[last].normalized : article
+            let fix = (tokens[noun].startsWithVowel ? "d'" : "de ") + tokens[noun].text
+            return issue(
+                .article, .warning, from: first, through: noun, in: tokens,
+                replacement: matchingCase(of: tokens[first].text, fix),
+                explanation: explanations.render(
+                    .negativeArticle, ["article": articleText, "negation": tokens[index].normalized, "fix": fix]
+                ),
+                source: "Negative article rule · won't block play"
+            )
+        }
+    }
 
     /// Warns on "il dort plus" at the end of a clause, where written French means
     /// "no longer" only with ne.
