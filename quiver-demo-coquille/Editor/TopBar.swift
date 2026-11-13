@@ -13,7 +13,7 @@
 
 import SwiftUI
 
-/// The status chip, the file menu with the journal, New beside Explain and the phrasebook, the progress button, and the theme toggle.
+/// The iPad's top bar: the journal, the status chip, and the More menu, as on iPhone.
 struct TopBar: View {
 
     let model: EditorModel
@@ -30,6 +30,9 @@ struct TopBar: View {
     // the keyboard still up.
     var body: some View {
         HStack(spacing: 4) {
+            PanelToggle(title: "Journal", systemImage: "list.bullet", isOn: $showsEntries)
+                .frame(minWidth: 44, minHeight: 44)
+
             Button {
                 hideKeyboard()
                 showsIssueList = true
@@ -42,93 +45,25 @@ struct TopBar: View {
             Spacer()
 
             Menu {
-                Button("Journal", systemImage: "list.bullet") {
-                    hideKeyboard()
-                    showsEntries = true
-                }
-                Divider()
-                Button("Save", systemImage: "square.and.arrow.down") { request(.save) }
-                    .disabled(!model.canSave)
-                Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
-                    .disabled(!model.canSave)
-                Divider()
-                Button("Import…", systemImage: "folder") { request(.importFile) }
-                Button("Export a Copy…", systemImage: "square.and.arrow.up") { request(.export) }
-                    .disabled(!model.hasText)
-                ShareLink(item: model.plainText)
-                    .disabled(!model.hasText)
+                MoreMenuItems(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsExplanation: $showsExplanation, showsSettings: $showsSettings, perform: perform)
             } label: {
-                Label("File", systemImage: "folder")
+                Label("More", systemImage: "ellipsis")
                     .labelStyle(.iconOnly)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
-
-            Button("New") { request(.new) }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("Start a blank page")
-                .disabled(!model.hasText && model.fileURL == nil)
-
-            ExplainToggle(model: model, isOn: $showsExplanation)
-
-            PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
-
-            Button {
-                hideKeyboard()
-                showsProgress = true
-            } label: {
-                Label("\(model.stats.stats.streak(asOf: .now))", systemImage: "chart.bar.xaxis")
-                    .font(.subheadline.weight(.medium))
-                    .frame(minHeight: 44)
-                    .padding(.horizontal, 8)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.tint)
-            .accessibilityLabel("Your progress: \(model.stats.stats.streak(asOf: .now)) day streak")
-
-            ShareLink(item: model.plainText)
-                .labelStyle(.iconOnly)
-                .buttonStyle(.plain)
-                .foregroundStyle(.tint)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
-                .disabled(!model.hasText)
-
-            Button {
-                hideKeyboard()
-                showsSettings = true
-            } label: {
-                Label("Settings", systemImage: "gear")
-                    .labelStyle(.iconOnly)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-
-            ThemeToggle()
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
         }
-        .padding(.leading, 20)
+        .padding(.leading, 12)
         .padding(.trailing, 12)
         .padding(.vertical, 6)
-    }
-
-    /// Hides the keyboard, then hands the File menu command to the editor.
-    private func request(_ fileRequest: FileRequest) {
-        hideKeyboard()
-        perform(fileRequest)
     }
 }
 
 #if !os(macOS)
-/// The iPhone navigation bar's buttons: the journal on the leading edge, then Explain,
-/// the phrasebook and a More menu holding the file commands, progress, font size, and the theme.
+/// The iPhone navigation bar's buttons: the journal on the leading edge and the More menu
+/// on the trailing edge, as in Things, so the bar never holds more than two controls.
 struct CompactToolbar: ToolbarContent {
 
     let model: EditorModel
@@ -140,60 +75,84 @@ struct CompactToolbar: ToolbarContent {
     /// Hands a file command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
 
-    // Every button here hides the keyboard first, so a sheet, menu or alert never
-    // opens with the keyboard still covering the bottom of the screen.
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             PanelToggle(title: "Journal", systemImage: "list.bullet", isOn: $showsEntries)
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            ExplainToggle(model: model, isOn: $showsExplanation)
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
-            PanelToggle(title: "Phrasebook", systemImage: "book", isOn: $showsPhrasebook)
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
-            ShareLink(item: model.plainText)
-                .labelStyle(.iconOnly)
-                .disabled(!model.hasText)
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Section {
-                    Button("New", systemImage: "square.and.pencil") { request(.new) }
-                        .disabled(!model.hasText && model.fileURL == nil)
-                    Button("Save", systemImage: "square.and.arrow.down") { request(.save) }
-                        .disabled(!model.canSave)
-                    Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
-                        .disabled(!model.canSave)
-                }
-                Section {
-                    FontSizePicker()
-                    Button("Import…", systemImage: "folder") { request(.importFile) }
-                    Button("Export a Copy…", systemImage: "square.and.arrow.up") { request(.export) }
-                        .disabled(!model.hasText)
-                    ShareLink(item: model.plainText)
-                        .disabled(!model.hasText)
-                }
-                Section {
-                    Button("Progress ·\(plural(streak, "day")) streak", systemImage: "chart.bar.xaxis") {
-                        hideKeyboard()
-                        showsProgress = true
-                    }
-                    ThemeToggle()
-                    Button("Settings", systemImage: "gear") {
-                        hideKeyboard()
-                        showsSettings = true
-                    }
-                }
+                MoreMenuItems(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsExplanation: $showsExplanation, showsSettings: $showsSettings, perform: perform)
             } label: {
                 Label("More", systemImage: "ellipsis")
             }
         }
+    }
+}
+#endif
+
+/// The More menu on iPhone and iPad: New, Save, Share and the phrasebook first, then
+/// Save as New Entry and Explain, then font size, progress and settings.
+///
+/// Share stands in for Export a Copy, since the share sheet can save to Files.
+/// Save as New Entry shows only once the page is a saved entry, because before that it
+/// would do the same as Save. Every item hides the keyboard first, so a sheet, menu or
+/// alert never opens with the keyboard still covering the bottom of the screen.
+struct MoreMenuItems: View {
+
+    let model: EditorModel
+    @Binding var showsProgress: Bool
+    @Binding var showsPhrasebook: Bool
+    @Binding var showsExplanation: Bool
+    @Binding var showsSettings: Bool
+    /// Hands a file command to the editor, which asks about unsaved changes first.
+    let perform: (FileRequest) -> Void
+
+    var body: some View {
+        Section {
+            Button("New", systemImage: "square.and.pencil") { request(.new) }
+                .disabled(!model.hasText && model.fileURL == nil)
+            Button(model.saveNeedsTitle ? "Save…" : "Save", systemImage: "square.and.arrow.down") { request(.save) }
+                .disabled(!model.canSave)
+            ShareLink(item: model.plainText)
+                .disabled(!model.hasText)
+            Toggle("Phrasebook", systemImage: "book", isOn: hidingKeyboard($showsPhrasebook))
+        }
+        Section {
+            if model.fileURL != nil {
+                Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
+                    .disabled(!model.canSave)
+            }
+            explainItem
+        }
+        Section {
+            FontSizePicker()
+            Button("Progress", systemImage: "chart.bar.xaxis") {
+                hideKeyboard()
+                showsProgress = true
+            }
+            Button("Settings", systemImage: "gear") {
+                hideKeyboard()
+                showsSettings = true
+            }
+        }
+    }
+
+    /// Explain, with the reason it's unavailable as a subtitle, since a menu item can't show a tooltip.
+    ///
+    /// An open panel can always be closed, even once an error appears and the panel locks.
+    private var explainItem: some View {
+        let reason = ExplainToggle.reason(for: model)
+        return Button {
+            hideKeyboard()
+            showsExplanation.toggle()
+        } label: {
+            Label(showsExplanation ? "Hide Explanation" : "Explain", systemImage: "lightbulb")
+            if let reason, !showsExplanation {
+                Text(reason)
+            }
+        }
+        .disabled(!showsExplanation && reason != nil)
     }
 
     /// Hides the keyboard, then hands the file command to the editor.
@@ -202,12 +161,16 @@ struct CompactToolbar: ToolbarContent {
         perform(fileRequest)
     }
 
-    /// The learner's current streak, in days.
-    private var streak: Int {
-        model.stats.stats.streak(asOf: .now)
+    /// Wraps a panel binding so turning it on or off hides the keyboard first.
+    private func hidingKeyboard(_ isOn: Binding<Bool>) -> Binding<Bool> {
+        Binding {
+            isOn.wrappedValue
+        } set: { newValue in
+            hideKeyboard()
+            isOn.wrappedValue = newValue
+        }
     }
 }
-#endif
 
 /// An icon button that opens and closes a panel, showing a selected background while the
 /// panel is open, as Apple's guidelines ask of a button that behaves like a toggle.
@@ -251,6 +214,11 @@ struct ExplainToggle: View {
 
     /// Why there's nothing to explain yet, or `nil` when there is.
     private var reason: String? {
+        Self.reason(for: model)
+    }
+
+    /// Why `model` has nothing to explain yet, or `nil` when it has; the More menu shows it too.
+    static func reason(for model: EditorModel) -> String? {
         if !PassageExplainer.isAvailable { return "Explain needs Apple Intelligence." }
         if !model.hasFrench { return "Write some French to explain it." }
         if model.isLocked { return "Explain unlocks when the French is correct." }

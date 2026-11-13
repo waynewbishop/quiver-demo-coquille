@@ -521,7 +521,7 @@ struct EditorScreen: View {
         Button("Save", systemImage: "square.and.arrow.down") { save(then: nil) }
             .disabled(!model.canSave)
         Button("Save as New Entry…", systemImage: "plus.square.on.square") { naming = Naming(asNewEntry: true, then: nil) }
-            .disabled(!model.canSave)
+            .disabled(!model.canSave || model.fileURL == nil)
         Divider()
         Button("Export a Copy…", systemImage: "square.and.arrow.up") { export(model.plainText, named: exportName) }
             .disabled(!model.hasText)
@@ -634,12 +634,6 @@ struct EditorScreen: View {
                     .labelStyle(.iconOnly)
                     .help("Export this entry to another app")
                     .disabled(!model.hasText)
-            }
-
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-
-            ToolbarItem(placement: .primaryAction) {
-                ThemeToggle()
             }
         }
     }

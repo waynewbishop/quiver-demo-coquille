@@ -72,26 +72,3 @@ enum Appearance: String, CaseIterable, Identifiable {
         #endif
     }
 }
-
-/// A moon in light mode and a sun in dark mode; clicking switches to the other.
-struct ThemeToggle: View {
-
-    @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
-    @Environment(\.colorScheme) private var colorScheme
-
-    var body: some View {
-        Button {
-            hideKeyboard()
-            appearance = colorScheme == .dark ? .light : .dark
-        } label: {
-            Label(label, systemImage: colorScheme == .dark ? "sun.max" : "moon")
-                .labelStyle(.iconOnly)
-        }
-        .help(label)
-    }
-
-    /// "Switch to light mode" or "Switch to dark mode".
-    private var label: String {
-        colorScheme == .dark ? "Switch to light mode" : "Switch to dark mode"
-    }
-}
