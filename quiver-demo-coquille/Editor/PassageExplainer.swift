@@ -64,16 +64,17 @@ enum PassageExplainer {
             An English speaker learning French wrote this passage, and its French is \
             correct. Pick the phrases most worth explaining: idioms, tenses, and words \
             whose meaning differs from English. Keep each phrase to five words or fewer. \
-            Explain each in plain English. French has one present tense, so je mange \
-            means both I eat and I'm eating. Call something a contraction only when two \
-            words have merged in the passage, such as du for de + le. Never say where a \
-            word comes from or what it is short for. Never correct, rewrite or translate \
-            the whole passage.
+            Explain each in plain English. Explain only words that appear in the passage. \
+            French has one present tense, which means both "I do" and "I am doing". Call \
+            something a contraction only when two words have visibly merged in the \
+            passage. Never say where a word comes from or what it is short for. Never \
+            correct, rewrite or translate the whole passage.
             """)
         do {
             let response = try await session.respond(to: text, generating: Explanation.self)
             let short = shortPhrases(response.content.phrases, french: \.french)
-            return .explained(inPassageOrder(short, french: \.french, in: text))
+            let found = phrasesInPassage(short, french: \.french, in: text)
+            return .explained(inPassageOrder(found, french: \.french, in: text))
         } catch LanguageModelError.contextSizeExceeded {
             return .tooLong
         } catch {
@@ -87,6 +88,15 @@ enum PassageExplainer {
     /// Words are split on spaces, so an elision such as "j'ai" counts as one word.
     static func shortPhrases<Item>(_ items: [Item], french: (Item) -> String) -> [Item] {
         items.filter { french($0).split(whereSeparator: \.isWhitespace).count <= maximumWords }
+    }
+
+    /// Keeps only the items whose French can be found in `text`, so the panel never
+    /// explains a phrase the learner didn't write.
+    ///
+    /// A phrase counts as found by the same test `inPassageOrder` uses to place it: the
+    /// whole phrase, or its longest word of three or more letters, ignoring case and accents.
+    static func phrasesInPassage<Item>(_ items: [Item], french: (Item) -> String, in text: String) -> [Item] {
+        items.filter { position(of: french($0), in: text) != nil }
     }
 
     /// Puts `items` in the order their French first appears in `text`, so the bullets

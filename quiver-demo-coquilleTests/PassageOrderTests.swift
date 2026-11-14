@@ -50,6 +50,18 @@ final class PassageOrderTests: XCTestCase {
         )
     }
 
+    // A phrase the learner didn't write is dropped, but a dictionary form of one they did is kept.
+    func testPhrasesNotInThePassageAreDropped() {
+        XCTAssertEqual(
+            PassageExplainer.phrasesInPassage(
+                ["je porte", "avoir hâte de", "être en train de", "au stade"],
+                french: { $0 },
+                in: passage
+            ),
+            ["avoir hâte de", "au stade"]
+        )
+    }
+
     // Phrases longer than five words are dropped, and an elision counts as one word.
     func testPhrasesOverFiveWordsAreDropped() {
         XCTAssertEqual(
