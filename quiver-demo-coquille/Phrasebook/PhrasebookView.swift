@@ -98,6 +98,8 @@ struct PhraseRow: View {
 
     let phrase: Phrase
     let isSpeaking: Bool
+    /// Whether the phrase's note shows under its English; the welcome tour leaves it out to fit.
+    var showsNote = true
     let play: () -> Void
 
     var body: some View {
@@ -119,7 +121,7 @@ struct PhraseRow: View {
                 Text(phrase.english)
                     .font(.plexSans(14, relativeTo: .subheadline))
                     .foregroundStyle(.secondary)
-                if let note = phrase.note {
+                if showsNote, let note = phrase.note {
                     Text(note)
                         .font(.plexSans(13, relativeTo: .footnote))
                         .foregroundStyle(.tertiary)

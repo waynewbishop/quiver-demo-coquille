@@ -253,7 +253,7 @@ private struct WelcomeStage: View {
     }
     #else
     private var content: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 22) {
             Text("COQUILLE")
                 .font(.plexMono(13, weight: .medium, relativeTo: .caption))
                 .tracking(3)
@@ -261,7 +261,7 @@ private struct WelcomeStage: View {
             sentence
                 .font(.plexMono(21, relativeTo: .title3))
                 .lineSpacing(8)
-                .padding(.vertical, 28)
+                .padding(.vertical, 22)
                 .padding(.horizontal, 22)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .paperCard()
@@ -325,8 +325,8 @@ private struct MistakeStage: View {
         VStack(alignment: .leading, spacing: 12) {
             StageLabel("TRY IT")
             sentence
-                .padding(.horizontal, 18)
-                .padding(.vertical, 22)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 18)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .paperCard()
             if outcome == nil && !showsCard {
@@ -334,7 +334,7 @@ private struct MistakeStage: View {
                     .font(.plexSans(15, relativeTo: .subheadline))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 4)
-                    .padding(.top, 6)
+                    .padding(.top, 2)
             }
         }
         .padding(20)
@@ -373,8 +373,13 @@ private struct MistakeStage: View {
     }
     #endif
 
+    /// What to try, shortened on iPhone and iPad so the stage fits without scrolling.
     private var prompt: String {
-        "\(Sample.press) the underlined word and read the rule. Then try typing the fix in the highlighted box yourself."
+        #if os(macOS)
+        "Click the underlined word and read the rule. Then try typing the fix in the highlighted box yourself."
+        #else
+        "Tap the underline, read the rule, then type the fix in the box."
+        #endif
     }
 
     /// The sentence: with a box to retype the article in, or as it was settled.
@@ -612,7 +617,11 @@ private struct UnlockStage: View {
                 .font(.system(size: Sample.frenchSize - 2))
         } else {
             Label {
+                #if os(macOS)
                 Text("The English appears once the French is correct. Fix 1 error to see it.")
+                #else
+                Text("Fix 1 error to see the English.")
+                #endif
             } icon: {
                 Image(systemName: "lock")
             }
@@ -735,8 +744,8 @@ private struct UnlockStage: View {
                 english
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
             .background(Color.secondary.opacity(0.07))
             .overlay(alignment: .top) { Divider() }
 
@@ -796,7 +805,8 @@ private struct UnlockStage: View {
 
 // MARK: - 4 · Notes and sharing
 
-/// Notes that are never checked, review markers to finish, and the real Share and Export a Copy.
+/// Notes that are never checked, review markers to finish, and the real Share, plus Export a
+/// Copy on the Mac. On iPhone and iPad, Share covers both, since the share sheet saves to Files.
 private struct NotesStage: View {
 
     @State private var keyword = ""
@@ -811,12 +821,15 @@ private struct NotesStage: View {
 
     /// The sample page as plain text, as Share and Export a Copy send it.
     private var pageText: String {
-        (opening + [
+        var lines = opening + [
             "",
             "Ce matin, je suis allé au marché. // went to the market",
-            "//: \(keyword)",
-            "J'ai acheté des choses pour manger. /* groceries? */"
-        ]).joined(separator: "\n")
+            "//: \(keyword)"
+        ]
+        #if os(macOS)
+        lines.append("J'ai acheté des choses pour manger. /* groceries? */")
+        #endif
+        return lines.joined(separator: "\n")
     }
 
     /// The sample page, with its notes in gray as the editor draws them.
@@ -839,10 +852,12 @@ private struct NotesStage: View {
                         .foregroundStyle(.tint)
                 }
             }
+            #if os(macOS)
             Text("J'ai acheté des choses pour manger. \(Text("/* groceries? */").foregroundStyle(.secondary))")
+            #endif
         }
         .font(.plexMono(Self.textSize, relativeTo: .callout))
-        .lineSpacing(4)
+        .lineSpacing(Self.lineSpacing)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -851,6 +866,15 @@ private struct NotesStage: View {
         13
         #else
         14
+        #endif
+    }
+
+    /// The space between the sample's lines, tighter on iPhone and iPad so the stage fits.
+    private static var lineSpacing: Double {
+        #if os(macOS)
+        4
+        #else
+        2
         #endif
     }
 
@@ -879,12 +903,12 @@ private struct NotesStage: View {
         .overlay(alignment: .top) { Divider() }
     }
 
-    /// What Share and Export a Copy send, or where the copy went.
+    /// What Share sends, or on the Mac where the exported copy went.
     private var sentNote: String {
         if let exportedName {
             return "Saved as “\(exportedName)”, a copy you can attach anywhere."
         }
-        return "Share and Export a Copy send everything, notes and markers included, so your reader sees exactly what you asked."
+        return "Share sends the whole page, notes and markers included."
     }
 
     private var exportButton: some View {
@@ -935,7 +959,7 @@ private struct NotesStage: View {
     #else
     private var content: some View {
         VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 StageLabel("TRY IT")
                 page
                 Spacer(minLength: 0)
@@ -949,19 +973,16 @@ private struct NotesStage: View {
                 .background(.background)
 
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    shareLink
-                    exportButton
-                }
-                .buttonStyle(.bordered)
-                .font(.plexSans(14, weight: .medium, relativeTo: .subheadline))
+                shareLink
+                    .buttonStyle(.bordered)
+                    .font(.plexSans(14, weight: .medium, relativeTo: .subheadline))
                 Text(sentNote)
                     .font(.plexSans(12, relativeTo: .caption))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.secondary.opacity(0.07))
             .overlay(alignment: .top) { Divider() }
@@ -981,12 +1002,8 @@ private struct PhrasebookStage: View {
     @State private var query = ""
     @State private var speakingID: String?
 
-    /// The phrases shown before a search: a few greetings and café phrases.
-    private static let featured = [
-        "Bonjour !", "Salut !", "Ça va ?",
-        "Je voudrais un thé, s'il vous plaît.", "Un café, s'il vous plaît.",
-        "L'addition, s'il vous plaît.", "Je peux payer par carte ?"
-    ]
+    /// The three phrases shown before a search on iPhone and iPad: two greetings and a café phrase.
+    private static let featured = ["Bonjour !", "Ça va ?", "Un café, s'il vous plaît."]
 
     /// Reads the bundled phrasebook, or nothing if it won't load.
     private static func loadPhrases() -> [Phrase] {
@@ -1123,43 +1140,32 @@ private struct PhrasebookStage: View {
             .paperCard(cornerRadius: 10)
             .padding(.horizontal, 14)
 
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 6) {
-                    if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                        ForEach(Situation.allCases, id: \.self) { situation in
-                            let rows = featuredPhrases.filter { $0.situation == situation }
-                            if !rows.isEmpty {
-                                Text(situation.title)
-                                    .font(.plexSans(13, weight: .medium, relativeTo: .footnote))
-                                    .foregroundStyle(.secondary)
-                                    .padding(.horizontal, 4)
-                                    .padding(.top, 8)
-                                ForEach(rows) { card(for: $0) }
-                            }
-                        }
-                    } else {
-                        let results = PhraseSearch.matches(for: query, in: phrases).prefix(12)
-                        if results.isEmpty {
-                            Text("No phrases match.")
-                                .font(.plexSans(14, relativeTo: .subheadline))
-                                .foregroundStyle(.secondary)
-                                .padding(12)
-                        }
-                        ForEach(Array(results)) { card(for: $0) }
+            // Three phrases at most and no notes, so the stage never scrolls.
+            VStack(alignment: .leading, spacing: 6) {
+                if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    ForEach(featuredPhrases) { card(for: $0) }
+                } else {
+                    let results = PhraseSearch.matches(for: query, in: phrases).prefix(3)
+                    if results.isEmpty {
+                        Text("No phrases match.")
+                            .font(.plexSans(14, relativeTo: .subheadline))
+                            .foregroundStyle(.secondary)
+                            .padding(12)
                     }
+                    ForEach(Array(results)) { card(for: $0) }
                 }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
             }
-            .scrollDismissesKeyboard(.immediately)
+            .padding(.horizontal, 14)
+            .padding(.bottom, 14)
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .padding(.top, 14)
         .stageGround()
     }
 
-    /// One phrase as a card, using the phrasebook's own row.
+    /// One phrase as a card, using the phrasebook's own row without its note.
     private func card(for phrase: Phrase) -> some View {
-        PhraseRow(phrase: phrase, isSpeaking: isSpeaking(phrase)) { toggle(phrase) }
+        PhraseRow(phrase: phrase, isSpeaking: isSpeaking(phrase), showsNote: false) { toggle(phrase) }
             .padding(.leading, 12)
             .padding(.trailing, 4)
             .padding(.vertical, 4)
@@ -1283,7 +1289,7 @@ private struct JournalStage: View {
     @State private var picked = "2026-11-10"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             StageLabel("SAMPLE DATA")
             Picker("View", selection: $tab) {
                 ForEach(Tab.allCases) { Text($0.rawValue).tag($0) }
@@ -1301,21 +1307,19 @@ private struct JournalStage: View {
         .stageGround()
     }
 
-    /// Today's prompt, the sample entries, and the file the picked one is saved as.
+    /// Today's prompt and the sample entries.
     private var journal: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("TODAY'S PROMPT")
                     .font(.plexMono(11, weight: .medium, relativeTo: .caption2))
                     .tracking(1)
                     .foregroundStyle(.secondary)
                 Text("What did you do this morning?")
                     .font(.plexSans(15, weight: .medium, relativeTo: .body))
-                Text("A new prompt every day, also on the Home Screen widget.")
-                    .font(.plexSans(12, relativeTo: .caption))
-                    .foregroundStyle(.secondary)
             }
-            .padding(12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .paperCard(cornerRadius: 12)
 
@@ -1334,7 +1338,7 @@ private struct JournalStage: View {
                                 .lineLimit(1)
                         }
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 7)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(picked == entry.iso ? Color.brand.opacity(0.12) : Color.clear)
                         .contentShape(Rectangle())
@@ -1345,42 +1349,27 @@ private struct JournalStage: View {
             }
             .paperCard(cornerRadius: 12)
             .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            Text("Saved as \(Text(fileName).font(.plexMono(12, weight: .medium, relativeTo: .caption)).foregroundStyle(.primary)), plain text you can open in Files.")
-                .font(.plexSans(12, relativeTo: .caption))
-                .foregroundStyle(.secondary)
         }
     }
 
-    /// "2026-11-10 Le week-end.txt", as the journal names the picked entry.
-    private var fileName: String {
-        let entry = Self.entries.first { $0.iso == picked } ?? Self.entries[0]
-        return "\(entry.iso) \(entry.title).txt"
-    }
-
-    /// Every sample fix with its sentence.
+    /// The first three sample fixes, each with its sentence.
     private var correctionsList: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Every error you fixed, with the sentence it sat in, like the list at the back of a paper journal.")
-                .font(.plexSans(12, relativeTo: .caption))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            VStack(spacing: 0) {
-                ForEach(Self.corrections) { correction in
-                    correctionRow(correction, showsSentence: true)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    if correction.id != Self.corrections.last?.id { Divider() }
-                }
+        let shown = Self.corrections.prefix(3)
+        return VStack(spacing: 0) {
+            ForEach(shown) { correction in
+                correctionRow(correction, showsSentence: true)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if correction.id != shown.last?.id { Divider() }
             }
-            .paperCard(cornerRadius: 12)
         }
+        .paperCard(cornerRadius: 12)
     }
 
-    /// The sample streak, counts, weak spots and tricky words.
+    /// The sample streak, counts and weak spots.
     private var progress: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
                 statCard("Day streak", "6")
                 statCard("Sentences checked", "84")
@@ -1393,21 +1382,6 @@ private struct JournalStage: View {
                     .foregroundStyle(.secondary)
                 weakSpot("Noun gender", count: 9, of: 9)
                 weakSpot("Elision", count: 5, of: 9)
-                weakSpot("Prepositions", count: 3, of: 9)
-            }
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Tricky words")
-                    .font(.plexSans(13, weight: .medium, relativeTo: .footnote))
-                    .foregroundStyle(.secondary)
-                HStack(spacing: 6) {
-                    ForEach(["fromage", "gentille", "à", "l'école"], id: \.self) { word in
-                        Text(word)
-                            .font(.plexMono(13, weight: .medium, relativeTo: .footnote))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .paperCard(cornerRadius: 8)
-                    }
-                }
             }
         }
     }
@@ -1422,7 +1396,7 @@ private struct JournalStage: View {
                 .font(.plexSans(22, weight: .medium, relativeTo: .title2))
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
     }
@@ -1525,7 +1499,7 @@ private struct ReadyStage: View {
                 .font(.plexSans(12, weight: .medium, relativeTo: .caption))
                 .foregroundStyle(status == .installed ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
             }
-            Text("The English pane needs Apple's French–English language pack. It downloads once and works offline after that.")
+            Text(Self.translationNote)
                 .font(.plexSans(13, relativeTo: .footnote))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1547,7 +1521,7 @@ private struct ReadyStage: View {
                     .font(.plexSans(12, weight: .medium, relativeTo: .caption))
                     .foregroundStyle(.secondary)
             }
-            Text("Play uses your device's French voices. The enhanced and premium ones sound much more natural. To add one, open")
+            Text(Self.voiceNote)
                 .font(.plexSans(13, relativeTo: .footnote))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1562,6 +1536,24 @@ private struct ReadyStage: View {
         13
         #else
         16
+        #endif
+    }
+
+    /// What the translation pack is for, shortened on iPhone and iPad so the stage fits.
+    private static var translationNote: String {
+        #if os(macOS)
+        "The English pane needs Apple's French–English language pack. It downloads once and works offline after that."
+        #else
+        "The English needs Apple's French–English pack. It downloads once, then works offline."
+        #endif
+    }
+
+    /// Where better voices come from, shortened on iPhone and iPad so the stage fits.
+    private static var voiceNote: String {
+        #if os(macOS)
+        "Play uses your device's French voices. The enhanced and premium ones sound much more natural. To add one, open"
+        #else
+        "For a more natural voice, open"
         #endif
     }
 
@@ -1597,16 +1589,16 @@ private struct ReadyStage: View {
     }
     #else
     private var content: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             StageLabel("TRY IT")
             translationSection
-                .padding(14)
+                .padding(12)
                 .paperCard(cornerRadius: 14)
             voiceSection
-                .padding(14)
+                .padding(12)
                 .paperCard(cornerRadius: 14)
         }
-        .padding(16)
+        .padding(14)
         .stageGround()
     }
     #endif

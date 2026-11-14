@@ -39,42 +39,52 @@ enum TourPage: Int, CaseIterable, Identifiable {
     }
 
     /// The page's explanation, worded for taps on iPhone and iPad and clicks on the Mac.
+    ///
+    /// On iPhone and iPad it's at most three lines, so every page fits without scrolling.
     var body: String {
         switch self {
         case .welcome:
+            #if os(macOS)
             return "There's no answer key. Write about your day, mistakes and all. Coquille marks them the way a teacher's red pen would, and the fix stays yours to make."
+            #else
+            return "Write about your day, mistakes and all. Coquille marks them like a teacher's red pen, and the fix stays yours."
+            #endif
         case .mistakes:
             #if os(macOS)
             return "You can't fix a mistake you can't see. Click an underline and the card names the rule but holds the answer back, so you get the first try. Looking it up isn't cheating: Show fix is always there."
             #else
-            return "You can't fix a mistake you can't see. Tap an underline and the card names the rule but holds the answer back, so you get the first try. Looking it up isn't cheating: Show fix is always there."
+            return "Tap an underline and the card names the rule but holds the answer back. Show fix is always there if you need it."
             #endif
         case .unlock:
             #if os(macOS)
             return "Hearing your French aloud and reading it in English are the reward for a clean page. The translator would quietly smooth over a mistake, so errors hold back Play in the toolbar and the English pane beside your page. Warnings never do."
             #else
-            return "Hearing your French aloud and reading it in English are the reward for a clean page. The translator would quietly smooth over a mistake, so errors hold both back. Warnings never do, and the lock takes you to what's left."
+            return "Hearing your French and reading it in English are the reward for a clean page. Errors hold both back. Warnings never do."
             #endif
         case .notes:
             #if os(macOS)
             return "Coquille catches French that's wrong, not French that's right but stiff. Notes after // are never checked, so mark a sentence //: natural and share the page with your teacher or other French learners. Share and Export a Copy send plain text, notes and markers included."
             #else
-            return "Coquille catches French that's wrong, not French that's right but stiff. Notes after // are never checked, so mark a sentence //: natural and share the page with your teacher or other French learners, notes and all."
+            return "Notes after // are never checked. Mark a sentence //: natural, then share the page with your teacher or other learners."
             #endif
         case .phrasebook:
             #if os(macOS)
             return "The phrasebook opens as a panel beside your page, so you can read a phrase and type it out at the same time. There's no copy button on purpose: typing it is how it sticks, and Coquille checks it like the rest of your French."
             #else
-            return "Hundreds of everyday phrases, each with English, a tu or vous tag and a play button. There's no copy button on purpose: typing a phrase out is how it sticks, and Coquille checks it like the rest of your French."
+            return "Everyday phrases with English, a tu or vous tag and playback. There's no copy button: typing a phrase is how it sticks."
             #endif
         case .journal:
             #if os(macOS)
             return "Your journal sits in the sidebar with a new prompt each day, and a few sentences a day keep the momentum going. Every fix lands in the Corrections window, so you can see what keeps coming back. Entries are plain text files; right-click one to Show in Finder."
             #else
-            return "A new prompt each day gets you past the blank page, and a few sentences a day keep the momentum going. Every fix lands in your corrections list, so you can see what keeps coming back. It all stays private, on your devices."
+            return "A new prompt each day gets you past the blank page. Every fix lands in your corrections, so you see what comes back."
             #endif
         case .ready:
+            #if os(macOS)
             return "Everything else is built in and works offline, with no account. Keeping a paper notebook too? Type a page in here and Coquille will mark it. You can change these anytime in Settings."
+            #else
+            return "Everything else is built in and works offline, with no account. You can change these anytime in Settings."
+            #endif
         }
     }
 
@@ -138,6 +148,10 @@ struct WelcomeTour: View {
     @AppStorage(Self.seenKey) private var hasSeenTour = false
     @AppStorage(SpeechNarrator.voiceStorageKey) private var playbackVoiceID = ""
     @State private var page = TourPage.welcome
+    #if !os(macOS)
+    /// The text size, which decides whether a page needs to scroll.
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #endif
     /// Reads the tour's sample French aloud, apart from the editor's own narrator.
     @State private var narrator = SpeechNarrator(language: "fr-FR")
     @Environment(\.dismiss) private var dismiss
@@ -272,6 +286,9 @@ struct WelcomeTour: View {
     #else
     /// The iPhone and iPad layout: the step and Skip, the stage, the heading and
     /// explanation, then the dots and Back and Next.
+    ///
+    /// Every page fits on screen without scrolling. Only at the accessibility text sizes,
+    /// where the larger type can't fit, does the page scroll.
     private var content: some View {
         VStack(spacing: 0) {
             HStack {
@@ -288,37 +305,15 @@ struct WelcomeTour: View {
             .padding(.leading, 24)
             .padding(.trailing, 20)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    stage
-                        .frame(height: 410)
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(.separator))
-                        .padding(.horizontal, 20)
-                        .padding(.top, 6)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(page.title)
-                            .font(.plexSans(28, weight: .medium, relativeTo: .largeTitle))
-                        Text(page.body)
-                            .font(.plexSans(16, relativeTo: .body))
-                            .lineSpacing(3)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if page == .mistakes {
-                            SeverityLegend()
-                                .padding(.top, 2)
-                        }
-                    }
-                    .padding(.horizontal, 28)
-                    .padding(.top, 28)
-                    .padding(.bottom, 16)
-                }
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView { pageContent }
+                    .scrollBounceBehavior(.basedOnSize)
+            } else {
+                pageContent
+                    .frame(maxHeight: .infinity, alignment: .top)
             }
-            .scrollBounceBehavior(.basedOnSize)
 
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 dots
                 HStack(spacing: 10) {
                     if page.previous != nil {
@@ -344,6 +339,36 @@ struct WelcomeTour: View {
         .frame(maxWidth: .infinity)
         .background(Color.frenchPaper.ignoresSafeArea())
         .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+    }
+
+    /// The stage, then the page's heading and explanation.
+    private var pageContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            stage
+                .frame(height: 320)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(.separator))
+                .padding(.horizontal, 20)
+                .padding(.top, 6)
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text(page.title)
+                    .font(.plexSans(26, weight: .medium, relativeTo: .largeTitle))
+                Text(page.body)
+                    .font(.plexSans(16, relativeTo: .body))
+                    .lineSpacing(3)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if page == .mistakes {
+                    SeverityLegend()
+                        .padding(.top, 2)
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+        }
     }
     #endif
 }
