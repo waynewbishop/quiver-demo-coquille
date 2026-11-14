@@ -1,0 +1,98 @@
+[
+  {
+    "match": ["@assister à"],
+    "french": "assister à",
+    "meaning": "to attend",
+    "note": "Not \"to assist\": it means being present at something."
+  },
+  {
+    "match": ["librairie", "librairies"],
+    "french": "librairie",
+    "meaning": "bookshop",
+    "note": "Looks like \"library\", but a library is une bibliothèque."
+  },
+  {
+    "match": ["sensible", "sensibles"],
+    "french": "sensible",
+    "meaning": "sensitive",
+    "note": "Not \"sensible\", which is raisonnable."
+  },
+  {
+    "match": ["actuellement"],
+    "french": "actuellement",
+    "meaning": "currently",
+    "note": "Not \"actually\", which is en fait."
+  },
+  {
+    "match": ["éventuellement"],
+    "french": "éventuellement",
+    "meaning": "possibly, if need be",
+    "note": "Not \"eventually\", which is finalement."
+  },
+  {
+    "match": ["@demander"],
+    "french": "demander",
+    "meaning": "to ask, to ask for",
+    "note": "Not \"to demand\", which is exiger."
+  },
+  {
+    "match": ["l'addition"],
+    "french": "l'addition",
+    "meaning": "the bill",
+    "note": "In a café or restaurant it's the bill; in maths it's addition."
+  },
+  {
+    "match": ["@rester"],
+    "french": "rester",
+    "meaning": "to stay",
+    "note": "Not \"to rest\", which is se reposer."
+  },
+  {
+    "match": ["@passer un examen", "@passer l'examen"],
+    "french": "passer un examen",
+    "meaning": "to take an exam",
+    "note": "It doesn't say how it went: to pass an exam is réussir un examen."
+  },
+  {
+    "match": ["@avoir hâte de", "@avoir hâte d'"],
+    "french": "avoir hâte de",
+    "meaning": "can't wait to, look forward to",
+    "note": "It shows eagerness, not being in a hurry."
+  },
+  {
+    "match": ["@pleuvoir des cordes"],
+    "french": "il pleut des cordes",
+    "meaning": "it's pouring",
+    "note": "An idiom for heavy rain; literally, it's raining ropes."
+  },
+  {
+    "match": ["@poser un lapin"],
+    "french": "poser un lapin",
+    "meaning": "to stand someone up",
+    "note": "An informal idiom for not turning up when expected."
+  },
+  {
+    "match": ["la mer à boire"],
+    "french": "ce n'est pas la mer à boire",
+    "meaning": "it's not that hard",
+    "note": "An idiom for a task that seems bigger than it is."
+  },
+  {
+    "match": ["@avoir la flemme"],
+    "french": "avoir la flemme",
+    "meaning": "can't be bothered",
+    "note": "Informal: for everyday speech, not formal writing."
+  },
+  {
+    "match": ["@tomber dans les pommes"],
+    "french": "tomber dans les pommes",
+    "meaning": "to faint",
+    "note": "An informal idiom used in everyday speech."
+  },
+  {
+    "match": ["@avoir le cafard"],
+    "french": "avoir le cafard",
+    "meaning": "to feel down",
+    "note": "An idiom; literally, to have the cockroach."
+  }
+]

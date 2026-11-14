@@ -165,7 +165,7 @@ struct ExplanationPanel: View {
             try? await Task.sleep(for: Self.pause)
             guard !Task.isCancelled else { return }
         }
-        let outcome = await PassageExplainer.explain(french)
+        let outcome = await PassageExplainer.explain(french, checkedNotes: model.checkedNotes)
         guard !Task.isCancelled else { return }
         explained = Explained(french: french, outcome: outcome)
     }

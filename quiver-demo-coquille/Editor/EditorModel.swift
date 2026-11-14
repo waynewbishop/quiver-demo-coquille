@@ -52,6 +52,8 @@ final class EditorModel {
     private(set) var loadFailure: String?
     /// The phrasebook, empty until the language pack loads.
     private(set) var phrases: [Phrase] = []
+    /// The hand-checked notes Explain shows for false friends and idioms, `nil` until the pack loads.
+    private(set) var checkedNotes: CheckedNotes?
     /// The phrasebook phrase last read aloud, if any.
     private(set) var speakingPhraseID: String?
     /// The supplied title and hidden nudge while an exercise draft is open.
@@ -242,6 +244,7 @@ final class EditorModel {
             translator = AppleTranslator(source: pack.language, target: Locale.Language(identifier: "en"))
             isReady = true
             phrases = pack.phrases
+            checkedNotes = pack.checkedNotes
             lintNow()
         } catch {
             loadFailure = "The French language pack couldn't be loaded: \(error.localizedDescription)"

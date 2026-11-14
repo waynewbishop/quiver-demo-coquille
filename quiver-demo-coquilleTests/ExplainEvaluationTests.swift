@@ -140,6 +140,9 @@ final class ExplainEvaluationTests: XCTestCase {
         var timer: Task<Void, Never>?
     }
 
+    /// The checked notes the app shows, so the evaluation scores what a learner sees.
+    private static let checkedNotes = (try? LanguagePack.french())?.checkedNotes
+
     /// Explains `french`, but stops waiting after `requestLimit`.
     ///
     /// The time limit cancels the request, but it doesn't wait for the request to stop:
@@ -149,7 +152,7 @@ final class ExplainEvaluationTests: XCTestCase {
         await withCheckedContinuation { continuation in
             let race = Race()
             let request = Task { @MainActor in
-                let outcome = await PassageExplainer.explain(french)
+                let outcome = await PassageExplainer.explain(french, checkedNotes: checkedNotes)
                 guard !race.isOver else { return }
                 race.isOver = true
                 race.timer?.cancel()

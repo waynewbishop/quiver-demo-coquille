@@ -57,9 +57,14 @@ enum PassageExplainer {
         return model.supportsLocale(Locale(identifier: "fr"))
     }
 
-    /// Explains the phrases worth knowing in correct French.
-    static func explain(_ text: String) async -> Outcome {
+    /// The most phrases the panel shows for one passage, the same limit as the model's guide.
+    static let maximumPhrases = 4
+
+    /// Explains the phrases worth knowing in correct French. A false friend or idiom in
+    /// `checkedNotes` gets its checked note, and the model explains the rest.
+    static func explain(_ text: String, checkedNotes: CheckedNotes? = nil) async -> Outcome {
         guard isAvailable else { return .failed }
+        let checked = checkedNotes?.notes(in: text) ?? []
         let session = LanguageModelSession(instructions: """
             An English speaker learning French wrote this passage, and its French is \
             correct. Pick the phrases most worth explaining: idioms, tenses, and words \
@@ -74,12 +79,29 @@ enum PassageExplainer {
             let response = try await session.respond(to: text, generating: Explanation.self)
             let short = shortPhrases(response.content.phrases, french: \.french)
             let found = phrasesInPassage(short, french: \.french, in: text)
-            return .explained(inPassageOrder(found, french: \.french, in: text))
+            return .explained(combined(checked: checked, model: found, in: text))
         } catch LanguageModelError.contextSizeExceeded {
             return .tooLong
         } catch {
-            return .failed
+            // The checked notes don't need the model, so they still show when it fails.
+            return checked.isEmpty ? .failed : .explained(combined(checked: checked, model: [], in: text))
         }
+    }
+
+    /// Puts the checked notes first, fills the rest of `maximumPhrases` with the model's
+    /// phrases that don't overlap one, and orders them all as they appear in `text`.
+    static func combined(checked: [CheckedNotes.Found], model: [Phrase], in text: String) -> [Phrase] {
+        let kept = Array(checked.prefix(maximumPhrases))
+        let others = model.filter { phrase in
+            guard let start = position(of: phrase.french, in: text) else { return true }
+            let end = start + phrase.french.count
+            return !kept.contains { start < $0.end && $0.offset < end }
+        }
+        let placed = kept.map { (position: $0.offset, phrase: Phrase(french: $0.french, meaning: $0.meaning, note: $0.note)) }
+            + others.prefix(maximumPhrases - kept.count).map { (position: position(of: $0.french, in: text) ?? .max, phrase: $0) }
+        return placed.enumerated()
+            .sorted { ($0.element.position, $0.offset) < ($1.element.position, $1.offset) }
+            .map(\.element.phrase)
     }
 
     /// Keeps only the items whose French is `maximumWords` words or fewer, since the

@@ -39,6 +39,9 @@ nonisolated struct LanguagePack: Sendable {
     let articleModel: ContextDecider?
     /// The phrasebook, in the order `fr.phrases.json` lists it, or empty if that file won't load.
     let phrases: [Phrase]
+    /// The hand-checked notes Explain shows for false friends and idioms, or `nil` if
+    /// `fr.explain-notes.json` won't load.
+    let checkedNotes: CheckedNotes?
 
     /// Loads the French pack from the app bundle.
     ///
@@ -53,6 +56,8 @@ nonisolated struct LanguagePack: Sendable {
         let phrases = bundle.url(forResource: "fr.phrases", withExtension: "json").flatMap {
             try? JSONDecoder().decode([Phrase].self, from: Data(contentsOf: $0))
         } ?? []
+        // Like the phrasebook, the checked notes are extra: without them, Explain uses the model alone.
+        let checkedNotes = (try? CheckedNotes.french(lexicon: lexicon, in: bundle)) ?? nil
 
         // The model is optional: until it is trained, unknown nouns simply go unchecked.
         let genderModel = try bundle.url(forResource: "fr.gender-model", withExtension: "json").map {
@@ -91,7 +96,8 @@ nonisolated struct LanguagePack: Sendable {
             ),
             genderModel: genderModel,
             articleModel: articleModel,
-            phrases: phrases
+            phrases: phrases,
+            checkedNotes: checkedNotes
         )
     }
 
