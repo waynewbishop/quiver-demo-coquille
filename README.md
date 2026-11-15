@@ -46,17 +46,29 @@ the French has no errors; otherwise it reads "Coquille".
 
 ## Widgets and exercise links
 
-The `CoquilleWidgets` extension provides a small or medium **Coquille**
-widget and two controls, Coquille and Coquille Phrasebook, on iPhone, iPad
-and Mac. Add them through the system's widget gallery and Control Center **+** flow.
+The `CoquilleWidgets` extension provides **Le tableau du jour**, a widget
+that pairs each daily prompt with a painting, and two controls, Écrire and
+Coquille Phrasebook, on iPhone, iPad and Mac. Add them through the system's
+widget gallery and Control Center **+** flow.
 
-The bar at the top carries on with the current writing, or starts today's
-entry when the editor is empty. Small adds today's prompt and the phrasebook;
-medium also adds the journal and corrections. The prompt comes from the
-bundled catalog and changes on the local calendar day, including across
-daylight-saving changes, and opens that exact English sentence as an unsaved
-draft. Everything works offline. The Coquille control behaves like the bar,
-and the Phrasebook control opens the phrasebook.
+The painting is always in full color. Small shows it with today's French
+prompt; medium adds the English beneath the French; large adds the
+painting's French title and **Cette semaine**, the week's paintings from
+Monday to Sunday with today ringed. iPad and the Mac desktop add extra
+large: the painting on the left, with the prompt and a two-row week beside
+it. On iPhone and iPad the Lock Screen gets a rectangular prompt and a
+circular shell, and StandBy on iPhone shows the small face full screen.
+Tapping anywhere opens today's prompt as an unsaved draft. The prompt
+changes on the local calendar day, including across daylight-saving
+changes, and everything works offline. Écrire opens today's prompt, and the
+Phrasebook control opens the phrasebook.
+
+The 14 paintings are originals made for Coquille, landscapes in the spirit
+of Monet and still lifes in the spirit of Cézanne, and they belong to the
+app. They ship in the widget's asset catalog as `Tableau-<prompt id>`,
+pre-sized to 700 px. The full-size originals live outside the repo in
+`~/Projects/Resources/coquille-paintings/`; a new or revised painting is
+resized with `sips -Z 700` into its imageset.
 
 Claude can offer a lesson's writing exercise with a custom link:
 
@@ -274,8 +286,8 @@ Everything is plain folders in one Xcode project:
   the SwiftUI views.
 - `Prompts/`, `Exercises/` — the daily catalog, strict custom-URL router,
   exercise confirmation, and optional hint presentation.
-- `CoquilleWidgets/` — the widget timeline and Control Center
-  launcher, with shared prompt code but no Quiver dependency.
+- `CoquilleWidgets/` — Le tableau du jour, its paintings and the Control
+  Center controls, with shared prompt code but no Quiver dependency.
 - `Fonts/` — IBM Plex Sans and Mono, registered at app launch and declared
   under `UIAppFonts` for the widget process.
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full

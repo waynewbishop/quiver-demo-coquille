@@ -14,21 +14,23 @@
 import SwiftUI
 import WidgetKit
 
-/// A control that goes straight to writing: the current text, or today's entry on an empty page.
-struct CoquilleControl: ControlWidget {
+/// Écrire: opens a new entry with today's prompt, worked out when it's tapped. It keeps the
+/// old Coquille control's kind, so a control already placed becomes Écrire.
+struct EcrireControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.waynebishop.coquille.open") {
-            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.writeLink)) {
-                Label("Écrivez", image: "ShellControl")
+            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.todayLink)) {
+                Label("Écrire", image: "ShellControl")
             }
         }
-        .displayName("Coquille")
-        .description("Carry on writing, or start today's entry.")
+        .displayName("Écrire")
+        .description("Start a new entry with today's prompt.")
     }
 }
 
-/// A control that opens the phrasebook, for the moment a phrase is needed.
-struct CoquillePhrasebookControl: ControlWidget {
+/// Opens the phrasebook, for the moment a phrase is needed. Its kind is unchanged, so
+/// controls already placed carry over.
+struct PhrasebookControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.waynebishop.coquille.phrasebook") {
             ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.phrasebookLink)) {

@@ -13,22 +13,24 @@
 
 import WidgetKit
 
-/// Supplies the local daily prompt without networking or app-container state.
-struct TodaysPromptProvider: TimelineProvider {
+/// Supplies today's prompt and painting, changing each local midnight.
+struct TableauProvider: TimelineProvider {
 
-    func placeholder(in context: Context) -> TodaysPromptEntry {
-        TodaysPromptEntry(date: .now, prompt: PromptCatalog.bundled().first ?? PromptCatalog.fallback)
+    /// Shows a fixed prompt while the widget loads.
+    func placeholder(in context: Context) -> TableauEntry {
+        .sample
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (TodaysPromptEntry) -> Void) {
-        completion(TodaysPromptEntry(date: .now, prompt: PromptCatalog.prompt()))
+    /// Shows a fixed prompt in the widget gallery, and the real day otherwise.
+    func getSnapshot(in context: Context, completion: @escaping (TableauEntry) -> Void) {
+        completion(context.isPreview ? .sample : .make(on: .now))
     }
 
     /// Refreshes just after the next local midnight rather than after a fixed 24 hours.
-    func getTimeline(in context: Context, completion: @escaping (Timeline<TodaysPromptEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TableauEntry>) -> Void) {
         let now = Date.now
         let calendar = Calendar.current
-        let entry = TodaysPromptEntry(date: now, prompt: PromptCatalog.prompt(on: now, calendar: calendar))
+        let entry = TableauEntry.make(on: now, calendar: calendar)
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)),
               let refresh = calendar.date(byAdding: .minute, value: 1, to: tomorrow) else {
             completion(Timeline(entries: [entry], policy: .atEnd))

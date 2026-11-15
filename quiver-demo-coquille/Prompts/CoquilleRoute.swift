@@ -22,7 +22,9 @@ nonisolated enum CoquilleRoute: Equatable, Sendable {
     case journal
     case corrections
 
-    /// The links behind the widget's buttons.
+    /// The links behind the widget and Control Center. `todayLink` opens whichever prompt
+    /// is today's when it's tapped, so a control never holds yesterday's prompt.
+    static let todayLink = "coquille://today"
     static let writeLink = "coquille://write"
     static let phrasebookLink = "coquille://phrasebook"
     static let journalLink = "coquille://journal"
@@ -64,11 +66,15 @@ nonisolated enum CoquilleRoute: Equatable, Sendable {
         if let destination = destinations[host] {
             return components.query == nil ? destination : nil
         }
+        let prompts = catalog ?? PromptCatalog.bundled()
+        if host == "today", components.query == nil {
+            return .today(PromptCatalog.prompt(on: .now, calendar: .current, from: prompts))
+        }
         guard let items = components.queryItems else { return nil }
 
         switch host {
         case "today":
-            return parseToday(items: items, catalog: catalog ?? PromptCatalog.bundled())
+            return parseToday(items: items, catalog: prompts)
         case "new":
             return parseExercise(items: items)
         default:

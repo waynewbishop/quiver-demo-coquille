@@ -14,12 +14,12 @@
 import SwiftUI
 import WidgetKit
 
-/// Coquille's Home Screen widget and Control Center launcher.
+/// Le tableau du jour on the Home Screen, Lock Screen and StandBy, and the two Control Center controls.
 @main
 struct CoquilleWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        TodaysPromptWidget()
-        CoquilleControl()
-        CoquillePhrasebookControl()
+        TableauWidget()
+        EcrireControl()
+        PhrasebookControl()
     }
 }
