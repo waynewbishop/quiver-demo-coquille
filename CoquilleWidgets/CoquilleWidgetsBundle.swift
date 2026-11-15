@@ -14,12 +14,11 @@
 import SwiftUI
 import WidgetKit
 
-/// Le tableau du jour on the Home Screen, Lock Screen and StandBy, and the two Control Center controls.
+/// Le tableau du jour on the Home Screen, Lock Screen and StandBy, and the Écrire control.
 @main
 struct CoquilleWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TableauWidget()
         EcrireControl()
-        PhrasebookControl()
     }
 }

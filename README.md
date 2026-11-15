@@ -47,9 +47,9 @@ the French has no errors; otherwise it reads "Coquille".
 ## Widgets and exercise links
 
 The `CoquilleWidgets` extension provides **Le tableau du jour**, a widget
-that pairs each daily prompt with a painting, and two controls, Écrire and
-Coquille Phrasebook, on iPhone, iPad and Mac. Add them through the system's
-widget gallery and Control Center **+** flow.
+that pairs each daily prompt with a painting, and one control, Écrire, on
+iPhone, iPad and Mac. Add them through the system's widget gallery and
+Control Center **+** flow.
 
 The painting is always in full color. Small shows it with today's French
 prompt; medium adds the English beneath the French; large adds the
@@ -57,11 +57,12 @@ painting's French title and **Cette semaine**, the week's paintings from
 Monday to Sunday with today ringed. iPad and the Mac desktop add extra
 large: the painting on the left, with the prompt and a two-row week beside
 it. On iPhone and iPad the Lock Screen gets a rectangular prompt and a
-circular shell, and StandBy on iPhone shows the small face full screen.
-Tapping anywhere opens today's prompt as an unsaved draft. The prompt
+circular pencil-and-scribble mark, and StandBy on iPhone shows the small
+face full screen. Tapping anywhere opens today's prompt as an unsaved draft. The prompt
 changes on the local calendar day, including across daylight-saving
-changes, and everything works offline. Écrire opens today's prompt, and the
-Phrasebook control opens the phrasebook.
+changes, and everything works offline. Écrire, which can sit in Control
+Center, on the Lock Screen or on the Action Button, carries on with the
+writing already open, or starts today's entry with the keyboard up.
 
 The 14 paintings are originals made for Coquille, landscapes in the spirit
 of Monet and still lifes in the spirit of Cézanne, and they belong to the

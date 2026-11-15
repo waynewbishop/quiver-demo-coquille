@@ -14,30 +14,17 @@
 import SwiftUI
 import WidgetKit
 
-/// Écrire: opens a new entry with today's prompt, worked out when it's tapped. It keeps the
+/// Écrire: the one Coquille control. It carries on with the writing already open, or starts
+/// today's entry with the day's prompt, keyboard up and never a save question. It keeps the
 /// old Coquille control's kind, so a control already placed becomes Écrire.
 struct EcrireControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.waynebishop.coquille.open") {
-            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.todayLink)) {
-                Label("Écrire", image: "ShellControl")
+            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.writeLink)) {
+                Label("Écrire", systemImage: "pencil.and.scribble")
             }
         }
         .displayName("Écrire")
-        .description("Start a new entry with today's prompt.")
-    }
-}
-
-/// Opens the phrasebook, for the moment a phrase is needed. Its kind is unchanged, so
-/// controls already placed carry over.
-struct PhrasebookControl: ControlWidget {
-    var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "com.waynebishop.coquille.phrasebook") {
-            ControlWidgetButton(action: OpenCoquilleRouteIntent(link: CoquilleRoute.phrasebookLink)) {
-                Label("Phrasebook", systemImage: "book")
-            }
-        }
-        .displayName("Coquille Phrasebook")
-        .description("Open your French phrasebook.")
+        .description("Write a journal entry in Coquille.")
     }
 }

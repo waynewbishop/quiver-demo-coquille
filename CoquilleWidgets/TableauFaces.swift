@@ -374,10 +374,10 @@ struct RectangularFace: View {
     }
 }
 
-/// The shell mark, one tap from today's prompt.
+/// The Écrire mark, one tap from today's prompt.
 struct CircularFace: View {
     var body: some View {
-        Image("ShellControl")
+        Image(systemName: "pencil.and.scribble")
             .font(.system(size: 22))
     }
 }
