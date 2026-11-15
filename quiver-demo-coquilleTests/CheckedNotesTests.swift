@@ -79,4 +79,16 @@ final class CheckedNotesTests: XCTestCase {
         XCTAssertEqual(phrases.map(\.french), ["mon ami", "poser un lapin", "samedi soir", "au café"])
         XCTAssertEqual(phrases[1].meaning, "to stand someone up")
     }
+
+    // Copy words each phrase as the panel shows it, one bulleted line per phrase.
+    func testCopiedTextMatchesThePanel() {
+        let phrases = [
+            PassageExplainer.Phrase(french: "librairie", meaning: "bookshop.", note: "Looks like \"library\", but a library is une bibliothèque."),
+            PassageExplainer.Phrase(french: "près du lac", meaning: "near the lake", note: "A place"),
+        ]
+        XCTAssertEqual(
+            ExplanationPanel.plainText(for: phrases),
+            "• librairie means bookshop. Looks like \"library\", but a library is une bibliothèque.\n• près du lac means near the lake. A place."
+        )
+    }
 }

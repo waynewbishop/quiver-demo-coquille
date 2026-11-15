@@ -28,6 +28,8 @@ struct ExplanationPanel: View {
     /// The last answer and the French it explains. It's shown only while it matches the
     /// French, so an edit clears the panel to the spinner until the new answer arrives.
     @State private var explained: Explained?
+    /// Whether Copy just put the explanation on the clipboard, so its label reads "Copied".
+    @State private var didCopy = false
 
     /// An answer from the model, for one version of the French.
     private struct Explained {
@@ -79,7 +81,56 @@ struct ExplanationPanel: View {
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+        .overlay(alignment: .trailing) {
+            // Placed like the Français pane's Save, and named for what it just did in the same way.
+            Button(didCopy ? "Copied" : "Copy") { copy() }
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .disabled(shownPhrases.isEmpty)
+                .help("Copy the explanation")
+                .padding(.trailing, 16)
+        }
         .overlay(alignment: .bottom) { Divider() }
+    }
+
+    /// The phrases on screen now, or none while the panel is locked, loading or showing a note.
+    private var shownPhrases: [PassageExplainer.Phrase] {
+        guard PassageExplainer.isAvailable, !model.isLocked, model.hasFrench, !isWorking,
+              case .explained(let phrases)? = explained?.outcome else { return [] }
+        return phrases
+    }
+
+    /// Puts the explanation on the clipboard as plain text and shows "Copied" for a moment.
+    private func copy() {
+        let text = Self.plainText(for: shownPhrases)
+        #if os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        #else
+        UIPasteboard.general.string = text
+        #endif
+        didCopy = true
+        Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            didCopy = false
+        }
+    }
+
+    /// The explanation as plain text, one bulleted line per phrase, worded as the panel shows it.
+    static func plainText(for phrases: [PassageExplainer.Phrase]) -> String {
+        phrases.map { phrase in
+            let parts = sentence(for: phrase)
+            return "• \(parts.french) means \(parts.meaning). \(parts.note)"
+        }
+        .joined(separator: "\n")
+    }
+
+    /// A phrase's French, its meaning without final punctuation, and its note ending in a full stop.
+    private static func sentence(for phrase: PassageExplainer.Phrase) -> (french: String, meaning: String, note: String) {
+        let meaning = phrase.meaning.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
+        var note = phrase.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let last = note.last, !".!?".contains(last) { note += "." }
+        return (phrase.french, meaning, note)
     }
 
     /// Why there's nothing to show yet, or the phrases.
@@ -142,12 +193,10 @@ struct ExplanationPanel: View {
 
     /// "avoir hâte de means can't wait to. It's about eagerness, not hurrying."
     private func line(for phrase: PassageExplainer.Phrase) -> Text {
-        let meaning = phrase.meaning.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
-        var note = phrase.note.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let last = note.last, !".!?".contains(last) { note += "." }
-        let french = Text(phrase.french).font(.plexSans(14, weight: .medium, relativeTo: .body)).foregroundStyle(.tint)
-        let english = Text(meaning).font(.plexSans(14, weight: .medium, relativeTo: .body))
-        return Text("\(french) means \(english). \(note)")
+        let parts = Self.sentence(for: phrase)
+        let french = Text(parts.french).font(.plexSans(14, weight: .medium, relativeTo: .body)).foregroundStyle(.tint)
+        let english = Text(parts.meaning).font(.plexSans(14, weight: .medium, relativeTo: .body))
+        return Text("\(french) means \(english). \(parts.note)")
     }
 
     /// A one-line note in place of the phrases.
