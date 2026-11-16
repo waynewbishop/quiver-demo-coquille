@@ -43,6 +43,12 @@ struct SettingsView: View {
     /// Set when the learner asks to download the pack, which starts the system's prompt.
     @State private var downloadRequest: TranslationSession.Configuration?
     @Environment(\.dismiss) private var dismiss
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #else
+    /// Set while the About dialog is showing over Settings.
+    @State private var isShowingAbout = false
+    #endif
 
     var body: some View {
         #if os(macOS)
@@ -108,8 +114,9 @@ struct SettingsView: View {
             }
 
             Section("About & Privacy") {
-                LabeledContent("Version", value: Self.version)
-                Text("Your entries, progress, and translations stay private, on your devices.")
+                LabeledContent("Version", value: Bundle.main.versionAndBuild)
+                Button("About Coquille…", action: showAbout)
+                Text("Your journal and your stats stay on this device. Coquille doesn't sync them.")
                 Text("Word data from [Lexique 3.83](http://www.lexique.org) by Boris New and Christophe Pallier, licensed CC BY-SA 4.0.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -127,6 +134,12 @@ struct SettingsView: View {
             Task { translationStatus = await TranslationPack.status() }
         }
         .translationTask(downloadRequest, action: Self.prepareDownload)
+        #if !os(macOS)
+        .sheet(isPresented: $isShowingAbout) {
+            AboutView()
+                .presentationSizing(.fitted)
+        }
+        #endif
     }
 
     /// Shows the system's download prompt and announces the outcome. The system reports its
@@ -160,8 +173,13 @@ struct SettingsView: View {
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
-    private static var version: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    /// Opens the About dialog: its own window on the Mac, a sheet over Settings elsewhere.
+    private func showAbout() {
+        #if os(macOS)
+        openWindow(id: AboutView.windowID)
+        #else
+        isShowingAbout = true
+        #endif
     }
 }
 

@@ -21,6 +21,7 @@
 		C0C000000000000000000028 /* quiver-demo-coquille/Fonts/BrandColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */; };
 		C0C00000000000000000002B /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */; };
 		C0C00000000000000000002D /* quiver-demo-coquille/Prompts/Tableau.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C00000000000000000002E /* quiver-demo-coquille/Prompts/Tableau.swift */; };
+		C0C000000000000000000030 /* quiver-demo-coquille/Prompts/Paintings.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0C00000000000000000002F /* quiver-demo-coquille/Prompts/Paintings.xcassets */; };
 		DA2705DA3091505900F81D2D /* Quiver in Frameworks */ = {isa = PBXBuildFile; productRef = DA2705D93091505900F81D2D /* Quiver */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +70,7 @@
 		C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Fonts/BrandColor.swift"; sourceTree = SOURCE_ROOT; };
 		C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift"; sourceTree = "<group>"; };
 		C0C00000000000000000002E /* quiver-demo-coquille/Prompts/Tableau.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "quiver-demo-coquille/Prompts/Tableau.swift"; sourceTree = SOURCE_ROOT; };
+		C0C00000000000000000002F /* quiver-demo-coquille/Prompts/Paintings.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "quiver-demo-coquille/Prompts/Paintings.xcassets"; sourceTree = SOURCE_ROOT; };
 		DA2705F23091505900F81D2D /* quiver-demo-coquilleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "quiver-demo-coquilleTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -165,6 +167,7 @@
 				C0C000000000000000000027 /* quiver-demo-coquille/Fonts/BrandColor.swift */,
 				C0C00000000000000000002C /* quiver-demo-coquille/Prompts/OpenCoquilleRouteIntent.swift */,
 				C0C00000000000000000002E /* quiver-demo-coquille/Prompts/Tableau.swift */,
+				C0C00000000000000000002F /* quiver-demo-coquille/Prompts/Paintings.xcassets */,
 				C0C000000000000000000018 /* quiver-demo-coquille/LanguagePacks/French/fr.prompts.json */,
 				C0C00000000000000000001A /* quiver-demo-coquille/Fonts/IBMPlexMono-Regular.ttf */,
 				C0C00000000000000000001C /* quiver-demo-coquille/Fonts/IBMPlexMono-Medium.ttf */,
@@ -297,6 +300,7 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				C0C000000000000000000019 /* quiver-demo-coquille/LanguagePacks/French/fr.prompts.json in Resources */,
+				C0C000000000000000000030 /* quiver-demo-coquille/Prompts/Paintings.xcassets in Resources */,
 				C0C00000000000000000001B /* quiver-demo-coquille/Fonts/IBMPlexMono-Regular.ttf in Resources */,
 				C0C00000000000000000001D /* quiver-demo-coquille/Fonts/IBMPlexMono-Medium.ttf in Resources */,
 				C0C00000000000000000001F /* quiver-demo-coquille/Fonts/IBMPlexSans-Regular.ttf in Resources */,

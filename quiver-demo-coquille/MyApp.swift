@@ -23,6 +23,7 @@ import SwiftUI
             FontSizeCommands()
             PlaybackCommands()
             #if os(macOS)
+            AboutCommands()
             WelcomeCommands()
             #endif
         }
@@ -44,6 +45,15 @@ import SwiftUI
             .tint(.brand)
         }
         .defaultSize(width: 460, height: 560)
+
+        // Opens from Coquille › About Coquille and from Settings.
+        Window("About Coquille", id: AboutView.windowID) {
+            AboutView()
+                .ignoresSafeArea()
+        }
+        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
+        .defaultPosition(.center)
 
         // Opens by itself at first launch, and again from Help › Welcome to Coquille.
         Window("Welcome to Coquille", id: WelcomeTour.windowID) {
