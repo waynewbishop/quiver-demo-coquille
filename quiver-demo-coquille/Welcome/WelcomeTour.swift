@@ -33,7 +33,7 @@ enum TourPage: Int, CaseIterable, Identifiable {
         case .unlock: "Fix first, then listen."
         case .notes: "Correct isn't always natural."
         case .phrasebook: "Borrow a phrase, make it yours."
-        case .journal: "A little every day."
+        case .journal: "A little French, every day."
         case .ready: "One download, then write."
         }
     }
@@ -45,45 +45,45 @@ enum TourPage: Int, CaseIterable, Identifiable {
         switch self {
         case .welcome:
             #if os(macOS)
-            return "There's no answer key. Write about your day, mistakes and all. Coquille marks them the way a teacher's red pen would, and the fix stays yours to make."
+            return "Write about your day, your plans, or anything on your mind. Mistakes are part of learning, and Coquille helps you understand and correct them yourself."
             #else
-            return "Write about your day, mistakes and all. Coquille marks them like a teacher's red pen, and the fix stays yours."
+            return "Write about your day or anything on your mind. Coquille helps you understand and correct your mistakes yourself."
             #endif
         case .mistakes:
             #if os(macOS)
-            return "You can't fix a mistake you can't see. Click an underline and the card names the rule but holds the answer back, so you get the first try. Looking it up isn't cheating: Show fix is always there."
+            return "Coquille underlines mistakes as you write. Click an underline to see the rule, then try correcting the sentence yourself. Errors need fixing; warnings and suggestions are there to help."
             #else
-            return "Tap an underline and the card names the rule but holds the answer back. Show fix is always there if you need it."
+            return "Tap an underline to see the rule, then try correcting it yourself. Errors need fixing; warnings and suggestions help."
             #endif
         case .unlock:
             #if os(macOS)
-            return "Hearing your French aloud and reading it in English are the reward for a clean page. The translator would quietly smooth over a mistake, so errors hold back Play in the toolbar and the English pane beside your page. Warnings never do."
+            return "Correct your errors to unlock French playback and English translation. It's a chance to learn from each mistake before hearing or reading the answer. Warnings won't keep these features locked."
             #else
-            return "Hearing your French and reading it in English are the reward for a clean page. Errors hold both back. Warnings never do."
+            return "Correct your errors to unlock French playback and English translation. Warnings won't keep them locked."
             #endif
         case .notes:
             #if os(macOS)
-            return "Coquille catches French that's wrong, not French that's right but stiff. Notes after // are never checked, so mark a sentence //: natural and share the page with your teacher or other French learners. Share and Export a Copy send plain text, notes and markers included."
+            return "A sentence can be correct but still sound unusual in French. Ask for a more natural way to say it, or add notes with // that Coquille won't check. Share your writing, including its notes and corrections, when you're ready."
             #else
-            return "Notes after // are never checked. Mark a sentence //: natural, then share the page with your teacher or other learners."
+            return "Ask for a more natural way to say it, or add notes with // that Coquille won't check. Share when you're ready."
             #endif
         case .phrasebook:
             #if os(macOS)
-            return "The phrasebook opens as a panel beside your page, so you can read a phrase and type it out at the same time. There's no copy button on purpose: typing it is how it sticks, and Coquille checks it like the rest of your French."
+            return "Find everyday French phrases with English translations and pronunciation. Search for something useful, then try writing your own version."
             #else
-            return "Everyday phrases with English, a tu or vous tag and playback. There's no copy button: typing a phrase is how it sticks."
+            return "Everyday French phrases with English and pronunciation. Find one you need, then write your own version."
             #endif
         case .journal:
             #if os(macOS)
-            return "Your journal sits in the sidebar with a new prompt each day, and a few sentences a day keep the momentum going. Every fix lands in the Corrections window, so you can see what keeps coming back. Entries are plain text files; right-click one to Show in Finder."
+            return "A short sentence is enough to get started. Your journal saves your writing, corrections, and progress so you can see how far you've come."
             #else
-            return "A new prompt each day gets you past the blank page. Every fix lands in your corrections, so you see what comes back."
+            return "A short sentence is enough to start. Your journal saves your writing, corrections, and progress."
             #endif
         case .ready:
             #if os(macOS)
-            return "Everything else is built in and works offline, with no account. Keeping a paper notebook too? Type a page in here and Coquille will mark it. You can change these anytime in Settings."
+            return "Coquille works offline, with no account needed. Download the French-English translation pack if you want English translations; French voice uses your device's voice settings. Then write your first sentence, or try an example to see how Coquille works."
             #else
-            return "Everything else is built in and works offline, with no account. You can change these anytime in Settings."
+            return "Works offline, no account needed. Download the translation pack for English; French voice uses your device's settings."
             #endif
         }
     }
