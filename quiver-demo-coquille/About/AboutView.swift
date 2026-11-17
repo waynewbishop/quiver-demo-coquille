@@ -267,16 +267,21 @@ private struct AcknowledgmentsPage: View {
 
     var body: some View {
         AboutSubpage(title: "Acknowledgments", isCompact: isCompact, back: back) {
-            credit("Quiver.", "The machine learning behind spelling suggestions, the part-of-speech layer, the gender of unknown nouns and phrasebook search. Apache License 2.0.")
-            credit("Lexique 3.83.", "The French word list behind spelling, gender and conjugation. By Boris New and Christophe Pallier. CC BY-SA 4.0.")
+            credit("Quiver.", link: "https://waynewbishop.github.io/quiver", "The machine learning behind spelling suggestions, the part-of-speech layer, the gender of unknown nouns and phrasebook search. Apache License 2.0.")
+            credit("Lexique 3.83.", link: "http://www.lexique.org", "The French word list behind spelling, gender and conjugation. By Boris New and Christophe Pallier. CC BY-SA 4.0.")
             credit("Universal Dependencies.", "The French GSD, Rhapsodie and ParisStories treebanks, used to build the part-of-speech models and the verb preposition list. CC BY-SA 4.0.")
             credit("Paintings.", "Made for Coquille, in the style of Monet and Cézanne.")
         }
     }
 
-    /// One credit: its name in bold, then what it does and its license.
-    private func credit(_ name: String, _ detail: String) -> some View {
-        Text("\(Text(name).bold()) \(detail)")
+    /// One credit: its name in bold, linked to its site when it has one, then what it does and its license.
+    private func credit(_ name: String, link: String? = nil, _ detail: String) -> some View {
+        var title = AttributedString(name)
+        title.inlinePresentationIntent = .stronglyEmphasized
+        if let link, let url = URL(string: link) {
+            title.link = url
+        }
+        return Text(title + AttributedString(" " + detail))
             .fixedSize(horizontal: false, vertical: true)
     }
 }
