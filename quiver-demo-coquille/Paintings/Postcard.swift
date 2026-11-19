@@ -216,17 +216,33 @@ struct PostcardView: View {
 }
 
 /// Draws postcard sides as JPEG images, 1800 × 1200 pixels each.
+///
+/// SwiftUI draws each side on the main actor; encoding the JPEG and writing its file run off it.
 @MainActor
 enum PostcardRenderer {
 
     /// Three pixels per point, so 600 × 400 points become 1800 × 1200 pixels: 6 × 4 in at 300 dpi.
     static let scale = 3.0
 
-    /// The JPEG of a postcard side, drawn at `scale`, or `nil` if it can't be drawn.
-    static func jpeg(of view: some View, quality: Double = 0.85) -> Data? {
+    /// A postcard side drawn at `scale` into a finished bitmap, or `nil` if it can't be drawn.
+    ///
+    /// The bitmap is filled in here, on the main actor, so encoding it later never draws views off it.
+    static func bitmap(of view: some View) -> CGImage? {
         let renderer = ImageRenderer(content: view)
         renderer.scale = scale
-        guard let image = renderer.cgImage else { return nil }
+        guard let image = renderer.cgImage,
+              let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
+                                      bytesPerRow: 0, space: space,
+                                      bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else {
+            return nil
+        }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return context.makeImage()
+    }
+
+    /// The JPEG of a finished bitmap, or `nil` if it can't be encoded; safe off the main actor.
+    nonisolated static func jpeg(from image: CGImage, quality: Double = 0.85) -> Data? {
         let data = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil) else {
             return nil
@@ -236,14 +252,27 @@ enum PostcardRenderer {
         return data as Data
     }
 
+    /// The JPEG of a postcard side, drawn at `scale`, or `nil` if it can't be drawn.
+    static func jpeg(of view: some View, quality: Double = 0.85) -> Data? {
+        bitmap(of: view).flatMap { jpeg(from: $0, quality: quality) }
+    }
+
+    /// The temporary folder that holds every export, one subfolder each.
+    nonisolated static var exportsFolder: URL {
+        FileManager.default.temporaryDirectory.appending(path: "Postcards", directoryHint: .isDirectory)
+    }
+
     /// A new, empty temporary folder for one export, so a later redraw never replaces
     /// a file that's already being shared.
-    static func newExportFolder() throws -> URL {
-        let folder = FileManager.default.temporaryDirectory
-            .appending(path: "Postcards", directoryHint: .isDirectory)
-            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    nonisolated static func newExportFolder() throws -> URL {
+        let folder = exportsFolder.appending(path: UUID().uuidString, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder
+    }
+
+    /// Removes the exports of earlier launches; called at launch, before any share could be reading one.
+    nonisolated static func removeOldExports() {
+        try? FileManager.default.removeItem(at: exportsFolder)
     }
 
     /// The JPEG of one postcard side, or an error if it can't be drawn.
@@ -258,36 +287,54 @@ enum PostcardRenderer {
         "\(content.tableau.title) – \(side == .back ? "verso" : "recto").jpg"
     }
 
-    /// Writes the chosen sides to temporary JPEG files for sharing, back first, named for the painting.
-    static func files(for content: PostcardContent, sides: [PostcardSide], showsWord: Bool, showsEnglish: Bool) throws -> [URL] {
+    /// Draws the chosen sides and writes them to temporary JPEG files for sharing, back first,
+    /// named for the painting; only the drawing holds the main actor.
+    static func files(for content: PostcardContent, sides: [PostcardSide], showsWord: Bool, showsEnglish: Bool) async throws -> [URL] {
         let folder = try newExportFolder()
-        return try sides.map { side in
-            let data = try image(of: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
-            let url = folder.appending(path: fileName(of: content, side: side))
+        let bitmaps = try sides.map { side in
+            let view = PostcardView(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
+            guard let bitmap = bitmap(of: view) else { throw CocoaError(.fileWriteUnknown) }
+            return bitmap
+        }
+        let urls = sides.map { folder.appending(path: fileName(of: content, side: $0)) }
+        try await write(bitmaps, to: urls)
+        return urls
+    }
+
+    /// Encodes each bitmap as a JPEG and writes it to the matching URL, off the main actor.
+    @concurrent
+    nonisolated private static func write(_ bitmaps: [CGImage], to urls: [URL]) async throws {
+        for (bitmap, url) in zip(bitmaps, urls) {
+            guard let data = jpeg(from: bitmap) else { throw CocoaError(.fileWriteUnknown) }
             try data.write(to: url, options: .atomic)
-            return url
         }
     }
 }
 
-/// One postcard side for the share sheet, drawn only when the learner shares it.
+/// One postcard side for the share sheet: the file the sheet prepared, or drawn when the
+/// learner shares it if that file isn't ready yet.
 nonisolated struct PostcardShare: Transferable, Sendable {
     let content: PostcardContent
     let side: PostcardSide
     let showsWord: Bool
     let showsEnglish: Bool
+    /// The file already written for this side and these options, if it's ready.
+    var prepared: URL?
 
-    /// Hands over the side as a JPEG file, drawn at the moment it's shared.
+    /// Hands over the side as a JPEG file, the prepared one when it's there.
     static var transferRepresentation: some TransferRepresentation {
         FileRepresentation(exportedContentType: .jpeg) { share in
-            SentTransferredFile(try await share.file())
+            if let prepared = share.prepared, FileManager.default.fileExists(atPath: prepared.path) {
+                return SentTransferredFile(prepared)
+            }
+            return SentTransferredFile(try await share.file())
         }
     }
 
     /// Draws the side and writes it to its own temporary folder.
     @MainActor
-    private func file() throws -> URL {
-        try PostcardRenderer.files(for: content, sides: [side], showsWord: showsWord, showsEnglish: showsEnglish)[0]
+    private func file() async throws -> URL {
+        try await PostcardRenderer.files(for: content, sides: [side], showsWord: showsWord, showsEnglish: showsEnglish)[0]
     }
 }
 
@@ -314,7 +361,8 @@ struct PostcardImageFile: FileDocument {
 /// The Share as Postcard sheet: a preview with Front and Back, the two options, the
 /// choice of back only or both sides, then Share, and Save Images on the Mac.
 ///
-/// Nothing is drawn to a file until the learner shares or saves.
+/// Once the sheet is up, it draws both sides for the current options and writes them to
+/// files, again after each change, so Share hands the share sheet finished images.
 struct PostcardSheet: View {
     let content: PostcardContent
 
@@ -324,6 +372,8 @@ struct PostcardSheet: View {
     @State private var showsWord = true
     @State private var sendsBothSides = false
     @State private var problem: Problem?
+    /// Both sides, written for the options they were drawn with.
+    @State private var prepared: PreparedSides?
     #if os(macOS)
     @State private var exporting: [PostcardImageFile] = []
     #endif
@@ -334,14 +384,53 @@ struct PostcardSheet: View {
         let message: String
     }
 
+    /// The two options that change what a side looks like.
+    private struct Options: Hashable {
+        let showsWord: Bool
+        let showsEnglish: Bool
+    }
+
+    /// Both sides' files and the options they were drawn with.
+    private struct PreparedSides {
+        let options: Options
+        let files: [PostcardSide: URL]
+    }
+
+    /// The options as they're set now.
+    private var options: Options {
+        Options(showsWord: showsWord, showsEnglish: showsEnglish)
+    }
+
     /// The sides that are shared and saved.
     private var sides: [PostcardSide] {
         sendsBothSides ? [.back, .front] : [.back]
     }
 
-    /// The chosen sides as the share sheet takes them, drawn when shared.
+    /// The prepared file of `side`, if it was drawn with the options as they're set now.
+    private func preparedFile(for side: PostcardSide) -> URL? {
+        guard let prepared, prepared.options == options else { return nil }
+        return prepared.files[side]
+    }
+
+    /// The chosen sides as the share sheet takes them, with their prepared files when ready.
     private var shares: [PostcardShare] {
-        sides.map { PostcardShare(content: content, side: $0, showsWord: showsWord, showsEnglish: showsEnglish) }
+        sides.map { side in
+            PostcardShare(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish,
+                          prepared: preparedFile(for: side))
+        }
+    }
+
+    /// Draws both sides for the current options and writes them to files, after a pause that
+    /// lets the sheet finish opening and a run of option changes settle.
+    private func prepareFiles() async {
+        try? await Task.sleep(for: .milliseconds(400))
+        guard !Task.isCancelled else { return }
+        let options = options
+        let sides: [PostcardSide] = [.back, .front]
+        guard let urls = try? await PostcardRenderer.files(for: content, sides: sides,
+                                                           showsWord: options.showsWord, showsEnglish: options.showsEnglish),
+              !Task.isCancelled else { return }
+        prepared = PreparedSides(options: options, files: Dictionary(uniqueKeysWithValues: zip(sides, urls)))
     }
 
     var body: some View {
@@ -356,6 +445,7 @@ struct PostcardSheet: View {
                         Button("Done") { dismiss() }
                     }
                 }
+                .task(id: options) { await prepareFiles() }
         }
         #if os(macOS)
         .frame(width: 720, height: 460)
@@ -474,12 +564,15 @@ struct PostcardSheet: View {
     }
 
     #if os(macOS)
-    /// Draws the chosen sides and opens the save panel, or says why they couldn't be drawn.
+    /// Opens the save panel with the chosen sides, prepared or drawn now, or says why they couldn't be drawn.
     private func saveImages() {
         do {
             exporting = try sides.map { side in
-                PostcardImageFile(data: try PostcardRenderer.image(of: content, side: side,
-                                                                   showsWord: showsWord, showsEnglish: showsEnglish))
+                if let url = preparedFile(for: side), let data = try? Data(contentsOf: url) {
+                    return PostcardImageFile(data: data)
+                }
+                return PostcardImageFile(data: try PostcardRenderer.image(of: content, side: side,
+                                                                          showsWord: showsWord, showsEnglish: showsEnglish))
             }
         } catch {
             problem = Problem(title: "The postcard couldn't be made", message: error.localizedDescription)

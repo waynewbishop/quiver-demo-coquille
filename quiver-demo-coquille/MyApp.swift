@@ -4,13 +4,15 @@ import SwiftUI
 
     /// The learner's stats, shared by the editor and, on the Mac, the Corrections window,
     /// so a fix shows in the list as soon as it's made.
-    @State private var stats = StatsStore()
+    @State private var stats = StatsStore() 
     /// The learner's entries, one text file each, in the app's Documents folder.
     @State private var journal = Journal(folderURL: Journal.defaultFolderURL())
 
-    /// Registers the bundled fonts before the first view draws.
+    /// Registers the bundled fonts before the first view draws, and clears postcard images
+    /// left from earlier launches.
     init() {
         AppFonts.register()
+        PostcardRenderer.removeOldExports()
     }
 
     var body: some Scene {

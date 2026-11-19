@@ -147,15 +147,23 @@ final class PostcardTests: XCTestCase {
     }
 
     /// Back only shares one file; both sides share the back, then the front.
-    func testFilesFollowTheSendChoice() throws {
+    func testFilesFollowTheSendChoice() async throws {
         let postcard = try content()
-        let back = try PostcardRenderer.files(for: postcard, sides: [.back], showsWord: true, showsEnglish: true)
+        let back = try await PostcardRenderer.files(for: postcard, sides: [.back], showsWord: true, showsEnglish: true)
         XCTAssertEqual(back.map(\.lastPathComponent), ["Le parc – verso.jpg"])
-        let both = try PostcardRenderer.files(for: postcard, sides: [.back, .front], showsWord: true, showsEnglish: true)
+        let both = try await PostcardRenderer.files(for: postcard, sides: [.back, .front], showsWord: true, showsEnglish: true)
         XCTAssertEqual(both.map(\.lastPathComponent), ["Le parc – verso.jpg", "Le parc – recto.jpg"])
         XCTAssertTrue(both.allSatisfy { FileManager.default.fileExists(atPath: $0.path) })
         XCTAssertNotEqual(back[0].deletingLastPathComponent(), both[0].deletingLastPathComponent(),
                           "each export gets its own folder, so a redraw never replaces a file being shared")
         XCTAssertTrue(FileManager.default.fileExists(atPath: back[0].path))
+    }
+
+    /// Launch clears the postcard images earlier launches left behind.
+    func testRemoveOldExportsClearsEarlierFiles() async throws {
+        let files = try await PostcardRenderer.files(for: try content(), sides: [.back], showsWord: true, showsEnglish: true)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: files[0].path))
+        PostcardRenderer.removeOldExports()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: PostcardRenderer.exportsFolder.path))
     }
 }
