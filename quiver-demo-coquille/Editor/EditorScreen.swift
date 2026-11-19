@@ -622,16 +622,14 @@ struct EditorScreen: View {
         return "Delete “\(name)”?"
     }
 
-    /// The Save, Save as New Entry and Export items, for the Français header's menus.
+    /// The Save and Save as New Entry items, for the Français header's menus. Export a
+    /// Copy lives in the File menu and each journal entry's menu.
     @ViewBuilder
     private var saveMenuItems: some View {
         Button("Save", systemImage: "square.and.arrow.down") { save(then: nil) }
             .disabled(!model.canSave)
         Button("Save as New Entry…", systemImage: "plus.square.on.square") { naming = Naming(asNewEntry: true, then: nil) }
             .disabled(!model.canSave || model.fileURL == nil)
-        Divider()
-        Button("Export a Copy…", systemImage: "square.and.arrow.up") { export(model.plainText, named: exportName) }
-            .disabled(!model.hasText)
     }
 
     #if os(macOS)
@@ -737,10 +735,17 @@ struct EditorScreen: View {
             }
 
             ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: model.plainText)
-                    .labelStyle(.iconOnly)
-                    .help("Export this entry to another app")
-                    .disabled(!model.hasText)
+                Menu {
+                    ShareLink(ShareTitles.text, item: model.plainText)
+                        .disabled(!model.hasText)
+                    Button("Share as Postcard…") { handle(.sharePostcard) }
+                        .disabled(model.postcardContent == nil)
+                } label: {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .labelStyle(.iconOnly)
+                }
+                .help("Share the page's text, or the entry as a postcard")
+                .disabled(!model.hasText)
             }
         }
     }

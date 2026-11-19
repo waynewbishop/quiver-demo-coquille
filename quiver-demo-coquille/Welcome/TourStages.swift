@@ -908,7 +908,7 @@ private struct NotesStage: View {
         if let exportedName {
             return "Saved as “\(exportedName)”, a copy you can attach anywhere."
         }
-        return "Share sends the whole page, notes and markers included."
+        return "Share Text sends the whole page, notes and markers included."
     }
 
     private var exportButton: some View {
@@ -917,7 +917,7 @@ private struct NotesStage: View {
 
     private var shareLink: some View {
         ShareLink(item: pageText) {
-            Label("Share", systemImage: "square.and.arrow.up")
+            Label(ShareTitles.text, systemImage: "square.and.arrow.up")
         }
     }
 

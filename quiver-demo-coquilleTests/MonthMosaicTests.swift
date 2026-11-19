@@ -11,11 +11,10 @@
 // ANY KIND, either express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-import ImageIO
 import XCTest
 @testable import quiver_demo_coquille
 
-/// Covers the journal's month of paintings and the mosaic image.
+/// Covers the journal's month of paintings.
 @MainActor
 final class MonthMosaicTests: XCTestCase {
 
@@ -48,7 +47,6 @@ final class MonthMosaicTests: XCTestCase {
         XCTAssertEqual(month.leadingBlanks, 6)
         XCTAssertEqual(month.days.count, 30)
         XCTAssertEqual(month.frenchTitle(calendar: paris), "Novembre 2026")
-        XCTAssertEqual(month.englishMonthName(calendar: paris), "November")
     }
 
     /// Days show their painting, a dot without one, and nothing without an entry; later days are future.
@@ -80,7 +78,6 @@ final class MonthMosaicTests: XCTestCase {
         ])
         XCTAssertEqual(month.countsLine, "4 entries · 3 with a painting")
         XCTAssertEqual(month.words, ["le marché", "le parc"])
-        XCTAssertFalse(month.canShareMosaic)
     }
 
     /// The calendar runs from the oldest entry's month to this month, or further to a future-dated entry.
@@ -99,27 +96,5 @@ final class MonthMosaicTests: XCTestCase {
                        try month(2026, 8)...month(2026, 11))
         XCTAssertEqual(MonthSummary.monthRange(of: [august, christmas], today: today, calendar: paris),
                        try month(2026, 8)...month(2026, 12))
-    }
-
-    /// Anything the mosaic shows changes the summary, so the shared image is drawn again:
-    /// an entry without a painting, or a painting moved to another day.
-    func testSummaryChangesWithEverythingTheMosaicShows() throws {
-        let base = try summary([try entry(2, "Le parc"), try entry(3, "La pluie")])
-        XCTAssertNotEqual(base, try summary([try entry(2, "Le parc"), try entry(3, "La pluie"), try entry(4, nil)]))
-        XCTAssertNotEqual(base, try summary([try entry(2, "Le parc"), try entry(5, "La pluie")]))
-        XCTAssertEqual(base, try summary([try entry(2, "Le parc"), try entry(3, "La pluie")]))
-    }
-
-    /// The mosaic is offered from four paintings, and draws at 1800 × 2400.
-    func testMosaicImage() throws {
-        let month = try summary([
-            try entry(2, "Le thé du matin"), try entry(3, "Le marché"), try entry(5, "La pluie"), try entry(9, "Le parc"),
-        ])
-        XCTAssertTrue(month.canShareMosaic)
-        let data = try XCTUnwrap(PostcardRenderer.jpeg(of: MosaicCard(summary: month)))
-        let source = try XCTUnwrap(CGImageSourceCreateWithData(data as CFData, nil))
-        let image = try XCTUnwrap(CGImageSourceCreateImageAtIndex(source, 0, nil))
-        XCTAssertEqual(image.width, 1800)
-        XCTAssertEqual(image.height, 2400)
     }
 }

@@ -91,10 +91,11 @@ struct CompactToolbar: ToolbarContent {
 }
 #endif
 
-/// The More menu on iPhone and iPad: New, Save, Share and the phrasebook first, then
-/// Save as New Entry, Explain and the painting, then font size, progress and settings.
+/// The More menu on iPhone and iPad: New, Save, Share Text, Share as Postcard and the
+/// phrasebook first, then Save as New Entry, Explain and the painting, then font size,
+/// progress and settings.
 ///
-/// Share stands in for Export a Copy, since the share sheet can save to Files.
+/// Share Text stands in for Export a Copy, since the share sheet can save to Files.
 /// Save as New Entry shows only once the page is a saved entry, because before that it
 /// would do the same as Save. Every item hides the keyboard first, so a sheet, menu or
 /// alert never opens with the keyboard still covering the bottom of the screen.
@@ -114,8 +115,10 @@ struct MoreMenuItems: View {
                 .disabled(!model.hasText && model.fileURL == nil)
             Button(model.saveNeedsTitle ? "Save…" : "Save", systemImage: "square.and.arrow.down") { request(.save) }
                 .disabled(!model.canSave)
-            ShareLink(item: model.plainText)
+            ShareLink(ShareTitles.text, item: model.plainText)
                 .disabled(!model.hasText)
+            Button("Share as Postcard…", systemImage: "envelope") { request(.sharePostcard) }
+                .disabled(model.postcardContent == nil)
             Toggle("Phrasebook", systemImage: "book", isOn: hidingKeyboard($showsPhrasebook))
         }
         Section {
@@ -129,8 +132,6 @@ struct MoreMenuItems: View {
             } else {
                 Button("Replace Painting…", systemImage: "photo") { request(.replacePainting) }
                 Button("Remove Painting", systemImage: "trash", role: .destructive) { request(.removePainting) }
-                Button("Share as Postcard…", systemImage: "envelope") { request(.sharePostcard) }
-                    .disabled(model.postcardContent == nil)
             }
         }
         Section {

@@ -47,9 +47,6 @@ struct MonthSummary: Equatable {
     /// The French weekday initials, Monday first.
     static let weekdayInitials = ["L", "M", "M", "J", "V", "S", "D"]
 
-    /// A mosaic is worth sharing once at least this many days have a painting.
-    static let minimumForMosaic = 4
-
     /// Summarizes `entries` for the month holding `date`, judging "future" against `today`.
     init(entries: [Journal.Entry], month date: Date, today: Date = .now, calendar: Calendar = .current) {
         let start = calendar.dateInterval(of: .month, for: date)?.start ?? date
@@ -82,23 +79,10 @@ struct MonthSummary: Equatable {
         return "\(name.prefix(1).uppercased())\(name.dropFirst()) \(parts.year ?? 2026)"
     }
 
-    /// The month's name in English, as in "November", for the share button, read with
-    /// the same calendar as the grid so a time zone can't move it into the month before.
-    func englishMonthName(calendar: Calendar = .current) -> String {
-        var english = calendar
-        english.locale = Locale(identifier: "en")
-        return english.monthSymbols[calendar.component(.month, from: month) - 1]
-    }
-
     /// "12 entries · 10 with a painting"
     var countsLine: String {
         let entries = entryCount == 1 ? "1 entry" : "\(entryCount) entries"
         return "\(entries) · \(paintedCount) with a painting"
-    }
-
-    /// Whether the month has enough paintings to share as a mosaic.
-    var canShareMosaic: Bool {
-        paintedCount >= Self.minimumForMosaic
     }
 
     /// The months the calendar can show, as the first day of each: from the oldest
@@ -114,7 +98,7 @@ struct MonthSummary: Equatable {
     }
 }
 
-/// French month names, shared by the postcard and the mosaic.
+/// French month names, shared by the postcard and the calendar.
 enum FrenchCalendar {
     static let months = [
         "janvier", "février", "mars", "avril", "mai", "juin",
@@ -122,14 +106,13 @@ enum FrenchCalendar {
     ]
 }
 
-/// The journal's calendar view: the month's paintings day by day, its words, and the
-/// mosaic to share. Tapping or clicking a day with an entry opens it.
+/// The journal's calendar view: the month's paintings day by day and its words.
+/// Tapping or clicking a day with an entry opens it.
 struct MonthMosaicView: View {
     let journal: Journal
     let open: (URL) -> Void
 
     @State private var month = Date.now
-    @State private var mosaicFile: URL?
 
     private var summary: MonthSummary {
         MonthSummary(entries: journal.entries, month: month)
@@ -160,15 +143,9 @@ struct MonthMosaicView: View {
                 if !summary.words.isEmpty {
                     WordChips(words: summary.words)
                 }
-                if summary.canShareMosaic {
-                    shareButton(summary)
-                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-        }
-        .task(id: summary) {
-            mosaicFile = summary.canShareMosaic ? MosaicRenderer.file(for: summary) : nil
         }
     }
 
@@ -229,19 +206,6 @@ struct MonthMosaicView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// Shares the month as one 1800 × 2400 image.
-    @ViewBuilder
-    private func shareButton(_ summary: MonthSummary) -> some View {
-        if let mosaicFile {
-            ShareLink(item: mosaicFile) {
-                Text("Share \(summary.englishMonthName()) as a mosaic")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, minHeight: 36)
-            }
-            .buttonStyle(.borderedProminent)
-        }
-    }
-
     /// Moves to the month `offset` months away.
     private func step(_ offset: Int) {
         month = Calendar.current.date(byAdding: .month, value: offset, to: month) ?? month
@@ -251,8 +215,8 @@ struct MonthMosaicView: View {
 /// The month grid: weekday initials, then one square per day, a painting where there is one.
 struct MosaicGrid: View {
     let summary: MonthSummary
-    /// Opens a day's entry, or `nil` in the shared image, where nothing is tappable.
-    var open: ((URL) -> Void)?
+    /// Opens a day's entry.
+    let open: (URL) -> Void
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
@@ -275,7 +239,7 @@ struct MosaicGrid: View {
     @ViewBuilder
     private func cell(_ day: MonthSummary.Day) -> some View {
         let square = DayCell(day: day)
-        if let url = day.entryURL, let open {
+        if let url = day.entryURL {
             Button { open(url) } label: { square }
                 .buttonStyle(.plain)
                 .accessibilityLabel(accessibilityLabel(for: day))
@@ -406,63 +370,5 @@ private struct FlowLayout: Layout {
         }
         if !current.isEmpty { rows.append((current, y, rowWidth, rowHeight)) }
         return rows
-    }
-}
-
-/// The month as a shareable image: 600 × 800 points, drawn at 1800 × 2400 pixels.
-struct MosaicCard: View {
-    let summary: MonthSummary
-
-    static let size = CGSize(width: 600, height: 800)
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("LE MOIS EN TABLEAUX")
-                    .font(.plexMono(13))
-                    .tracking(1)
-                    .foregroundStyle(Color.brand)
-                Text(frenchText(summary.frenchTitle()))
-                    .font(.cormorant(fixed: 58))
-                Text(summary.countsLine)
-                    .font(.plexSans(15))
-                    .foregroundStyle(.secondary)
-            }
-            MosaicGrid(summary: summary)
-            if !summary.words.isEmpty {
-                WordChips(words: summary.words)
-            }
-            Spacer(minLength: 0)
-            HStack {
-                Spacer()
-                Text(frenchText("Écrit avec Coquille"))
-                    .font(.plexSans(11))
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(36)
-        .frame(width: Self.size.width, height: Self.size.height)
-        .background(Color(red: 0.980, green: 0.976, blue: 0.961))
-        .foregroundStyle(Color(red: 0.078, green: 0.129, blue: 0.239))
-        .environment(\.dynamicTypeSize, .large)
-        .environment(\.colorScheme, .light)
-    }
-}
-
-/// Draws a month's mosaic to a JPEG file for sharing.
-@MainActor
-enum MosaicRenderer {
-
-    /// Writes the mosaic for `summary` to a temporary file named for the month, or `nil` if it can't be drawn.
-    static func file(for summary: MonthSummary) -> URL? {
-        guard let data = PostcardRenderer.jpeg(of: MosaicCard(summary: summary)) else { return nil }
-        guard let folder = try? PostcardRenderer.newExportFolder() else { return nil }
-        let url = folder.appending(path: "\(summary.frenchTitle()) en tableaux.jpg")
-        do {
-            try data.write(to: url, options: .atomic)
-            return url
-        } catch {
-            return nil
-        }
     }
 }

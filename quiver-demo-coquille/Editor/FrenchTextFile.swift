@@ -109,8 +109,20 @@ extension FocusedValues {
     @Entry var fileMenuState: FileMenuState?
 }
 
+/// The name of the item that shares the whole page as text, notes and markers included.
+///
+/// On the Mac it's a submenu of share services, so it has no ellipsis; elsewhere it
+/// opens the share sheet.
+enum ShareTitles {
+    #if os(macOS)
+    static let text = "Share Text"
+    #else
+    static let text = "Share Text…"
+    #endif
+}
+
 /// The File menu on the Mac and iPad, arranged as in Xcode: new, import, save, then the
-/// open entry's Rename, Duplicate and Delete, then its painting, then export.
+/// open entry's Rename, Duplicate and Delete, then its painting, then export and share.
 ///
 /// Nothing is saved to the journal without Save. New takes ⌘N from New Window, since
 /// each window would only show the same journal.
@@ -145,9 +157,9 @@ struct FileCommands: Commands {
             Divider()
             button("Export a Copy…", .export, enabled: state?.canExport == true)
                 .keyboardShortcut("e", modifiers: [.command, .shift])
-            button("Share as Postcard…", .sharePostcard, enabled: state?.canSharePostcard == true)
-            ShareLink(item: model?.plainText ?? "")
+            ShareLink(ShareTitles.text, item: model?.plainText ?? "")
                 .disabled(state?.canExport != true)
+            button("Share as Postcard…", .sharePostcard, enabled: state?.canSharePostcard == true)
         }
     }
 

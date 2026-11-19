@@ -79,7 +79,7 @@ extension Font {
         .custom(weight.rawValue, size: size, relativeTo: style)
     }
 
-    /// Cormorant Garamond italic at a fixed size, for postcards and mosaics, which become images.
+    /// Cormorant Garamond italic at a fixed size, for postcards, which become images.
     static func cormorant(fixed size: Double, weight: CormorantWeight = .semibold) -> Font {
         .custom(weight.rawValue, fixedSize: size)
     }
