@@ -20,6 +20,8 @@ struct ProgressSheet: View {
     let store: StatsStore
     @Environment(\.dismiss) private var dismiss
     @State private var confirmsReset = false
+    /// Why the last reset couldn't be saved, for the alert.
+    @State private var resetFailure: String?
 
     /// The stats as they stand, read from the store so a reset shows at once.
     private var stats: LearnerStats {
@@ -57,13 +59,31 @@ struct ProgressSheet: View {
                 }
             }
             .alert("Reset your progress?", isPresented: $confirmsReset) {
-                Button("Reset", role: .destructive) { store.reset() }
+                Button("Reset", role: .destructive) { reset() }
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This clears your streak, sentences checked, weak spots, tricky words and corrections. Your text isn't changed. This can't be undone.")
             }
+            .alert("Your progress couldn't be reset", isPresented: showsResetFailure) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(resetFailure ?? "")
+            }
         }
         .frame(minWidth: 380, minHeight: 520)
+    }
+
+    /// Resets the stats, or says why the reset couldn't be saved.
+    private func reset() {
+        do {
+            try store.reset()
+        } catch {
+            resetFailure = error.localizedDescription
+        }
+    }
+
+    private var showsResetFailure: Binding<Bool> {
+        Binding(get: { resetFailure != nil }, set: { if !$0 { resetFailure = nil } })
     }
 
     /// The four summary cards.

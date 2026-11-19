@@ -44,10 +44,11 @@ nonisolated enum PhraseSearch {
             .map { phrases[$0.index] }
     }
 
-    /// Returns the lowercased, accent-free words of `text`.
+    /// Returns the lowercased, accent-free words of `text`, numbers included, so a search
+    /// for "8" finds "8 p.m." instead of counting as an empty search.
     static func words(in text: String) -> [String] {
         text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "fr"))
-            .split { !$0.isLetter }
+            .split { !$0.isLetter && !$0.isNumber }
             .map(String.init)
     }
 

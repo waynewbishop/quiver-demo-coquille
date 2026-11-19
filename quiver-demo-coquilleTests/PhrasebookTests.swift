@@ -105,6 +105,14 @@ final class PhrasebookTests: XCTestCase {
         XCTAssertEqual(PhraseSearch.matches(for: "passport", in: phrases).first?.french, "J'ai perdu mon passeport.")
     }
 
+    // A number is searched like a word, not ignored as if the query were empty.
+    func testSearchFindsNumbers() throws {
+        let phrases = try pack().phrases
+        let found = PhraseSearch.matches(for: "8", in: phrases)
+        XCTAssertEqual(found.first?.french, "La pharmacie est ouverte jusqu'à vingt heures.")
+        XCTAssertLessThan(found.count, phrases.count)
+    }
+
     // A word unlike anything in the phrasebook finds nothing.
     func testSearchWithNoMatchIsEmpty() throws {
         let phrases = try pack().phrases

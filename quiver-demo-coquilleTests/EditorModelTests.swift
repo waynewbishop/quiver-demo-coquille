@@ -528,10 +528,13 @@ final class EditorModelTests: XCTestCase {
         return (Journal(folderURL: folder.appending(path: "Journal")), workspace)
     }
 
-    /// A model over a journal and workspace.
-    private func makeModel(_ files: (journal: Journal, workspace: Workspace)) throws -> EditorModel {
+    /// A model over a journal and workspace, without a linter when `checks` is false,
+    /// as when the language pack fails to load.
+    private func makeModel(_ files: (journal: Journal, workspace: Workspace), checks: Bool = true) throws -> EditorModel {
         let pack = try LanguagePack.french()
-        let linter = Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        let linter = checks
+            ? Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+            : nil
         return EditorModel(stats: StatsStore(fileURL: nil), journal: files.journal, workspace: files.workspace, narrator: FakeNarrator(), phraseNarrator: FakeNarrator(), linter: linter)
     }
 
@@ -740,6 +743,34 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(second.fileURL?.lastPathComponent, "\(today) Averse.txt")
         XCTAssertEqual(second.plainText, "Il pleut fort.")
         XCTAssertTrue(second.isEdited)
+    }
+
+    // A guided entry left untouched is still untouched after a relaunch, so moving on
+    // doesn't ask to save it.
+    func testRestoredUntouchedPromptIsNotEdited() throws {
+        let files = try makeJournal()
+        let first = try makeModel(files)
+        first.newEntry()
+        XCTAssertTrue(first.hasText)
+        XCTAssertFalse(first.isEdited)
+
+        let second = try makeModel(files)
+        second.restore()
+        XCTAssertEqual(second.plainText, first.plainText)
+        XCTAssertFalse(second.isEdited)
+        XCTAssertFalse(second.needsSaveDecision)
+    }
+
+    // Writing is kept for the next launch even when the language pack failed to load.
+    func testWritingIsKeptWithoutALinter() throws {
+        let files = try makeJournal()
+        let first = try makeModel(files, checks: false)
+        type("Mes notes.", into: first)
+        first.lintNow()
+
+        let second = try makeModel(files)
+        second.restore()
+        XCTAssertEqual(second.plainText, "Mes notes.")
     }
 
     // The next launch brings back writing that wasn't saved.

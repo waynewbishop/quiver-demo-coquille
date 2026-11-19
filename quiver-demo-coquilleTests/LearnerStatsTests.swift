@@ -117,6 +117,43 @@ final class LearnerStatsTests: XCTestCase {
     }
 
     // Stats saved before fixedByLearner existed still load, starting it at zero.
+    // A stats file that can't be decoded is moved aside, not overwritten by the next save.
+    @MainActor
+    func testUnreadableStatsAreKeptAside() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "CoquilleStats-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: folder) }
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = folder.appending(path: "LearnerStats.json")
+        try Data("not json".utf8).write(to: url)
+
+        let store = StatsStore(fileURL: url)
+        XCTAssertEqual(store.stats, LearnerStats())
+        store.recordFix(byLearner: true)
+
+        let names = try FileManager.default.contentsOfDirectory(atPath: folder.path)
+        let aside = try XCTUnwrap(names.first { $0.hasPrefix("LearnerStats unreadable") })
+        XCTAssertEqual(try Data(contentsOf: folder.appending(path: aside)), Data("not json".utf8))
+        XCTAssertNotEqual(try Data(contentsOf: url), Data("not json".utf8))
+    }
+
+    // A reset that can't be saved throws and leaves the stats as they were.
+    @MainActor
+    func testFailedResetKeepsTheStats() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "CoquilleStats-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: folder) }
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // A folder where the file should be makes every write fail.
+        let url = folder.appending(path: "LearnerStats.json")
+        let store = StatsStore(fileURL: url)
+        store.recordFix(byLearner: true)
+        let before = store.stats
+        try FileManager.default.removeItem(at: url)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
+
+        XCTAssertThrowsError(try store.reset())
+        XCTAssertEqual(store.stats, before)
+    }
+
     func testDecodesStatsWithoutFixedByLearner() throws {
         let json = #"{"days":{},"issueCounts":{"gender":2},"nounMistakes":{},"errorsFixed":3,"countedIssues":[]}"#
         let stats = try JSONDecoder().decode(LearnerStats.self, from: Data(json.utf8))
@@ -172,7 +209,7 @@ final class LearnerStatsTests: XCTestCase {
         store.record(text: "Un une fromage.", issues: [genderIssue])
         store.recordFix(byLearner: true, issue: genderIssue, in: "Un une fromage.")
         XCTAssertNotEqual(store.stats, LearnerStats())
-        store.reset()
+        try store.reset()
         XCTAssertEqual(store.stats, LearnerStats())
     }
 }

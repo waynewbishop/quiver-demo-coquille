@@ -87,11 +87,11 @@ nonisolated struct EtOrEstModel: Codable, Equatable, Sendable {
         previousWords = try container.decode([String].self, forKey: .previousWords)
         nextWords = try container.decode([String].self, forKey: .nextWords)
         model = try container.decode(LogisticRegression.self, forKey: .model)
-        guard expectedFeatureCount == model.featureCount else {
+        guard expectedFeatureCount == model.featureCount, model.hasUsableCoefficients else {
             throw DecodingError.dataCorruptedError(
                 forKey: .model,
                 in: container,
-                debugDescription: "Word lists imply \(expectedFeatureCount) features; the model has \(model.featureCount)"
+                debugDescription: "Word lists imply \(expectedFeatureCount) features; the model has \(model.featureCount) and \(model.coefficients.count) coefficients"
             )
         }
     }

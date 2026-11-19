@@ -374,8 +374,14 @@ final class EditorModel {
 
     /// Lints the current text, counts learner-typed fixes when requested, and restyles.
     /// `applied` is the issue whose fix Apply just inserted, which isn't the learner's own.
+    ///
+    /// Without a linter, as when the language pack fails to load, the writing is still
+    /// kept for the next launch.
     private func lint(applied: Issue?, countsTypedFixes: Bool = true) {
-        guard let linter else { return }
+        guard let linter else {
+            persist(plainText)
+            return
+        }
         let plain = plainText
         // A question with choices has no single fix, so changing its words isn't fixing an error.
         let previousErrors = visibleIssues.filter {
@@ -1041,9 +1047,11 @@ final class EditorModel {
                 restored = .unsaved
             }
         }
-        // A guided entry begun before midnight keeps the day it was begun.
-        if restored == .unsaved, let date = draft?.entryDate {
-            entryDate = date
+        // A guided entry begun before midnight keeps the day it was begun, and the
+        // prompt it started with, so an untouched prompt still isn't an edit.
+        if restored == .unsaved {
+            if let date = draft?.entryDate { entryDate = date }
+            saved = draft?.savedText ?? ""
         }
         document = restored
         savedText = saved
@@ -1067,7 +1075,7 @@ final class EditorModel {
         guard plain != bufferedText, let workspace else { return }
         if document == .unsaved || isEdited {
             do {
-                try workspace.writeUnsaved(plain, for: document, entryDate: entryDate)
+                try workspace.writeUnsaved(plain, for: document, entryDate: entryDate, savedText: savedText)
             } catch {
                 cannotKeepDraft = true
                 return

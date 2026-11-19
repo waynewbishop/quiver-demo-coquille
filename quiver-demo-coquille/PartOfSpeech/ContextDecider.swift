@@ -102,7 +102,7 @@ nonisolated struct ContextDecider: Decodable, Sendable {
         pairIndices = indices
         let names = baseNames + pairs.map { "pair." + $0[0] + "*" + $0[1] }
         let saved = try container.decode([String].self, forKey: .featureNames)
-        guard names == saved, names.count == model.featureCount else {
+        guard names == saved, names.count == model.featureCount, model.hasUsableCoefficients else {
             throw DecodingError.dataCorruptedError(
                 forKey: .featureNames,
                 in: container,

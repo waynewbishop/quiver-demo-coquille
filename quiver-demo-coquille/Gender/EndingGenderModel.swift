@@ -50,11 +50,11 @@ nonisolated struct EndingGenderModel: GenderPredictor, Codable, Equatable, Senda
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let endings = try container.decode([String].self, forKey: .endings)
         let model = try container.decode(LogisticRegression.self, forKey: .model)
-        guard endings.count == model.featureCount else {
+        guard endings.count == model.featureCount, model.hasUsableCoefficients else {
             throw DecodingError.dataCorruptedError(
                 forKey: .endings,
                 in: container,
-                debugDescription: "\(endings.count) endings for \(model.featureCount) features"
+                debugDescription: "\(endings.count) endings for \(model.featureCount) features and \(model.coefficients.count) coefficients"
             )
         }
         self.endings = endings

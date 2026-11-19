@@ -50,20 +50,31 @@ struct Workspace {
     ///
     /// Writing kept for one document is never handed to another: if forgetting it ever
     /// failed, it stays on disk but no longer matches what the editor has open.
-    func unsavedDraft() -> (text: String, entryDate: Date?)? {
+    ///
+    /// `savedText` is what an unsaved page started as, such as a guided entry's prompt,
+    /// so an untouched prompt isn't taken for an edit after a relaunch. It's `nil` for
+    /// drafts kept before it was stored.
+    func unsavedDraft() -> (text: String, entryDate: Date?, savedText: String?)? {
         guard let text = try? FrenchTextFile.text(at: unsavedURL) else { return nil }
         // Writing kept before drafts named their document belongs to whatever is open.
-        guard let draft = defaults?.dictionary(forKey: Self.draftKey) else { return (text, nil) }
+        guard let draft = defaults?.dictionary(forKey: Self.draftKey) else { return (text, nil, nil) }
         guard draft["document"] as? String == storedDocument else { return nil }
-        return (text, (draft["entryDate"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:)))
+        return (text,
+                (draft["entryDate"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:)),
+                draft["savedText"] as? String)
     }
 
-    /// Keeps the editor's writing for `document` until the learner saves or discards it.
-    func writeUnsaved(_ text: String, for document: EditorDocument, entryDate: Date) throws {
+    /// Keeps the editor's writing for `document` until the learner saves or discards it,
+    /// with `savedText`, what an unsaved page started as.
+    func writeUnsaved(_ text: String, for document: EditorDocument, entryDate: Date, savedText: String = "") throws {
         try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
         try Data(text.utf8).write(to: unsavedURL, options: .atomic)
         defaults?.set(
-            ["document": Self.storedValue(for: document), "entryDate": entryDate.timeIntervalSinceReferenceDate],
+            [
+                "document": Self.storedValue(for: document),
+                "entryDate": entryDate.timeIntervalSinceReferenceDate,
+                "savedText": savedText,
+            ],
             forKey: Self.draftKey
         )
     }

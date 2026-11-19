@@ -22,14 +22,25 @@ final class StatsStore {
     @ObservationIgnored private let fileURL: URL?
 
     /// Loads saved stats, or starts fresh when there are none.
+    ///
+    /// A file that's there but can't be read or decoded is moved aside, not overwritten,
+    /// so the learner's history can still be recovered from it.
     init(fileURL: URL? = StatsStore.defaultFileURL()) {
         self.fileURL = fileURL
-        if let fileURL, let data = try? Data(contentsOf: fileURL),
-           let saved = try? JSONDecoder().decode(LearnerStats.self, from: data) {
-            stats = saved
-        } else {
-            stats = LearnerStats()
+        stats = LearnerStats()
+        guard let fileURL, FileManager.default.fileExists(atPath: fileURL.path) else { return }
+        do {
+            stats = try JSONDecoder().decode(LearnerStats.self, from: Data(contentsOf: fileURL))
+        } catch {
+            try? FileManager.default.moveItem(at: fileURL, to: Self.asideURL(for: fileURL))
         }
+    }
+
+    /// Where an unreadable stats file is kept, as in "LearnerStats unreadable 2026-11-18T20-15-04Z.json".
+    static func asideURL(for fileURL: URL, at date: Date = .now) -> URL {
+        let stamp = date.formatted(.iso8601).replacingOccurrences(of: ":", with: "-")
+        let name = fileURL.deletingPathExtension().lastPathComponent
+        return fileURL.deletingLastPathComponent().appending(path: "\(name) unreadable \(stamp).json")
     }
 
     /// Logs a lint pass and saves.
@@ -45,16 +56,30 @@ final class StatsStore {
     }
 
     /// Starts the stats over, as on first launch, and saves.
-    func reset() {
+    ///
+    /// - Throws: The write's error if the reset couldn't be saved, with the stats left as they were.
+    func reset() throws {
+        let previous = stats
         stats = LearnerStats()
-        save()
+        do {
+            try write()
+        } catch {
+            stats = previous
+            throw error
+        }
     }
 
     /// Writes the stats file. A failed write loses only this update, which the next one retries.
     private func save() {
-        guard let fileURL, let data = try? JSONEncoder().encode(stats) else { return }
-        try? FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? data.write(to: fileURL, options: .atomic)
+        try? write()
+    }
+
+    /// Writes the stats file, or throws why it couldn't be written.
+    private func write() throws {
+        guard let fileURL else { return }
+        let data = try JSONEncoder().encode(stats)
+        try FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try data.write(to: fileURL, options: .atomic)
     }
 
     /// The stats file inside the app's Application Support folder.
