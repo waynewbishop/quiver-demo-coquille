@@ -1004,7 +1004,9 @@ struct EditorScreen: View {
                 Divider()
             }
             if let tableau = model.tableau, showsStampRow {
-                PaintingStampRow(tableau: tableau, stampWidth: Self.stampWidth)
+                PaintingStampRow(tableau: tableau, stampWidth: Self.stampWidth) {
+                    showsPaintingPicker = true
+                }
                 .transition(.opacity)
             }
             textEditor

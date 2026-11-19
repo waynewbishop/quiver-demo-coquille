@@ -80,11 +80,13 @@ struct PaintingStamp: View {
 /// The row under the French header with the entry's painting: its French word on the
 /// left and the painting as a stamp in the top-right corner.
 ///
-/// It only shows the painting. The painting changes through the entry's `//: tableau`
-/// line or the menus: File › Painting on the Mac, More on iPhone and iPad.
+/// Tapping the stamp calls `replace`, which opens the same picker as Replace Painting…
+/// in the menus: File › Painting on the Mac, More on iPhone and iPad.
 struct PaintingStampRow: View {
     let tableau: Tableau
     let stampWidth: CGFloat
+    /// Opens the painting picker to replace this painting.
+    let replace: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -102,14 +104,19 @@ struct PaintingStampRow: View {
 
             Spacer(minLength: 0)
 
-            PaintingStamp(tableau: tableau, width: stampWidth)
-                .padding(4)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("Painting: \(frenchText(tableau.title)). \(tableau.description)"))
-                .accessibilityAddTraits(.isImage)
-                #if os(macOS)
-                .help(tableau.title)
-                #endif
+            Button(action: replace) {
+                PaintingStamp(tableau: tableau, width: stampWidth)
+                    .padding(4)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Painting: \(frenchText(tableau.title)). \(tableau.description)"))
+            .accessibilityHint("Replaces the painting")
+            .accessibilityAddTraits([.isImage, .isButton])
+            #if os(macOS)
+            .help("Replace Painting…")
+            #endif
         }
         .padding(.leading, 22)
         .padding(.trailing, 14)
