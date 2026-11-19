@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-match-de-foot.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

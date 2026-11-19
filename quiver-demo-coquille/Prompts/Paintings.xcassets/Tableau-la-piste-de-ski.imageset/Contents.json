@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-piste-de-ski.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

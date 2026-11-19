@@ -35,6 +35,8 @@ final class Journal {
         let title: String?
         /// The entry's French, read when the list was built or last written.
         let text: String
+        /// When the file was created, which orders a day's entries; `nil` if the system doesn't say.
+        var created: Date? = nil
 
         var id: URL { url }
 
@@ -304,9 +306,11 @@ final class Journal {
         // A URL caches what it last read about its file, which a write has just changed.
         var url = url
         url.removeAllCachedResourceValues()
-        let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .now
+        let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .creationDateKey])
+        let modified = values?.contentModificationDate ?? .now
         let name = url.deletingPathExtension().lastPathComponent
-        return Entry(url: url, date: date(fromName: name) ?? modified, modified: modified, title: Self.title(of: url), text: text)
+        return Entry(url: url, date: date(fromName: name) ?? modified, modified: modified, title: Self.title(of: url), text: text,
+                     created: values?.creationDate)
     }
 
     /// Newest day first, and within a day, the most recently written first.

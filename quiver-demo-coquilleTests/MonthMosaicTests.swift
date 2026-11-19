@@ -29,11 +29,13 @@ final class MonthMosaicTests: XCTestCase {
         try XCTUnwrap(paris.date(from: DateComponents(year: 2026, month: 11, day: day, hour: 12)))
     }
 
-    /// An entry on a November day, with a painting line when `painting` is given.
-    private func entry(_ day: Int, _ painting: String?, name: String? = nil) throws -> Journal.Entry {
+    /// An entry on a November day, with a painting line when `painting` is given, its
+    /// file created `minute` minutes after midnight.
+    private func entry(_ day: Int, _ painting: String?, name: String? = nil, minute: Int = 0) throws -> Journal.Entry {
         let text = (painting.map { "//: tableau \($0)\n" } ?? "") + "Bonjour."
+        let created = try XCTUnwrap(paris.date(from: DateComponents(year: 2026, month: 11, day: day, minute: minute)))
         return Journal.Entry(url: URL(filePath: "/tmp/2026-11-\(day)\(name ?? "").txt"), date: try november(day),
-                             modified: try november(day), title: nil, text: text)
+                             modified: try november(day), title: nil, text: text, created: created)
     }
 
     /// The summary of November 2026 seen from the 16th.
@@ -53,19 +55,44 @@ final class MonthMosaicTests: XCTestCase {
     func testDays() throws {
         let month = try summary([try entry(2, "Le thé du matin"), try entry(8, nil), try entry(16, "Le parc")])
         XCTAssertEqual(month.days[1].tableau?.id, "le-the-du-matin")
-        XCTAssertNotNil(month.days[7].entryURL)
+        XCTAssertEqual(month.days[7].entries.count, 1)
         XCTAssertNil(month.days[7].tableau)
-        XCTAssertNil(month.days[2].entryURL)
+        XCTAssertTrue(month.days[2].entries.isEmpty)
         XCTAssertFalse(month.days[15].isFuture)
         XCTAssertTrue(month.days[16].isFuture)
     }
 
-    /// Two entries on one day: the one with a painting is the day's.
-    func testADayPrefersTheEntryWithAPainting() throws {
-        let month = try summary([try entry(5, nil, name: "a"), try entry(5, "La pluie", name: "b")])
+    /// Two entries on one day: the day shows the first painting, and lists both.
+    func testADayShowsItsFirstPainting() throws {
+        let month = try summary([try entry(5, nil, name: "a", minute: 10), try entry(5, "La pluie", name: "b", minute: 20)])
         XCTAssertEqual(month.days[4].tableau?.id, "la-pluie")
-        XCTAssertEqual(month.days[4].entryURL?.lastPathComponent, "2026-11-5b.txt")
+        XCTAssertEqual(month.days[4].entries.map(\.url.lastPathComponent), ["2026-11-5a.txt", "2026-11-5b.txt"])
         XCTAssertEqual(month.entryCount, 2)
+    }
+
+    /// A day's entries are listed in the order their files were created, whatever their names.
+    func testADayListsItsEntriesInTheOrderWritten() throws {
+        let month = try summary([
+            try entry(18, "Les deux coureuses", name: " Course", minute: 605),
+            try entry(18, nil, name: " (3)", minute: 1270),
+            try entry(18, "Au bord de l’eau", name: " Lac", minute: 580),
+        ])
+        let day = month.days[17]
+        XCTAssertEqual(day.entries.map(\.url.lastPathComponent),
+                       ["2026-11-18 Lac.txt", "2026-11-18 Course.txt", "2026-11-18 (3).txt"])
+        XCTAssertEqual(day.tableau?.id, "au-bord-de-l-eau")
+        XCTAssertEqual(day.entries.map(\.preview), ["Bonjour.", "Bonjour.", "Bonjour."])
+    }
+
+    /// Every entry's painting counts and gives its word, not just each day's first.
+    func testSeveralPaintingsInADayAllCount() throws {
+        let month = try summary([
+            try entry(18, "Au bord de l’eau", name: "a", minute: 1),
+            try entry(18, "Les deux coureuses", name: "b", minute: 2),
+            try entry(18, nil, name: "c", minute: 3),
+        ])
+        XCTAssertEqual(month.countsLine, "3 entries · 2 with a painting")
+        XCTAssertEqual(month.words, ["l’eau", "ensemble"])
     }
 
     /// The counts line, the words once each in date order, and entries from other months left out.

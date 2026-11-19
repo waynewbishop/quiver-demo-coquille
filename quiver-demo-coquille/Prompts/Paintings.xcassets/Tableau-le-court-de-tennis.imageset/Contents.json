@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-court-de-tennis.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

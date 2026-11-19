@@ -20,18 +20,33 @@ import SwiftUI
 /// entry's date comes from its file name and its painting from its `//: tableau` line.
 struct MonthSummary: Equatable {
 
+    /// One entry as a day lists it.
+    struct DayEntry: Equatable, Identifiable {
+        let url: URL
+        /// The title from the file name, if the entry has one.
+        let title: String?
+        let tableau: Tableau?
+        /// The entry's first line of French.
+        let preview: String
+
+        var id: URL { url }
+    }
+
     /// One day of the month.
     struct Day: Equatable, Identifiable {
         let number: Int
         let date: Date
-        /// The entry the day opens: its first with a painting, else its first.
-        let entryURL: URL?
-        /// That entry's painting, if it has one.
-        let tableau: Tableau?
+        /// The day's entries, in the order their files were created.
+        let entries: [DayEntry]
         /// Whether the day is after today.
         let isFuture: Bool
 
         var id: Int { number }
+
+        /// The painting the day shows: its first entry's that has one.
+        var tableau: Tableau? {
+            entries.lazy.compactMap(\.tableau).first
+        }
     }
 
     /// The first day of the month.
@@ -56,20 +71,36 @@ struct MonthSummary: Equatable {
         let count = calendar.range(of: .day, in: .month, for: start)?.count ?? 30
         let inMonth = entries
             .filter { calendar.isDate($0.date, equalTo: start, toGranularity: .month) }
-            .sorted { $0.date < $1.date }
+            .sorted(by: Self.writtenFirst(calendar: calendar))
         let todayStart = calendar.startOfDay(for: today)
 
         days = (1...count).compactMap { number in
             guard let dayDate = calendar.date(byAdding: .day, value: number - 1, to: start) else { return nil }
-            let onDay = inMonth.filter { calendar.isDate($0.date, inSameDayAs: dayDate) }
-            let chosen = onDay.first { $0.tableau != nil } ?? onDay.first
-            return Day(number: number, date: dayDate, entryURL: chosen?.url, tableau: chosen?.tableau,
+            let onDay = inMonth
+                .filter { calendar.isDate($0.date, inSameDayAs: dayDate) }
+                .map { DayEntry(url: $0.url, title: $0.title, tableau: $0.tableau, preview: $0.preview) }
+            return Day(number: number, date: dayDate, entries: onDay,
                        isFuture: calendar.startOfDay(for: dayDate) > todayStart)
         }
         entryCount = inMonth.count
-        paintedCount = days.filter { $0.tableau != nil }.count
+        let paintings = days.flatMap(\.entries).compactMap(\.tableau)
+        paintedCount = paintings.count
         var seen = Set<String>()
-        words = days.compactMap(\.tableau).map(\.word).filter { seen.insert($0).inserted }
+        words = paintings.map(\.word).filter { seen.insert($0).inserted }
+    }
+
+    /// Orders entries by day, then within a day by when each file was created (its
+    /// modification date when the system doesn't say), then by file name.
+    private static func writtenFirst(calendar: Calendar) -> (Journal.Entry, Journal.Entry) -> Bool {
+        { first, second in
+            let firstDay = calendar.startOfDay(for: first.date)
+            let secondDay = calendar.startOfDay(for: second.date)
+            if firstDay != secondDay { return firstDay < secondDay }
+            let firstWritten = first.created ?? first.modified
+            let secondWritten = second.created ?? second.modified
+            if firstWritten != secondWritten { return firstWritten < secondWritten }
+            return first.url.lastPathComponent < second.url.lastPathComponent
+        }
     }
 
     /// The month in French, as in "Novembre 2026".
@@ -107,7 +138,7 @@ enum FrenchCalendar {
 }
 
 /// The journal's calendar view: the month's paintings day by day and its words.
-/// Tapping or clicking a day with an entry opens it.
+/// Tapping or clicking a day with one entry opens it; a day with several lists them.
 struct MonthMosaicView: View {
     let journal: Journal
     let open: (URL) -> Void
@@ -187,23 +218,43 @@ struct MonthMosaicView: View {
         }
     }
 
-    /// What a painting cell and a dot mean.
+    /// What a painting cell, a dot and a stacked day mean.
     private var legend: some View {
-        HStack(spacing: 14) {
-            Label {
-                Text("Entry with a painting")
-            } icon: {
-                RoundedRectangle(cornerRadius: 3).fill(Color.green.opacity(0.45)).frame(width: 12, height: 12)
-            }
-            Label {
-                Text("Entry, no painting")
-            } icon: {
-                Circle().fill(Color.brand).frame(width: 6, height: 6)
-            }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) { legendItems }
+            VStack(alignment: .leading, spacing: 6) { legendItems }
         }
         .font(.caption)
         .foregroundStyle(.secondary)
         .accessibilityElement(children: .combine)
+    }
+
+    /// The legend's three keys.
+    @ViewBuilder
+    private var legendItems: some View {
+        Label {
+            Text("Entry with a painting")
+        } icon: {
+            RoundedRectangle(cornerRadius: 3).fill(Color.green.opacity(0.45)).frame(width: 12, height: 12)
+        }
+        Label {
+            Text("Entry, no painting")
+        } icon: {
+            Circle().fill(Color.brand).frame(width: 6, height: 6)
+        }
+        Label {
+            Text("Several entries")
+        } icon: {
+            ZStack(alignment: .bottomLeading) {
+                RoundedRectangle(cornerRadius: 3).fill(Color.secondary.opacity(0.3))
+                    .frame(width: 10, height: 10)
+                    .offset(x: 3, y: -3)
+                RoundedRectangle(cornerRadius: 3).fill(Color.green.opacity(0.45))
+                    .frame(width: 10, height: 10)
+                    .overlay(RoundedRectangle(cornerRadius: 3).stroke(.background, lineWidth: 1))
+            }
+            .frame(width: 13, height: 13, alignment: .bottomLeading)
+        }
     }
 
     /// Moves to the month `offset` months away.
@@ -215,8 +266,11 @@ struct MonthMosaicView: View {
 /// The month grid: weekday initials, then one square per day, a painting where there is one.
 struct MosaicGrid: View {
     let summary: MonthSummary
-    /// Opens a day's entry.
+    /// Opens an entry.
     let open: (URL) -> Void
+
+    /// The day whose entries are listed, while its list is up.
+    @State private var listedDay: Int?
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
@@ -235,37 +289,100 @@ struct MosaicGrid: View {
         }
     }
 
-    /// One day: its painting or a plain square, its number, and a dot for an entry without a painting.
+    /// One day: a day with one entry opens it, a day with several lists them.
     @ViewBuilder
     private func cell(_ day: MonthSummary.Day) -> some View {
         let square = DayCell(day: day)
-        if let url = day.entryURL {
-            Button { open(url) } label: { square }
+        switch day.entries.count {
+        case 0:
+            square
+                .accessibilityLabel(accessibilityLabel(for: day))
+        case 1:
+            Button { open(day.entries[0].url) } label: { square }
                 .buttonStyle(.plain)
                 .accessibilityLabel(accessibilityLabel(for: day))
                 .accessibilityHint("Opens the entry")
-        } else {
-            square
+        default:
+            Button { listedDay = day.number } label: { square }
+                .buttonStyle(.plain)
                 .accessibilityLabel(accessibilityLabel(for: day))
+                .accessibilityHint("Lists the day's entries")
+                .popover(isPresented: isListing(day)) {
+                    DayEntriesList(day: day, done: { listedDay = nil }) { url in
+                        listedDay = nil
+                        open(url)
+                    }
+                    .presentationCompactAdaptation(.sheet)
+                    .presentationDetents([.medium, .large])
+                }
         }
     }
 
-    /// "16 novembre, Le parc", "8 novembre, entry" or "20 novembre".
+    /// Whether `day`'s list is up.
+    private func isListing(_ day: MonthSummary.Day) -> Binding<Bool> {
+        Binding(get: { listedDay == day.number }, set: { if !$0 { listedDay = nil } })
+    }
+
+    /// "16 novembre, Le parc", "8 novembre, entry", "18 novembre, 2 entries, Au bord de l'eau" or "20 novembre".
     private func accessibilityLabel(for day: MonthSummary.Day) -> Text {
-        let date = "\(day.number) \(FrenchCalendar.months[Calendar.current.component(.month, from: day.date) - 1])"
-        if let tableau = day.tableau { return Text("\(frenchText(date)), \(frenchText(tableau.title))") }
-        if day.entryURL != nil { return Text("\(frenchText(date)), entry") }
-        return Text(frenchText(date))
+        let date = frenchText("\(day.number) \(FrenchCalendar.months[Calendar.current.component(.month, from: day.date) - 1])")
+        let count = day.entries.count
+        switch (count, day.tableau) {
+        case (0, _): return Text(date)
+        case (1, let tableau?): return Text("\(date), \(frenchText(tableau.title))")
+        case (1, nil): return Text("\(date), entry")
+        case (_, let tableau?): return Text("\(date), \(count) entries, \(frenchText(tableau.title))")
+        case (_, nil): return Text("\(date), \(count) entries")
+        }
     }
 }
 
-/// One square of the month grid.
+/// One square of the month grid. A day with several entries shows its first painting
+/// with one plain card edge peeking out behind it, however many entries there are, and
+/// no number badge; the day's list shows them all.
 private struct DayCell: View {
     let day: MonthSummary.Day
+
+    /// How far the card behind a day with several entries peeks out.
+    private static let stackInset: CGFloat = 4
 
     var body: some View {
         Color.clear
             .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                GeometryReader { geometry in
+                    let count = day.entries.count
+                    let inset = count > 1 ? Self.stackInset : 0
+                    let side = max(geometry.size.width - inset, 0)
+                    ZStack(alignment: .topLeading) {
+                        if count > 1 {
+                            card(Color.secondary.opacity(0.3), side: side)
+                                .offset(x: inset)
+                        }
+                        face
+                            .frame(width: side, height: side)
+                            .overlay {
+                                if count > 1 {
+                                    RoundedRectangle(cornerRadius: 7).stroke(.background, lineWidth: 1)
+                                }
+                            }
+                            .offset(y: inset)
+                    }
+                }
+            }
+    }
+
+    /// One plain card edge behind the day's face.
+    private func card(_ color: Color, side: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 7)
+            .fill(color)
+            .overlay(RoundedRectangle(cornerRadius: 7).stroke(.background, lineWidth: 1))
+            .frame(width: side, height: side)
+    }
+
+    /// The day's painting or a plain square, its number, and a dot when its entries have no painting.
+    private var face: some View {
+        Color.clear
             .background {
                 if let tableau = day.tableau {
                     Image(tableau.imageName)
@@ -273,6 +390,9 @@ private struct DayCell: View {
                         .aspectRatio(contentMode: .fill)
                 } else if day.isFuture {
                     RoundedRectangle(cornerRadius: 7).strokeBorder(Color.secondary.opacity(0.2))
+                } else if day.entries.count > 1 {
+                    // A solid base under the tint, so the card behind doesn't show through.
+                    Color.secondary.opacity(0.1).background(.background)
                 } else {
                     Color.secondary.opacity(0.1)
                 }
@@ -287,10 +407,108 @@ private struct DayCell: View {
                     .padding(.top, 3)
             }
             .overlay(alignment: .bottom) {
-                if day.entryURL != nil && day.tableau == nil {
+                if !day.entries.isEmpty && day.tableau == nil {
                     Circle().fill(Color.brand).frame(width: 6, height: 6).padding(.bottom, 6)
                 }
             }
+    }
+}
+
+/// A day's entries, for a day with several: each with its painting or a dot, its title
+/// and its first line, in the order they were written. Choosing one opens it.
+private struct DayEntriesList: View {
+    let day: MonthSummary.Day
+    let done: () -> Void
+    let open: (URL) -> Void
+
+    /// The day as the list's title writes it, as in "Mercredi 18 novembre".
+    private var title: String {
+        let calendar = Calendar.current
+        let weekday = Journal.frenchWeekdays[min(max(calendar.component(.weekday, from: day.date) - 1, 0), 6)]
+        let month = FrenchCalendar.months[min(max(calendar.component(.month, from: day.date) - 1, 0), 11)]
+        return "\(weekday) \(day.number) \(month)"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(frenchText(title))
+                        .font(.paintingTitle(.title2))
+                    Text("\(day.entries.count) entries")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Button("Done", action: done)
+                    .fontWeight(.semibold)
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 6)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(day.entries) { entry in
+                        Divider()
+                        Button { open(entry.url) } label: { row(entry) }
+                            .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        #if os(macOS)
+        .frame(width: 340, height: min(CGFloat(day.entries.count) * 76 + 84, 420))
+        #endif
+    }
+
+    /// One entry: its painting or a dot, the painting's title, the entry's title and its first line.
+    private func row(_ entry: MonthSummary.DayEntry) -> some View {
+        HStack(spacing: 12) {
+            Group {
+                if let tableau = entry.tableau {
+                    Image(tableau.imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    Color.secondary.opacity(0.1)
+                        .overlay { Circle().fill(Color.brand).frame(width: 6, height: 6) }
+                }
+            }
+            .frame(width: 64, height: 48)
+            .clipShape(.rect(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 2) {
+                if let tableau = entry.tableau {
+                    Text(frenchText(tableau.title))
+                        .font(.paintingTitle(.headline))
+                } else {
+                    Text("No painting")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                if let title = entry.title {
+                    Text(frenchText(title))
+                        .font(.footnote.weight(.medium))
+                }
+                if !entry.preview.isEmpty {
+                    Text(frenchText(entry.preview))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .padding(.vertical, 10)
+        .frame(minHeight: 64)
+        .contentShape(.rect)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens the entry")
     }
 }
 

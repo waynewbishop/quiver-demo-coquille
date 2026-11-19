@@ -27,7 +27,7 @@
     {
       "id": "dehors",
       "french": "Dehors",
-      "english": "Outdoors and sport",
+      "english": "Outdoors and nature",
       "short": "Outdoors"
     },
     {
@@ -35,6 +35,12 @@
       "french": "Les émotions",
       "english": "Feelings and moments",
       "short": "Feelings"
+    },
+    {
+      "id": "sport",
+      "french": "Le sport",
+      "english": "Outdoor sports",
+      "short": "Sports"
     }
   ],
   "paintings": [
@@ -403,26 +409,6 @@
       "description": "Beach umbrellas on the sand by a calm sea"
     },
     {
-      "id": "le-terrain-de-basket",
-      "title": "Le terrain de basket",
-      "word": "le basket",
-      "wordEnglish": "basketball",
-      "theme": "dehors",
-      "genre": "Paysage",
-      "painter": "Monet",
-      "description": "An outdoor basketball court with a hoop and a ball"
-    },
-    {
-      "id": "la-course-du-samedi",
-      "title": "La course du samedi",
-      "word": "la course",
-      "wordEnglish": "the run",
-      "theme": "dehors",
-      "genre": "Paysage",
-      "painter": "Monet",
-      "description": "Runners on a park path on a Saturday morning"
-    },
-    {
       "id": "au-bord-de-l-eau",
       "title": "Au bord de l’eau",
       "word": "l’eau",
@@ -431,16 +417,6 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "Tall trunks and orange leaves beside a grey lake, with a green rail fence"
-    },
-    {
-      "id": "les-deux-coureuses",
-      "title": "Les deux coureuses",
-      "word": "ensemble",
-      "wordEnglish": "together",
-      "theme": "dehors",
-      "genre": "Paysage",
-      "painter": "Monet",
-      "description": "Two runners on a leafy path under a yellow tree"
     },
     {
       "id": "les-nympheas",
@@ -515,6 +491,116 @@
       "genre": "Nature morte",
       "painter": "Cézanne",
       "description": "Two cups of tea side by side on a table"
+    },
+    {
+      "id": "le-terrain-de-basket",
+      "title": "Le terrain de basket",
+      "word": "le basket",
+      "wordEnglish": "basketball",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "An outdoor basketball court with a hoop and a ball"
+    },
+    {
+      "id": "la-course-du-samedi",
+      "title": "La course du samedi",
+      "word": "la course",
+      "wordEnglish": "the run",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Runners on a park path on a Saturday morning"
+    },
+    {
+      "id": "les-deux-coureuses",
+      "title": "Les deux coureuses",
+      "word": "ensemble",
+      "wordEnglish": "together",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two runners on a leafy path under a yellow tree"
+    },
+    {
+      "id": "le-volley-sur-la-plage",
+      "title": "Le volley sur la plage",
+      "word": "le volley",
+      "wordEnglish": "volleyball",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two players by a volleyball net on a sunny beach"
+    },
+    {
+      "id": "le-match-de-foot",
+      "title": "Le match de foot",
+      "word": "le foot",
+      "wordEnglish": "soccer",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two players and a ball on a green field, a goal behind them"
+    },
+    {
+      "id": "le-hockey-sur-gazon",
+      "title": "Le hockey sur gazon",
+      "word": "le hockey",
+      "wordEnglish": "field hockey",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two players with sticks and a white ball on a blue pitch"
+    },
+    {
+      "id": "le-court-de-tennis",
+      "title": "Le court de tennis",
+      "word": "le tennis",
+      "wordEnglish": "tennis",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A player serving on a red clay court"
+    },
+    {
+      "id": "le-velo-sur-la-route",
+      "title": "Le vélo sur la route",
+      "word": "le vélo",
+      "wordEnglish": "cycling",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A cyclist on a red bike riding a country road between green hills"
+    },
+    {
+      "id": "la-piste-de-ski",
+      "title": "La piste de ski",
+      "word": "le ski",
+      "wordEnglish": "skiing",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A skier on a snowy slope below white peaks and pines"
+    },
+    {
+      "id": "l-escalade",
+      "title": "L’escalade",
+      "word": "l’escalade",
+      "wordEnglish": "climbing",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A climber on a rope, high on a sunny rock face"
+    },
+    {
+      "id": "la-petanque",
+      "title": "La pétanque",
+      "word": "la pétanque",
+      "wordEnglish": "pétanque",
+      "theme": "sport",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A player with a boule on a gravel square under plane trees"
     }
   ]
 }
