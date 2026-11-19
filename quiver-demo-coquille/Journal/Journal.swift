@@ -151,6 +151,33 @@ final class Journal {
     /// Writes an entry's text and updates its place in the list.
     func write(_ text: String, to url: URL) throws {
         try CoordinatedFile.write(Data(text.utf8), to: url)
+        didWrite(text, to: url)
+    }
+
+    /// Thrown when an entry's file changed outside Coquille since the editor opened or last
+    /// saved it, so saving would replace someone else's edit.
+    struct FileChangedElsewhere: LocalizedError {
+        let url: URL
+        var errorDescription: String? {
+            "\u{201C}\(url.deletingPathExtension().lastPathComponent)\u{201D} was changed in another app."
+        }
+    }
+
+    /// Writes an entry's text only if its file still holds `expected`, the text the editor
+    /// last opened or saved. A file that's gone is written again, since nothing is replaced.
+    ///
+    /// - Throws: `FileChangedElsewhere`, writing nothing, when the file holds something else.
+    func write(_ text: String, to url: URL, replacing expected: String) throws {
+        let written = try CoordinatedFile.write(Data(text.utf8), to: url) { url in
+            guard FileManager.default.fileExists(atPath: url.path) else { return true }
+            return try FrenchTextFile.text(at: url) == expected
+        }
+        guard written else { throw FileChangedElsewhere(url: url) }
+        didWrite(text, to: url)
+    }
+
+    /// Updates a written entry's place in the list.
+    private func didWrite(_ text: String, to url: URL) {
         entries.removeAll { $0.url == url }
         entries.append(entry(for: url, text: text))
         sort()

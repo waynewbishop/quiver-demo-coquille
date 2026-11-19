@@ -58,6 +58,8 @@ struct EditorScreen: View {
     @State private var postcard: PostcardContent?
     /// The postcard waiting on Fix First or Share as Written, while errors are open.
     @State private var postcardWithErrors: PostcardContent?
+    /// A save that found the entry's file changed in another app, waiting on the learner's choice.
+    @State private var saveConflict: SaveConflict?
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     /// Reopens the welcome tour, from the empty page on iPhone and iPad.
@@ -149,6 +151,14 @@ struct EditorScreen: View {
                 Text(url == model.fileURL
                      ? "Its text stays in the editor, unsaved, so you can save it again. This can't be undone."
                      : "It will be removed from your journal. This can't be undone.")
+            }
+            .alert(saveConflict?.message ?? "", isPresented: asksAboutSaveConflict, presenting: saveConflict) { conflict in
+                Button("Save as New Entry…") { resolveBySavingAsNew(conflict) }
+                Button("Reload from File", role: .destructive) { resolveByReloading(conflict) }
+                Button("Replace", role: .destructive) { resolveByReplacing(conflict) }
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("Your changes are still here. Save them as a new entry to keep both versions, reload the file and let your changes go, or replace the file with your version.")
             }
             .alert(fileProblem?.title ?? "", isPresented: showsFileProblem, presenting: fileProblem) { _ in
                 Button("OK", role: .cancel) {}
@@ -344,7 +354,9 @@ struct EditorScreen: View {
     }
 
     /// Opens the postcard sheet, first asking Fix First or Share as Written while errors are open.
+    /// Like play, it checks the French as it is now, not as it was before the last edit.
     private func sharePostcard() {
+        if !model.isLintCurrent { model.lintNow() }
         guard let content = model.postcardContent else { return }
         if model.isLocked {
             postcardWithErrors = content
@@ -467,10 +479,45 @@ struct EditorScreen: View {
             naming = Naming(asNewEntry: false, then: move)
             return
         }
-        attempt("The entry couldn't be saved") {
+        do {
             try model.save()
             if let move { carryOut(move) }
+        } catch let changed as Journal.FileChangedElsewhere {
+            saveConflict = SaveConflict(message: changed.localizedDescription, then: move)
+        } catch {
+            fileProblem = FileProblem(title: "The entry couldn't be saved", message: error.localizedDescription)
         }
+    }
+
+    /// A save that stopped because the entry's file changed in another app, and where to go once it's settled.
+    private struct SaveConflict {
+        let message: String
+        let then: Move?
+    }
+
+    /// Keeps both versions: the learner's writing becomes a new entry, the changed file stays as it is.
+    private func resolveBySavingAsNew(_ conflict: SaveConflict) {
+        naming = Naming(asNewEntry: true, then: conflict.then)
+    }
+
+    /// Shows the file as it now is and lets the editor's changes go.
+    private func resolveByReloading(_ conflict: SaveConflict) {
+        attempt("The entry couldn't be reloaded") {
+            try model.reloadFromFile()
+            if let move = conflict.then { carryOut(move) }
+        }
+    }
+
+    /// Saves over the file, replacing the change made in the other app.
+    private func resolveByReplacing(_ conflict: SaveConflict) {
+        attempt("The entry couldn't be saved") {
+            try model.saveReplacingFile()
+            if let move = conflict.then { carryOut(move) }
+        }
+    }
+
+    private var asksAboutSaveConflict: Binding<Bool> {
+        Binding(get: { saveConflict != nil }, set: { if !$0 { saveConflict = nil } })
     }
 
     /// Saves with the title the learner chose in the sheet, then goes on.

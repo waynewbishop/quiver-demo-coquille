@@ -73,6 +73,50 @@ final class PostcardTests: XCTestCase {
         XCTAssertEqual(mark.date, "06·11·26")
     }
 
+    // MARK: - Content from the editor
+
+    /// Reports no misspellings, so only the grammar rules can raise issues.
+    private struct NoSpellChecker: SpellChecker {
+        func misspellings(in text: String) -> [Misspelling] { [] }
+    }
+
+    /// Says nothing, so tests stay silent.
+    private final class SilentNarrator: Narrator {
+        var voiceID = ""
+        private(set) var state = PlaybackState.idle
+        var spokenRange: Range<Int>?
+        func speak(_ text: String) {}
+        func pause() {}
+        func resume() {}
+        func stop() {}
+    }
+
+    /// Translates by labelling the French, so a test can tell which text was translated.
+    private struct LabelTranslator: Translator {
+        func translate(_ text: String) async throws -> String { "EN: " + text }
+    }
+
+    // A postcard leaves out English translated from the French as it was before the last edit.
+    func testPostcardNeverPairsNewFrenchWithOldEnglish() async throws {
+        let pack = try LanguagePack.french()
+        let linter = Linter(spellChecker: NoSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        let model = EditorModel(stats: StatsStore(fileURL: nil), narrator: SilentNarrator(), phraseNarrator: SilentNarrator(),
+                                linter: linter, translator: LabelTranslator())
+        model.text = AttributedString("//: tableau Le parc\nIl fait beau.")
+        model.textDidChange()
+        model.lintNow()
+        model.isEnglishOn = true
+        for _ in 0..<50 where model.postcardContent?.english == nil {
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTAssertEqual(model.postcardContent?.english, "EN: Il fait beau.")
+
+        model.text = AttributedString("//: tableau Le parc\nIl fait froid.")
+        model.textDidChange()
+        XCTAssertEqual(model.postcardContent?.french, "Il fait froid.")
+        XCTAssertNil(model.postcardContent?.english, "the English is from the old French")
+    }
+
     // MARK: - Fonts
 
     /// Cormorant Garamond ships with the app and registers both weights the titles and postcard use.
@@ -110,5 +154,8 @@ final class PostcardTests: XCTestCase {
         let both = try PostcardRenderer.files(for: postcard, sides: [.back, .front], showsWord: true, showsEnglish: true)
         XCTAssertEqual(both.map(\.lastPathComponent), ["Le parc – verso.jpg", "Le parc – recto.jpg"])
         XCTAssertTrue(both.allSatisfy { FileManager.default.fileExists(atPath: $0.path) })
+        XCTAssertNotEqual(back[0].deletingLastPathComponent(), both[0].deletingLastPathComponent(),
+                          "each export gets its own folder, so a redraw never replaces a file being shared")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: back[0].path))
     }
 }

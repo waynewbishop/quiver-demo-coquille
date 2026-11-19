@@ -142,6 +142,11 @@ struct PostcardView: View {
                     .foregroundStyle(Self.ink)
                     .minimumScaleFactor(0.5)
                 if showsEnglish, let english = content.english {
+                    WavyRule()
+                        .stroke(Self.rule, style: StrokeStyle(lineWidth: 1.3, lineCap: .round))
+                        .frame(width: 72, height: 8)
+                        .padding(.vertical, 2)
+                        .accessibilityHidden(true)
                     Text(english)
                         .font(.plexSans(10.5).italic())
                         .lineSpacing(2)
@@ -231,10 +236,19 @@ enum PostcardRenderer {
         return data as Data
     }
 
+    /// A new, empty temporary folder for one export, so a later redraw never replaces
+    /// a file that's already being shared.
+    static func newExportFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory
+            .appending(path: "Postcards", directoryHint: .isDirectory)
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
     /// Writes the chosen sides to temporary JPEG files for sharing, back first, named for the painting.
     static func files(for content: PostcardContent, sides: [PostcardSide], showsWord: Bool, showsEnglish: Bool) throws -> [URL] {
-        let folder = FileManager.default.temporaryDirectory.appending(path: "Postcards", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let folder = try newExportFolder()
         return try sides.map { side in
             let view = PostcardView(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
             guard let data = jpeg(of: view) else { throw CocoaError(.fileWriteUnknown) }
@@ -444,5 +458,28 @@ private extension View {
                 }
             }
             .clipped()
+    }
+}
+
+/// A short wavy line, the delimiter between the French and its English on a postcard's back.
+nonisolated struct WavyRule: Shape {
+    /// How many full waves fit across the line.
+    var waves = 4.0
+
+    /// A sine wave across `rect`, centred on its middle.
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let steps = 64
+        for step in 0...steps {
+            let progress = Double(step) / Double(steps)
+            let x = rect.minX + rect.width * progress
+            let y = rect.midY + sin(progress * waves * 2 * .pi) * rect.height / 2
+            if step == 0 {
+                path.move(to: CGPoint(x: x, y: y))
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+        return path
     }
 }

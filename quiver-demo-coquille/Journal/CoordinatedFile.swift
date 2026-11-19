@@ -38,6 +38,22 @@ enum CoordinatedFile {
         try finish(result, coordinationError)
     }
 
+    /// Writes `data` to `url` only while `isUnchanged` says the file still holds what the
+    /// caller last saw, checking and writing under one coordinated write so nothing can
+    /// change the file in between. Returns `false`, writing nothing, when it has changed.
+    static func write(_ data: Data, to url: URL, ifUnchanged isUnchanged: (URL) throws -> Bool) throws -> Bool {
+        var coordinationError: NSError?
+        var result: Result<Bool, any Error>?
+        NSFileCoordinator().coordinate(writingItemAt: url, options: .forReplacing, error: &coordinationError) { url in
+            result = Result {
+                guard try isUnchanged(url) else { return false }
+                try data.write(to: url, options: .atomic)
+                return true
+            }
+        }
+        return try finish(result, coordinationError)
+    }
+
     /// Moves the file at `source` to `destination`, which may be in another folder.
     static func move(_ source: URL, to destination: URL) throws {
         let coordinator = NSFileCoordinator()

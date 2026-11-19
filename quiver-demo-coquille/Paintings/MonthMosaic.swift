@@ -167,7 +167,7 @@ struct MonthMosaicView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
         }
-        .task(id: "\(summary.month)|\(summary.days.compactMap(\.tableau?.id))") {
+        .task(id: summary) {
             mosaicFile = summary.canShareMosaic ? MosaicRenderer.file(for: summary) : nil
         }
     }
@@ -456,8 +456,7 @@ enum MosaicRenderer {
     /// Writes the mosaic for `summary` to a temporary file named for the month, or `nil` if it can't be drawn.
     static func file(for summary: MonthSummary) -> URL? {
         guard let data = PostcardRenderer.jpeg(of: MosaicCard(summary: summary)) else { return nil }
-        let folder = FileManager.default.temporaryDirectory.appending(path: "Postcards", directoryHint: .isDirectory)
-        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        guard let folder = try? PostcardRenderer.newExportFolder() else { return nil }
         let url = folder.appending(path: "\(summary.frenchTitle()) en tableaux.jpg")
         do {
             try data.write(to: url, options: .atomic)

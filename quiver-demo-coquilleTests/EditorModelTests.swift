@@ -626,6 +626,57 @@ final class EditorModelTests: XCTestCase {
         XCTAssertEqual(files.journal.entries.count, 2)
     }
 
+    // Save never replaces a change made in another app: it stops, writes nothing and keeps the writing.
+    func testSaveStopsWhenTheFileChangedElsewhere() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(url)
+        type("Il pleut fort.", into: model)
+        try Data("Il neige.".utf8).write(to: url)
+
+        XCTAssertThrowsError(try model.save()) { error in
+            XCTAssertTrue(error is Journal.FileChangedElsewhere)
+        }
+        XCTAssertEqual(try FrenchTextFile.text(at: url), "Il neige.")
+        XCTAssertEqual(model.plainText, "Il pleut fort.")
+        XCTAssertTrue(model.isEdited)
+    }
+
+    // Replace saves over the other app's change; Reload shows it and lets the editor's go.
+    func testSaveConflictAnswers() throws {
+        let files = try makeJournal()
+        let replacing = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try replacing.openEntry(url)
+        type("Il pleut fort.", into: replacing)
+        try Data("Il neige.".utf8).write(to: url)
+        try replacing.saveReplacingFile()
+        XCTAssertEqual(try FrenchTextFile.text(at: url), "Il pleut fort.")
+        XCTAssertFalse(replacing.isEdited)
+
+        let reloading = try makeModel(files)
+        try reloading.openEntry(url)
+        type("Il fait beau.", into: reloading)
+        try Data("Il fait froid.".utf8).write(to: url)
+        try reloading.reloadFromFile()
+        XCTAssertEqual(reloading.plainText, "Il fait froid.")
+        XCTAssertFalse(reloading.isEdited)
+    }
+
+    // Saving twice in a row, with nothing changed elsewhere, never counts as a conflict.
+    func testSavingAgainAfterSavingIsNoConflict() throws {
+        let files = try makeJournal()
+        let model = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try model.openEntry(url)
+        type("Il pleut fort.", into: model)
+        try model.save()
+        type("Il pleut très fort.", into: model)
+        XCTAssertNoThrow(try model.save())
+        XCTAssertEqual(try FrenchTextFile.text(at: url), "Il pleut très fort.")
+    }
+
     // Renaming the open entry keeps the editor on it, under its new name.
     func testRenameFollowsTheOpenEntry() throws {
         let files = try makeJournal()
@@ -670,6 +721,23 @@ final class EditorModelTests: XCTestCase {
         let second = try makeModel(files)
         second.restore()
         XCTAssertEqual(second.fileURL, url)
+        XCTAssertEqual(second.plainText, "Il pleut fort.")
+        XCTAssertTrue(second.isEdited)
+    }
+
+    // Renaming an entry with unsaved changes keeps those changes for the next launch.
+    func testRestoreAfterRenameBringsBackUnsavedChanges() throws {
+        let files = try makeJournal()
+        let first = try makeModel(files)
+        let url = try files.journal.createEntry(text: "Il pleut.", title: "Pluie")
+        try first.openEntry(url)
+        type("Il pleut fort.", into: first)
+        first.lintNow()
+        try first.renameEntry(url, to: "Averse")
+
+        let second = try makeModel(files)
+        second.restore()
+        XCTAssertEqual(second.fileURL?.lastPathComponent, "\(today) Averse.txt")
         XCTAssertEqual(second.plainText, "Il pleut fort.")
         XCTAssertTrue(second.isEdited)
     }

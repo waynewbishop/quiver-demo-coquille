@@ -87,6 +87,9 @@ final class EditorModel {
     private(set) var cannotKeepDraft = false
     /// The day a new entry's file is named for, set by New Entry.
     @ObservationIgnored private var entryDate = Date.now
+    /// The exact text the current English translation was made from, so a postcard never
+    /// pairs new French with English from before the last edit.
+    @ObservationIgnored private var englishSource: String?
     @ObservationIgnored private var translator: (any Translator)?
     /// The exact text the current `issues` describe.
     @ObservationIgnored private var lintedText = ""
@@ -178,9 +181,11 @@ final class EditorModel {
     }
 
     /// What Share as Postcard shows, or `nil` without a painting or French to send.
+    ///
+    /// The English comes along only when it was translated from exactly this text.
     var postcardContent: PostcardContent? {
         guard let tableau, hasFrench else { return nil }
-        let translation: String? = if case .translated(let text) = english { text } else { nil }
+        let translation: String? = if case .translated(let text) = english, englishSource == plainText { text } else { nil }
         return PostcardContent(
             tableau: tableau,
             french: PostcardContent.backText(from: plainText),
@@ -650,15 +655,35 @@ final class EditorModel {
 
     /// Saves the writing. A saved entry is written back to its file; unsaved writing
     /// becomes a new entry named for its date and `title`.
+    ///
+    /// - Throws: `Journal.FileChangedElsewhere` when the entry's file was changed in
+    ///   another app since it was opened or last saved. Nothing is written, and the
+    ///   writing stays in the editor and its kept draft.
     func save(title: String? = nil) throws {
         guard let journal, canSave else { return }
         let plain = plainText
         if let fileURL {
-            try journal.write(plain, to: fileURL)
+            try journal.write(plain, to: fileURL, replacing: savedText)
             didSave(plain, as: fileURL)
         } else {
             try saveAsNewEntry(title: title)
         }
+    }
+
+    /// Saves over the entry's file even though it was changed in another app: the
+    /// learner's Replace answer to a save conflict.
+    func saveReplacingFile() throws {
+        guard let journal, canSave, let fileURL else { return }
+        let plain = plainText
+        try journal.write(plain, to: fileURL)
+        didSave(plain, as: fileURL)
+    }
+
+    /// Opens the entry's file as it now is, letting the editor's changes go: the learner's
+    /// Reload answer to a save conflict.
+    func reloadFromFile() throws {
+        guard let fileURL else { return }
+        try openEntry(fileURL)
     }
 
     /// Saves the writing as a new entry named for its date and `title`, leaving any entry
@@ -695,6 +720,10 @@ final class EditorModel {
         if url == fileURL {
             document = .entry(renamed)
             workspace?.setOpenDocument(document)
+            // The kept draft still names the old file, so keep it again under the new one,
+            // or the next launch wouldn't match it to this entry and the changes would be lost.
+            bufferedText = nil
+            persist(plainText)
         }
     }
 
@@ -870,6 +899,7 @@ final class EditorModel {
                 let translated = try await translator.translate(source)
                 guard !Task.isCancelled, current == plainText else { return }
                 english = .translated(Markdown.restyled(translated, like: lines))
+                englishSource = current
             } catch TranslationUnavailable.notInstalled {
                 guard !Task.isCancelled else { return }
                 english = .unavailable("To see English, download French in Coquille's Settings.")

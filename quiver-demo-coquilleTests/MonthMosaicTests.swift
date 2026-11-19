@@ -101,6 +101,15 @@ final class MonthMosaicTests: XCTestCase {
                        try month(2026, 8)...month(2026, 12))
     }
 
+    /// Anything the mosaic shows changes the summary, so the shared image is drawn again:
+    /// an entry without a painting, or a painting moved to another day.
+    func testSummaryChangesWithEverythingTheMosaicShows() throws {
+        let base = try summary([try entry(2, "Le parc"), try entry(3, "La pluie")])
+        XCTAssertNotEqual(base, try summary([try entry(2, "Le parc"), try entry(3, "La pluie"), try entry(4, nil)]))
+        XCTAssertNotEqual(base, try summary([try entry(2, "Le parc"), try entry(5, "La pluie")]))
+        XCTAssertEqual(base, try summary([try entry(2, "Le parc"), try entry(3, "La pluie")]))
+    }
+
     /// The mosaic is offered from four paintings, and draws at 1800 × 2400.
     func testMosaicImage() throws {
         let month = try summary([
