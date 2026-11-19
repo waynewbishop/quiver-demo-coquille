@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-fromage-et-le-pain.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-parc.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

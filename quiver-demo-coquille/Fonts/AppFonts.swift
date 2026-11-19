@@ -14,9 +14,10 @@
 import SwiftUI
 import CoreText
 
-/// The bundled IBM Plex fonts, used as in the design: Plex Mono for the French and
-/// labels, Plex Sans for the English. The fonts ship under the SIL Open Font License
-/// (`IBMPlex-OFL.txt`).
+/// The bundled fonts, used as in the design: Plex Mono for the French and labels, Plex
+/// Sans for the English, and Cormorant Garamond italic for painting titles, the calendar
+/// and postcards. All ship under the SIL Open Font License (`IBMPlex-OFL.txt`,
+/// `CormorantGaramond-OFL.txt`); Cormorant is the unmodified variable italic from Google Fonts.
 enum AppFonts {
 
     /// Registers the bundled fonts for this process, so no Info.plist entry is needed.
@@ -65,5 +66,21 @@ extension Font {
     /// IBM Plex Sans at `size`, scaling with Dynamic Type like `style`.
     static func plexSans(_ size: Double, weight: PlexWeight = .regular, relativeTo style: Font.TextStyle = .body) -> Font {
         .custom(weight == .regular ? "IBMPlexSans" : "IBMPlexSans-Medm", size: size, relativeTo: style)
+    }
+
+    /// The Cormorant Garamond italic weights in use: semibold for titles, medium for running text.
+    enum CormorantWeight: String {
+        case medium = "CormorantGaramond-MediumItalic"
+        case semibold = "CormorantGaramond-SemiBoldItalic"
+    }
+
+    /// Cormorant Garamond italic at `size`, scaling with Dynamic Type like `style`.
+    static func cormorant(_ size: Double, weight: CormorantWeight = .semibold, relativeTo style: Font.TextStyle = .title3) -> Font {
+        .custom(weight.rawValue, size: size, relativeTo: style)
+    }
+
+    /// Cormorant Garamond italic at a fixed size, for postcards and mosaics, which become images.
+    static func cormorant(fixed size: Double, weight: CormorantWeight = .semibold) -> Font {
+        .custom(weight.rawValue, fixedSize: size)
     }
 }

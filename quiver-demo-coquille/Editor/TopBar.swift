@@ -92,7 +92,7 @@ struct CompactToolbar: ToolbarContent {
 #endif
 
 /// The More menu on iPhone and iPad: New, Save, Share and the phrasebook first, then
-/// Save as New Entry and Explain, then font size, progress and settings.
+/// Save as New Entry, Explain and the painting, then font size, progress and settings.
 ///
 /// Share stands in for Export a Copy, since the share sheet can save to Files.
 /// Save as New Entry shows only once the page is a saved entry, because before that it
@@ -124,6 +124,14 @@ struct MoreMenuItems: View {
                     .disabled(!model.canSave)
             }
             explainItem
+            if model.tableau == nil {
+                Button("Add Painting…", systemImage: "photo") { request(.addPainting) }
+            } else {
+                Button("Replace Painting…", systemImage: "photo") { request(.replacePainting) }
+                Button("Remove Painting", systemImage: "trash", role: .destructive) { request(.removePainting) }
+                Button("Share as Postcard…", systemImage: "envelope") { request(.sharePostcard) }
+                    .disabled(model.postcardContent == nil)
+            }
         }
         Section {
             FontSizePicker()

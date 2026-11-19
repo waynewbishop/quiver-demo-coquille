@@ -72,3 +72,23 @@ enum Appearance: String, CaseIterable, Identifiable {
         #endif
     }
 }
+
+#if os(macOS)
+/// View › Appearance on the Mac: System, Light or Dark, beside Font Size. It's the same
+/// choice as in Settings, so changing either changes both.
+struct AppearanceCommands: Commands {
+
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
+
+    var body: some Commands {
+        CommandGroup(after: .toolbar) {
+            Picker("Appearance", selection: $appearance) {
+                ForEach(Appearance.allCases) { appearance in
+                    Text(appearance.label).tag(appearance)
+                }
+            }
+            .onChange(of: appearance) { appearance.apply() }
+        }
+    }
+}
+#endif

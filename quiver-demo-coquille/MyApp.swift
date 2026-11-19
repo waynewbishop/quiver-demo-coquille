@@ -23,6 +23,7 @@ import SwiftUI
             FontSizeCommands()
             PlaybackCommands()
             #if os(macOS)
+            AppearanceCommands()
             AboutCommands()
             WelcomeCommands()
             #endif

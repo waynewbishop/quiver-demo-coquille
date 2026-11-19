@@ -23,10 +23,13 @@ struct AboutSlide {
     /// The prompt in English.
     let english: String
 
-    /// Every painting that has a prompt, in the catalog's order.
-    static let all: [AboutSlide] = TableauCatalog.all.compactMap { tableau in
-        PromptCatalog.prompt(withID: tableau.promptID)
-            .map { AboutSlide(tableau: tableau, english: $0.text) }
+    /// The prompt in French.
+    let french: String
+
+    /// Every prompt's painting, in the prompt catalog's order; paintings without a prompt stay out.
+    static let all: [AboutSlide] = PromptCatalog.bundled().compactMap { prompt in
+        guard let tableau = TableauCatalog.tableau(for: prompt), let french = tableau.french else { return nil }
+        return AboutSlide(tableau: tableau, english: prompt.text, french: french)
     }
 
     /// The slide for the prompt that's today's on `date`, the one the widget shows.
@@ -201,7 +204,7 @@ struct AboutView: View {
                 .font(.system(size: 11, design: .monospaced))
                 .tracking(1)
                 .foregroundStyle(.secondary)
-            Text(french(slide.tableau.french))
+            Text(french(slide.french))
                 .font(.system(size: isCompact ? 24 : 19, design: .serif).italic())
                 .fixedSize(horizontal: false, vertical: true)
             Text(slide.english)
@@ -271,6 +274,7 @@ private struct AcknowledgmentsPage: View {
             credit("Lexique 3.83.", link: "http://www.lexique.org", "The French word list behind spelling, gender and conjugation. By Boris New and Christophe Pallier. CC BY-SA 4.0.")
             credit("Universal Dependencies.", "The French GSD, Rhapsodie and ParisStories treebanks, used to build the part-of-speech models and the verb preposition list. CC BY-SA 4.0.")
             credit("Paintings.", "Made for Coquille, in the style of Monet and Cézanne.")
+            credit("Cormorant Garamond.", link: "https://github.com/CatharsisFonts/Cormorant", "The italic of painting titles, the calendar and postcards. By Christian Thalmann. SIL Open Font License 1.1.")
         }
     }
 

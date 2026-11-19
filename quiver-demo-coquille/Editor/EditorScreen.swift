@@ -52,6 +52,12 @@ struct EditorScreen: View {
     @State private var sidePanel: SidePanel?
     @State private var showsSettings = false
     @State private var showsCorrections = false
+    /// The sheet for adding or replacing the writing's painting.
+    @State private var showsPaintingPicker = false
+    /// The postcard being shared, while its sheet is up.
+    @State private var postcard: PostcardContent?
+    /// The postcard waiting on Fix First or Share as Written, while errors are open.
+    @State private var postcardWithErrors: PostcardContent?
     @FocusState private var editorIsFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
     /// Reopens the welcome tour, from the empty page on iPhone and iPad.
@@ -123,7 +129,7 @@ struct EditorScreen: View {
                 Button("Don't Save", role: .destructive) { carryOut(move) }
                 Button("Cancel", role: .cancel) {}
             } message: { _ in
-                Text("Your changes will be lost if you don't save them.")
+                Text(saveMessage)
             }
             #else
             // An alert, since the question can come from a menu or the journal sheet,
@@ -133,7 +139,7 @@ struct EditorScreen: View {
                 Button("Don't Save", role: .destructive) { carryOut(move) }
                 Button("Cancel", role: .cancel) {}
             } message: { _ in
-                Text("Your changes will be lost if you don't save them.")
+                Text(saveMessage)
             }
             #endif
             .alert(deleteQuestion, isPresented: confirmsDelete, presenting: pendingDelete) { url in
@@ -165,7 +171,9 @@ struct EditorScreen: View {
             .focusedSceneValue(\.fileMenuState, FileMenuState(
                 canSave: model.canSave,
                 canExport: model.hasText,
-                hasOpenEntry: model.fileURL != nil
+                hasOpenEntry: model.fileURL != nil,
+                hasPainting: model.tableau != nil,
+                canSharePostcard: model.postcardContent != nil
             ))
             .onChange(of: fileRequest) {
                 if let fileRequest { handle(fileRequest) }
@@ -247,6 +255,24 @@ struct EditorScreen: View {
                 ProgressSheet(store: model.stats)
                     .tint(.brand)
             }
+            .sheet(isPresented: showsPostcard) {
+                if let postcard {
+                    PostcardSheet(content: postcard)
+                        .tint(.brand)
+                }
+            }
+            .alert(postcardErrorsQuestion, isPresented: asksAboutPostcardErrors, presenting: postcardWithErrors) { content in
+                Button("Fix First") { jumpToFirstError() }
+                Button("Share as Written") { postcard = content }
+            } message: { _ in
+                Text("A postcard shares your French exactly as it is.")
+            }
+            .sheet(isPresented: $showsPaintingPicker) {
+                PaintingPicker(current: model.tableau, suggested: model.promptTableau) { tableau in
+                    model.setTableau(tableau)
+                }
+                .tint(.brand)
+            }
             #if !os(macOS)
             .sheet(isPresented: $showsSettings) {
                 SettingsView()
@@ -311,7 +337,41 @@ struct EditorScreen: View {
         case .duplicateEntry: if let url = model.fileURL { duplicate(url) }
         case .deleteEntry: pendingDelete = model.fileURL
         case .export: export(model.plainText, named: exportName)
+        case .addPainting, .replacePainting: showsPaintingPicker = true
+        case .removePainting: model.setTableau(nil)
+        case .sharePostcard: sharePostcard()
         }
+    }
+
+    /// Opens the postcard sheet, first asking Fix First or Share as Written while errors are open.
+    private func sharePostcard() {
+        guard let content = model.postcardContent else { return }
+        if model.isLocked {
+            postcardWithErrors = content
+        } else {
+            postcard = content
+        }
+    }
+
+    /// "Your entry still has 1 error."
+    private var postcardErrorsQuestion: String {
+        let count = model.blockingIssues.count
+        return "Your entry still has \(count) \(count == 1 ? "error" : "errors")."
+    }
+
+    private var showsPostcard: Binding<Bool> {
+        Binding(get: { postcard != nil }, set: { if !$0 { postcard = nil } })
+    }
+
+    private var asksAboutPostcardErrors: Binding<Bool> {
+        Binding(get: { postcardWithErrors != nil }, set: { if !$0 { postcardWithErrors = nil } })
+    }
+
+    /// The Save question's message, saying first when the painting changed.
+    private var saveMessage: String {
+        [model.paintingChange, "Your changes will be lost if you don't save them."]
+            .compactMap { $0 }
+            .joined(separator: " ")
     }
 
     /// Carries out something asked for in the journal list.
@@ -638,7 +698,8 @@ struct EditorScreen: View {
         }
     }
 
-    /// The French pane: its header, the editor, and the open issue's card floating over it.
+    /// The French pane: its header, the entry's painting, the editor, and the open issue's
+    /// card floating over it.
     private var frenchPane: some View {
         VStack(spacing: 0) {
             PaneHeader(title: "FRANÇAIS", showsDivider: true)
@@ -714,6 +775,12 @@ struct EditorScreen: View {
             .animation(.snappy(duration: 0.2), value: editorIsFocused)
             .toolbar {
                 CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: showsPanel(.phrasebook), showsExplanation: showsPanel(.explanation), showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
+                // While typing, the stamp row steps aside and a tiny stamp rides beside the title.
+                if let tableau = model.tableau, !showsStampRow {
+                    ToolbarItem(placement: .principal) {
+                        typingTitle(with: tableau)
+                    }
+                }
             }
             // Going back to the French brings the keyboard up, so the phrasebook or
             // explanation sheet steps down rather than sharing the screen with it.
@@ -722,6 +789,26 @@ struct EditorScreen: View {
             }
             .task(id: titleSource) { await retitle() }
         }
+    }
+
+    /// The navigation bar's title and status while typing, with a tiny stamp of the painting.
+    private func typingTitle(with tableau: Tableau) -> some View {
+        HStack(spacing: 8) {
+            VStack(spacing: 0) {
+                Text(documentName)
+                    .font(.headline)
+                    .lineLimit(1)
+                if !documentStatus.isEmpty {
+                    Text(documentStatus)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            PaintingStamp(tableau: tableau, width: 34, showsTitle: false)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     /// iPhone portrait: the French, the English below it, then the open issue's card.
@@ -855,7 +942,8 @@ struct EditorScreen: View {
         #endif
     }
 
-    /// The French editor, with an optional exercise hint and an empty-text placeholder.
+    /// The French editor, with an optional exercise hint, the entry's painting as a stamp,
+    /// and an empty-text placeholder.
     private var editor: some View {
         VStack(spacing: 0) {
             if let hint = model.exerciseHint {
@@ -863,11 +951,36 @@ struct EditorScreen: View {
                     .id(hint)
                 Divider()
             }
+            if let tableau = model.tableau, showsStampRow {
+                PaintingStampRow(tableau: tableau, stampWidth: Self.stampWidth)
+                .transition(.opacity)
+            }
             textEditor
             MarkerKeywordBar(model: model)
         }
+        .animation(.snappy(duration: 0.2), value: model.tableau?.id)
+        .animation(.snappy(duration: 0.2), value: showsStampRow)
         // A slight cream in light mode; the color is clear in dark mode.
         .background(Color.frenchPaper)
+    }
+
+    /// The stamp's width beside the French: a little smaller on iPhone and iPad than on the Mac.
+    private static var stampWidth: CGFloat {
+        #if os(macOS)
+        112
+        #else
+        96
+        #endif
+    }
+
+    /// Whether the stamp row shows above the French. On iPhone it steps aside while the
+    /// keyboard is up, leaving a tiny stamp beside the title, so the writing gets the room.
+    private var showsStampRow: Bool {
+        #if os(macOS)
+        true
+        #else
+        !(usesPhoneLayout && editorIsFocused)
+        #endif
     }
 
     /// The text editor itself, including its placeholder and editing commands.

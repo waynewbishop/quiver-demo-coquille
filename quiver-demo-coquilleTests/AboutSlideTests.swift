@@ -19,11 +19,13 @@ import SwiftUI
 @MainActor
 final class AboutSlideTests: XCTestCase {
 
-    // Every painting becomes a slide, in catalog order, with its prompt's English.
-    func testEveryPaintingIsASlideWithItsEnglishPrompt() {
-        XCTAssertEqual(AboutSlide.all.map(\.tableau), TableauCatalog.all)
+    // Every prompt's painting becomes a slide, in prompt order, with the prompt in both languages.
+    func testEveryPromptPaintingIsASlideWithItsPrompt() {
+        let prompts = PromptCatalog.bundled()
+        XCTAssertEqual(AboutSlide.all.map(\.tableau.promptID), prompts.map(\.id))
         for slide in AboutSlide.all {
-            XCTAssertEqual(slide.english, PromptCatalog.prompt(withID: slide.tableau.promptID)?.text)
+            XCTAssertEqual(slide.english, slide.tableau.promptID.flatMap { PromptCatalog.prompt(withID: $0)?.text })
+            XCTAssertEqual(slide.french, slide.tableau.french)
         }
     }
 

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-lampe-le-soir.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

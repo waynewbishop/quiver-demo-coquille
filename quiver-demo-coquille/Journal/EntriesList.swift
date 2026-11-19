@@ -35,8 +35,34 @@ struct EntriesList: View {
     /// The entry whose name is being edited in place, if any.
     @Binding var renaming: URL?
     let perform: (EntryAction) -> Void
+    /// Whether the journal shows the month as a calendar of paintings, kept between launches.
+    @AppStorage("journalShowsCalendar") private var showsCalendar = false
 
     var body: some View {
+        VStack(spacing: 0) {
+            Picker("View", selection: $showsCalendar) {
+                Label("List view", systemImage: "list.bullet").tag(false)
+                Label("Calendar view", systemImage: "calendar").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .labelStyle(.iconOnly)
+            .fixedSize()
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+
+            if showsCalendar {
+                MonthMosaicView(journal: journal) { perform(.open($0)) }
+            } else {
+                list
+            }
+        }
+        .navigationTitle("Journal")
+        .onAppear { journal.refresh() }
+    }
+
+    /// The entries, newest first, with their right-click menus.
+    private var list: some View {
         List(selection: selection) {
             if journal.isUnavailable {
                 Label("Coquille can't read the journal folder right now.", systemImage: "exclamationmark.triangle")
@@ -49,11 +75,13 @@ struct EntriesList: View {
                     .foregroundStyle(.secondary)
                     .selectionDisabled()
             }
+            let showsThumbnailSpace = journal.entries.contains { $0.tableau != nil }
             ForEach(journal.entries) { entry in
                 EntryRow(
                     entry: entry,
                     model: model,
                     isOpen: model.fileURL == entry.url,
+                    showsThumbnailSpace: showsThumbnailSpace,
                     renaming: $renaming,
                     commitRename: { perform(.rename(entry.url, $0)) }
                 )
@@ -71,8 +99,6 @@ struct EntriesList: View {
         } primaryAction: { urls in
             if let url = urls.first { perform(.open(url)) }
         }
-        .navigationTitle("Journal")
-        .onAppear { journal.refresh() }
     }
 
     /// The open entry, selected in the list. Choosing another asks the editor to open it,
@@ -108,6 +134,9 @@ private struct EntryRow: View {
     let entry: Journal.Entry
     let model: EditorModel
     let isOpen: Bool
+    /// Whether rows without a painting keep a blank space where one would be, so titles
+    /// line up once any entry in the journal has a painting.
+    let showsThumbnailSpace: Bool
     @Binding var renaming: URL?
     let commitRename: (String) -> Void
     /// Whether the entry's French has errors, or `nil` until it's been checked.
@@ -115,7 +144,30 @@ private struct EntryRow: View {
     @State private var draftTitle = ""
     @FocusState private var titleIsFocused: Bool
 
+    /// The thumbnail's width: smaller in the Mac sidebar than in the iPhone and iPad list.
+    private static var thumbnailWidth: CGFloat {
+        #if os(macOS)
+        48
+        #else
+        64
+        #endif
+    }
+
     var body: some View {
+        HStack(spacing: 10) {
+            if let tableau = entry.tableau {
+                PaintingThumbnail(tableau: tableau, width: Self.thumbnailWidth)
+            } else if showsThumbnailSpace {
+                Color.clear
+                    .frame(width: Self.thumbnailWidth, height: Self.thumbnailWidth * 3 / 4)
+                    .accessibilityHidden(true)
+            }
+            details
+        }
+    }
+
+    /// The title, date, opening line and error dot.
+    private var details: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 if renaming == entry.url {

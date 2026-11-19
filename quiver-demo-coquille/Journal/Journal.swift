@@ -38,6 +38,11 @@ final class Journal {
 
         var id: URL { url }
 
+        /// The painting the entry's painting line names, for the list's thumbnail.
+        var tableau: Tableau? {
+            PaintingLine.tableau(in: text)
+        }
+
         /// The first line of French worth showing in a list, skipping the notes and a new
         /// entry's date line, so every entry isn't previewed by the same guide note.
         var preview: String {

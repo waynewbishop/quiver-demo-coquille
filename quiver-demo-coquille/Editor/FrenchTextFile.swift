@@ -82,6 +82,10 @@ enum FileRequest {
     case duplicateEntry
     case deleteEntry
     case export
+    case addPainting
+    case replacePainting
+    case removePainting
+    case sharePostcard
 }
 
 /// What the focused window's File menu can do right now.
@@ -92,6 +96,10 @@ struct FileMenuState: Equatable {
     var canExport = false
     /// Whether a saved entry is open, for Rename, Duplicate and Delete.
     var hasOpenEntry = false
+    /// Whether the writing has a painting, for Painting › Replace and Remove.
+    var hasPainting = false
+    /// Whether there's a painting and French for Share as Postcard.
+    var canSharePostcard = false
 }
 
 extension FocusedValues {
@@ -102,7 +110,7 @@ extension FocusedValues {
 }
 
 /// The File menu on the Mac and iPad, arranged as in Xcode: new, import, save, then the
-/// open entry's Rename, Duplicate and Delete, then export.
+/// open entry's Rename, Duplicate and Delete, then its painting, then export.
 ///
 /// Nothing is saved to the journal without Save. New takes ⌘N from New Window, since
 /// each window would only show the same journal.
@@ -129,8 +137,15 @@ struct FileCommands: Commands {
             button("Duplicate Entry", .duplicateEntry, enabled: state?.hasOpenEntry == true)
             button("Delete Entry…", .deleteEntry, enabled: state?.hasOpenEntry == true)
             Divider()
+            Menu("Painting") {
+                button("Add…", .addPainting, enabled: fileRequest != nil && state?.hasPainting == false)
+                button("Replace…", .replacePainting, enabled: state?.hasPainting == true)
+                button("Remove", .removePainting, enabled: state?.hasPainting == true)
+            }
+            Divider()
             button("Export a Copy…", .export, enabled: state?.canExport == true)
                 .keyboardShortcut("e", modifiers: [.command, .shift])
+            button("Share as Postcard…", .sharePostcard, enabled: state?.canSharePostcard == true)
             ShareLink(item: model?.plainText ?? "")
                 .disabled(state?.canExport != true)
         }

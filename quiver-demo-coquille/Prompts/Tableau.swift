@@ -13,90 +13,137 @@
 
 import Foundation
 
-/// The painting that goes with one daily prompt, with the prompt in French for the widget face.
-nonisolated struct Tableau: Equatable, Sendable {
+/// One painting in the collection, with the French word it teaches.
+///
+/// Paintings are data, not code: each one is an entry in `fr.paintings.json` and an image
+/// set named `Tableau-<id>` in `Paintings.xcassets`. Adding a painting needs no Swift.
+nonisolated struct Tableau: Equatable, Sendable, Decodable {
 
-    /// Landscapes for outdoor prompts, still lifes for indoor ones.
-    enum Genre: Sendable {
-        case paysage
-        case natureMorte
-    }
-
-    /// The catalog ID of the prompt this painting belongs to.
-    let promptID: String
-    /// The prompt in French, which leads on the widget with the English beneath it.
-    let french: String
-    /// The painting's short French title.
+    /// The permanent ID, the title as a slug such as `le-parc`. Never changed or reused.
+    let id: String
+    /// The painting's short French title. Permanent too, since entries store it.
     let title: String
-    let genre: Genre
+    /// The one French word the painting carries, with its article, as in "le parc".
+    let word: String
+    /// The word in English, as in "the park".
+    let wordEnglish: String
+    /// The ID of the theme the painting belongs to.
+    let theme: String
+    /// The genre in French, as in "Paysage" or "Nature morte".
+    let genre: String
     /// The painter whose style the painting follows.
     let painter: String
     /// What the painting shows, in English, for VoiceOver.
     let description: String
+    /// The catalog ID of the daily prompt this painting belongs to, if it has one.
+    let promptID: String?
+    /// That prompt in French, which leads on the widget with the English beneath it.
+    let french: String?
+    /// A retired painting leaves the picker but still shows on entries that have it.
+    let retired: Bool
 
-    /// The widget asset catalog's image for this painting.
-    var imageName: String { "Tableau-\(promptID)" }
+    /// The asset catalog's image for this painting, shared by the app and the widget.
+    var imageName: String { "Tableau-\(id)" }
 
     /// The genre and painter in French, as in "Paysage · à la Monet".
-    var style: String {
-        switch genre {
-        case .paysage: "Paysage · à la \(painter)"
-        case .natureMorte: "Nature morte · à la \(painter)"
-        }
+    var style: String { "\(genre) · à la \(painter)" }
+
+    /// The keys in `fr.paintings.json`; `retired` may be left out.
+    private enum CodingKeys: String, CodingKey {
+        case id, title, word, wordEnglish, theme, genre, painter, description, promptID, french, retired
+    }
+
+    /// Decodes one painting, treating a missing `retired` as false.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        word = try container.decode(String.self, forKey: .word)
+        wordEnglish = try container.decode(String.self, forKey: .wordEnglish)
+        theme = try container.decode(String.self, forKey: .theme)
+        genre = try container.decode(String.self, forKey: .genre)
+        painter = try container.decode(String.self, forKey: .painter)
+        description = try container.decode(String.self, forKey: .description)
+        promptID = try container.decodeIfPresent(String.self, forKey: .promptID)
+        french = try container.decodeIfPresent(String.self, forKey: .french)
+        retired = try container.decodeIfPresent(Bool.self, forKey: .retired) ?? false
     }
 }
 
-/// One painting for every prompt in `fr.prompts.json`, matched by prompt ID.
+/// A group of paintings in the picker, such as "À table · Food and cafés".
+nonisolated struct TableauTheme: Equatable, Sendable, Decodable {
+    let id: String
+    /// The theme's name in French.
+    let french: String
+    /// The theme's name in English.
+    let english: String
+    /// A one-word English name for the picker's buttons, such as "Food"; the full name without one.
+    let short: String?
+
+    /// The name on the theme's picker button.
+    var buttonTitle: String { short ?? english }
+}
+
+/// Loads the bundled painting collection from `fr.paintings.json`.
 nonisolated enum TableauCatalog {
 
-    /// Every painting, in the prompt catalog's order.
-    static let all: [Tableau] = [
-        Tableau(promptID: "daily-life-morning", french: "Qu'est-ce que vous avez fait ce matin\u{00A0}?",
-                title: "Le thé du matin", genre: .natureMorte, painter: "Cézanne",
-                description: "A blue teapot, a cup of tea and bread on a table by a window"),
-        Tableau(promptID: "food-favorite-meal", french: "Quel est votre repas préféré\u{00A0}?",
-                title: "Pommes et pichet", genre: .natureMorte, painter: "Cézanne",
-                description: "Apples on a white cloth beside a cream jug"),
-        Tableau(promptID: "weather-outside", french: "Quel temps fait-il\u{00A0}?",
-                title: "Meules en été", genre: .paysage, painter: "Monet",
-                description: "Haystacks in a golden field under a summer sky"),
-        Tableau(promptID: "place-writing-from", french: "D'où écrivez-vous aujourd'hui\u{00A0}?",
-                title: "La montagne au loin", genre: .paysage, painter: "Cézanne",
-                description: "A village below a violet mountain, framed by pines"),
-        Tableau(promptID: "people-friend", french: "Avec qui avez-vous passé du temps récemment\u{00A0}?",
-                title: "Le jardin en fleurs", genre: .paysage, painter: "Monet",
-                description: "A table and two chairs in a garden full of flowers"),
-        Tableau(promptID: "travel-next-trip", french: "Où aimeriez-vous voyager ensuite\u{00A0}?",
-                title: "Le lac de montagne", genre: .paysage, painter: "Monet",
-                description: "A mountain lake below snowy peaks"),
-        Tableau(promptID: "work-today", french: "Qu'est-ce que vous devez faire aujourd'hui\u{00A0}?",
-                title: "Le bureau", genre: .natureMorte, painter: "Cézanne",
-                description: "Books, a sheet of paper, an inkwell and a lamp on a desk"),
-        Tableau(promptID: "free-time-weekend", french: "Qu'est-ce que vous avez aimé faire le week-end dernier\u{00A0}?",
-                title: "Les voiliers", genre: .paysage, painter: "Monet",
-                description: "Three sailboats on a blue river"),
-        Tableau(promptID: "cafe-order", french: "Qu'est-ce que vous voudriez commander au café\u{00A0}?",
-                title: "Au café", genre: .natureMorte, painter: "Cézanne",
-                description: "A cup of tea, a croissant and a carafe on a café table"),
-        Tableau(promptID: "directions-place", french: "Comment allez-vous à un endroit près de chez vous\u{00A0}?",
-                title: "Le chemin des peupliers", genre: .paysage, painter: "Monet",
-                description: "A sandy path running between tall poplars"),
-        Tableau(promptID: "feelings-today", french: "Comment vous sentez-vous, et pourquoi\u{00A0}?",
-                title: "Les nymphéas", genre: .paysage, painter: "Monet",
-                description: "Water lilies on a still green pond"),
-        Tableau(promptID: "clothing-wearing", french: "Qu'est-ce que vous portez\u{00A0}?",
-                title: "Le chapeau de paille", genre: .natureMorte, painter: "Cézanne",
-                description: "A straw hat and a blue scarf on a wooden chair"),
-        Tableau(promptID: "journal-small-pleasure", french: "Quelle petite chose vous a fait plaisir récemment\u{00A0}?",
-                title: "Le bouquet", genre: .natureMorte, painter: "Cézanne",
-                description: "A bouquet of bright flowers in a blue vase"),
-        Tableau(promptID: "daily-life-today", french: "Qu'est-ce que vous avez fait aujourd'hui\u{00A0}?",
-                title: "Soleil couchant", genre: .paysage, painter: "Monet",
-                description: "The sun setting over a harbor, its light on the water"),
-    ]
+    /// The file's shape: the themes, then every painting ever shipped.
+    struct Contents: Decodable, Sendable {
+        let themes: [TableauTheme]
+        let paintings: [Tableau]
+    }
+
+    /// Decodes the collection, throwing so tests can show what's wrong with the file.
+    static func decode(_ data: Data) throws -> Contents {
+        try JSONDecoder().decode(Contents.self, from: data)
+    }
+
+    /// The main bundle's collection, decoded once per process.
+    private static let mainBundled = load(from: .main)
+
+    /// Reads `fr.paintings.json` from `bundle`, or an empty collection when it can't be read.
+    private static func load(from bundle: Bundle) -> Contents {
+        guard let url = bundle.url(forResource: "fr.paintings", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let contents = try? decode(data) else {
+            return Contents(themes: [], paintings: [])
+        }
+        return contents
+    }
+
+    /// Every painting, retired ones included, in the file's order.
+    static var all: [Tableau] { mainBundled.paintings }
+
+    /// The paintings a writer can choose, in the file's order.
+    static var available: [Tableau] { all.filter { !$0.retired } }
+
+    /// The picker's themes, in the file's order.
+    static var themes: [TableauTheme] { mainBundled.themes }
+
+    /// Returns the painting with a permanent ID, or `nil` for an unknown ID.
+    static func tableau(withID id: String) -> Tableau? {
+        all.first { $0.id == id }
+    }
 
     /// Returns the painting for `prompt`, or `nil` for a prompt with no painting yet.
     static func tableau(for prompt: WritingPrompt) -> Tableau? {
         all.first { $0.promptID == prompt.id }
+    }
+
+    /// Returns the painting whose title matches `title` as typed, ignoring capitals,
+    /// accents, apostrophe style and extra spaces, or `nil` when none does.
+    /// Retired paintings still match, so older entries keep showing them.
+    static func tableau(titled title: String) -> Tableau? {
+        let key = matchKey(title)
+        guard !key.isEmpty else { return nil }
+        return all.first { matchKey($0.title) == key }
+    }
+
+    /// `title` folded for matching, so "les nympheas" and "Les  Nymphéas" agree.
+    static func matchKey(_ title: String) -> String {
+        title.replacingOccurrences(of: "’", with: "'")
+            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "fr"))
+            .split(whereSeparator: \.isWhitespace)
+            .joined(separator: " ")
     }
 }

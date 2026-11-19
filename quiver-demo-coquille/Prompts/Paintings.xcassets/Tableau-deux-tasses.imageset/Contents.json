@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "deux-tasses.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

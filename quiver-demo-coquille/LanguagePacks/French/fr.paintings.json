@@ -1,0 +1,520 @@
+{
+  "themes": [
+    {
+      "id": "maison",
+      "french": "À la maison",
+      "english": "Home and daily life",
+      "short": "Home"
+    },
+    {
+      "id": "table",
+      "french": "À table",
+      "english": "Food and cafés",
+      "short": "Food"
+    },
+    {
+      "id": "saisons",
+      "french": "Le temps et les saisons",
+      "english": "Weather and seasons",
+      "short": "Weather"
+    },
+    {
+      "id": "voyage",
+      "french": "En voyage",
+      "english": "Travel and places",
+      "short": "Travel"
+    },
+    {
+      "id": "dehors",
+      "french": "Dehors",
+      "english": "Outdoors and sport",
+      "short": "Outdoors"
+    },
+    {
+      "id": "emotions",
+      "french": "Les émotions",
+      "english": "Feelings and moments",
+      "short": "Feelings"
+    }
+  ],
+  "paintings": [
+    {
+      "id": "le-the-du-matin",
+      "title": "Le thé du matin",
+      "word": "le thé",
+      "wordEnglish": "tea",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A blue teapot, a cup of tea and bread on a table by a window",
+      "promptID": "daily-life-morning",
+      "french": "Qu'est-ce que vous avez fait ce matin\u00A0?"
+    },
+    {
+      "id": "le-bureau",
+      "title": "Le bureau",
+      "word": "le bureau",
+      "wordEnglish": "the desk",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Books, a sheet of paper, an inkwell and a lamp on a desk",
+      "promptID": "work-today",
+      "french": "Qu'est-ce que vous devez faire aujourd'hui\u00A0?"
+    },
+    {
+      "id": "le-chapeau-de-paille",
+      "title": "Le chapeau de paille",
+      "word": "le chapeau",
+      "wordEnglish": "the hat",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A straw hat and a blue scarf on a wooden chair",
+      "promptID": "clothing-wearing",
+      "french": "Qu'est-ce que vous portez\u00A0?"
+    },
+    {
+      "id": "la-fenetre-ouverte",
+      "title": "La fenêtre ouverte",
+      "word": "la fenêtre",
+      "wordEnglish": "the window",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "An open window with pots of flowers on the sill"
+    },
+    {
+      "id": "la-cuisine",
+      "title": "La cuisine",
+      "word": "la cuisine",
+      "wordEnglish": "the kitchen",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A kitchen with hanging pans, a frying pan and fresh vegetables"
+    },
+    {
+      "id": "le-chat-sur-le-fauteuil",
+      "title": "Le chat sur le fauteuil",
+      "word": "le chat",
+      "wordEnglish": "the cat",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "An orange cat asleep on a red armchair"
+    },
+    {
+      "id": "la-lampe-le-soir",
+      "title": "La lampe le soir",
+      "word": "le soir",
+      "wordEnglish": "the evening",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A warm lamp glowing on a shelf in the evening"
+    },
+    {
+      "id": "pommes-et-pichet",
+      "title": "Pommes et pichet",
+      "word": "la pomme",
+      "wordEnglish": "the apple",
+      "theme": "table",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Apples on a white cloth beside a cream jug",
+      "promptID": "food-favorite-meal",
+      "french": "Quel est votre repas préféré\u00A0?"
+    },
+    {
+      "id": "au-cafe",
+      "title": "Au café",
+      "word": "le café",
+      "wordEnglish": "the café",
+      "theme": "table",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A cup of tea, a croissant and a carafe on a café table",
+      "promptID": "cafe-order",
+      "french": "Qu'est-ce que vous voudriez commander au café\u00A0?"
+    },
+    {
+      "id": "le-marche",
+      "title": "Le marché",
+      "word": "le marché",
+      "wordEnglish": "the market",
+      "theme": "table",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Market stalls with striped awnings and crates of fruit"
+    },
+    {
+      "id": "la-boulangerie",
+      "title": "La boulangerie",
+      "word": "le pain",
+      "wordEnglish": "bread",
+      "theme": "table",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Shelves of loaves and croissants in a bakery window"
+    },
+    {
+      "id": "la-tarte-aux-fruits",
+      "title": "La tarte aux fruits",
+      "word": "la tarte",
+      "wordEnglish": "the tart",
+      "theme": "table",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A fruit tart on a white plate"
+    },
+    {
+      "id": "le-fromage-et-le-pain",
+      "title": "Le fromage et le pain",
+      "word": "le fromage",
+      "wordEnglish": "cheese",
+      "theme": "table",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Cheese, a baguette and grapes on a wooden board"
+    },
+    {
+      "id": "le-pique-nique",
+      "title": "Le pique-nique",
+      "word": "le pique-nique",
+      "wordEnglish": "the picnic",
+      "theme": "table",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A red checked blanket with a basket on the grass"
+    },
+    {
+      "id": "meules-en-ete",
+      "title": "Meules en été",
+      "word": "l’été",
+      "wordEnglish": "summer",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Haystacks in a golden field under a summer sky",
+      "promptID": "weather-outside",
+      "french": "Quel temps fait-il\u00A0?"
+    },
+    {
+      "id": "soleil-couchant",
+      "title": "Soleil couchant",
+      "word": "le soleil",
+      "wordEnglish": "the sun",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The sun setting over a harbor, its light on the water",
+      "promptID": "daily-life-today",
+      "french": "Qu'est-ce que vous avez fait aujourd'hui\u00A0?"
+    },
+    {
+      "id": "la-pluie",
+      "title": "La pluie",
+      "word": "la pluie",
+      "wordEnglish": "rain",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "People with umbrellas on a rainy evening street"
+    },
+    {
+      "id": "la-neige",
+      "title": "La neige",
+      "word": "la neige",
+      "wordEnglish": "snow",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A snowy village with pine trees and falling snow"
+    },
+    {
+      "id": "l-automne",
+      "title": "L’automne",
+      "word": "l’automne",
+      "wordEnglish": "autumn",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Orange and red trees above a path covered in leaves"
+    },
+    {
+      "id": "le-brouillard",
+      "title": "Le brouillard",
+      "word": "le brouillard",
+      "wordEnglish": "fog",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A bridge and hills fading into morning fog"
+    },
+    {
+      "id": "le-printemps",
+      "title": "Le printemps",
+      "word": "le printemps",
+      "wordEnglish": "spring",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A cherry tree in pink blossom in a green field"
+    },
+    {
+      "id": "le-lac-en-automne",
+      "title": "Le lac en automne",
+      "word": "les feuilles",
+      "wordEnglish": "the leaves",
+      "theme": "saisons",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Tall trees with gold leaves beside a calm lake, fallen leaves on the grass"
+    },
+    {
+      "id": "la-montagne-au-loin",
+      "title": "La montagne au loin",
+      "word": "la montagne",
+      "wordEnglish": "the mountain",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Cézanne",
+      "description": "A village below a violet mountain, framed by pines",
+      "promptID": "place-writing-from",
+      "french": "D'où écrivez-vous aujourd'hui\u00A0?"
+    },
+    {
+      "id": "le-lac-de-montagne",
+      "title": "Le lac de montagne",
+      "word": "le lac",
+      "wordEnglish": "the lake",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A mountain lake below snowy peaks",
+      "promptID": "travel-next-trip",
+      "french": "Où aimeriez-vous voyager ensuite\u00A0?"
+    },
+    {
+      "id": "les-voiliers",
+      "title": "Les voiliers",
+      "word": "le bateau",
+      "wordEnglish": "the boat",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Three sailboats on a blue river",
+      "promptID": "free-time-weekend",
+      "french": "Qu'est-ce que vous avez aimé faire le week-end dernier\u00A0?"
+    },
+    {
+      "id": "la-gare",
+      "title": "La gare",
+      "word": "le train",
+      "wordEnglish": "the train",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A railway station with a train and a clock"
+    },
+    {
+      "id": "le-pont",
+      "title": "Le pont",
+      "word": "le pont",
+      "wordEnglish": "the bridge",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A stone bridge arching over a river between two towers"
+    },
+    {
+      "id": "la-place-du-village",
+      "title": "La place du village",
+      "word": "le village",
+      "wordEnglish": "the village",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A village square with a fountain and café umbrellas"
+    },
+    {
+      "id": "le-telepherique",
+      "title": "Le téléphérique",
+      "word": "le téléphérique",
+      "wordEnglish": "the cable car",
+      "theme": "voyage",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A red cable car rising toward snowy peaks"
+    },
+    {
+      "id": "le-jardin-en-fleurs",
+      "title": "Le jardin en fleurs",
+      "word": "la fleur",
+      "wordEnglish": "the flower",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A table and two chairs in a garden full of flowers",
+      "promptID": "people-friend",
+      "french": "Avec qui avez-vous passé du temps récemment\u00A0?"
+    },
+    {
+      "id": "le-chemin-des-peupliers",
+      "title": "Le chemin des peupliers",
+      "word": "le chemin",
+      "wordEnglish": "the path",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A sandy path running between tall poplars",
+      "promptID": "directions-place",
+      "french": "Comment allez-vous à un endroit près de chez vous\u00A0?"
+    },
+    {
+      "id": "le-sentier-de-montagne",
+      "title": "Le sentier de montagne",
+      "word": "la randonnée",
+      "wordEnglish": "the hike",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A hiker on a trail climbing toward the mountains"
+    },
+    {
+      "id": "le-parc",
+      "title": "Le parc",
+      "word": "le parc",
+      "wordEnglish": "the park",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A bench beside a path under tall trees in a park"
+    },
+    {
+      "id": "la-plage",
+      "title": "La plage",
+      "word": "la plage",
+      "wordEnglish": "the beach",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Beach umbrellas on the sand by a calm sea"
+    },
+    {
+      "id": "le-terrain-de-basket",
+      "title": "Le terrain de basket",
+      "word": "le basket",
+      "wordEnglish": "basketball",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "An outdoor basketball court with a hoop and a ball"
+    },
+    {
+      "id": "la-course-du-samedi",
+      "title": "La course du samedi",
+      "word": "la course",
+      "wordEnglish": "the run",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Runners on a park path on a Saturday morning"
+    },
+    {
+      "id": "au-bord-de-l-eau",
+      "title": "Au bord de l’eau",
+      "word": "l’eau",
+      "wordEnglish": "the water",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Tall trunks and orange leaves beside a grey lake, with a green rail fence"
+    },
+    {
+      "id": "les-deux-coureuses",
+      "title": "Les deux coureuses",
+      "word": "ensemble",
+      "wordEnglish": "together",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two runners on a leafy path under a yellow tree"
+    },
+    {
+      "id": "les-nympheas",
+      "title": "Les nymphéas",
+      "word": "le calme",
+      "wordEnglish": "calm",
+      "theme": "emotions",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Water lilies on a still green pond",
+      "promptID": "feelings-today",
+      "french": "Comment vous sentez-vous, et pourquoi\u00A0?"
+    },
+    {
+      "id": "le-bouquet",
+      "title": "Le bouquet",
+      "word": "la joie",
+      "wordEnglish": "joy",
+      "theme": "emotions",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A bouquet of bright flowers in a blue vase",
+      "promptID": "journal-small-pleasure",
+      "french": "Quelle petite chose vous a fait plaisir récemment\u00A0?"
+    },
+    {
+      "id": "la-lettre",
+      "title": "La lettre",
+      "word": "la nostalgie",
+      "wordEnglish": "nostalgia",
+      "theme": "emotions",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A handwritten letter and a sealed envelope on a desk"
+    },
+    {
+      "id": "les-bougies",
+      "title": "Les bougies",
+      "word": "la fête",
+      "wordEnglish": "celebration",
+      "theme": "emotions",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A birthday cake with lit candles"
+    },
+    {
+      "id": "le-ciel-etoile",
+      "title": "Le ciel étoilé",
+      "word": "le rêve",
+      "wordEnglish": "the dream",
+      "theme": "emotions",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A swirling starry sky over a sleeping village"
+    },
+    {
+      "id": "le-cerf-volant",
+      "title": "Le cerf-volant",
+      "word": "la liberté",
+      "wordEnglish": "freedom",
+      "theme": "emotions",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A bright kite flying high above a green field"
+    },
+    {
+      "id": "deux-tasses",
+      "title": "Deux tasses",
+      "word": "l’amitié",
+      "wordEnglish": "friendship",
+      "theme": "emotions",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Two cups of tea side by side on a table"
+    }
+  ]
+}

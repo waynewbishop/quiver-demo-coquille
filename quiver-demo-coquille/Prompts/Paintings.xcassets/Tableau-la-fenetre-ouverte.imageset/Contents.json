@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-fenetre-ouverte.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

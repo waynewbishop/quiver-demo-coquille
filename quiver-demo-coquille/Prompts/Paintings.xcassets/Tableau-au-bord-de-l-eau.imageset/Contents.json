@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "au-bord-de-l-eau.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

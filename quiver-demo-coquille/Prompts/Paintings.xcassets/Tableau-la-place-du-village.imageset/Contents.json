@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-place-du-village.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

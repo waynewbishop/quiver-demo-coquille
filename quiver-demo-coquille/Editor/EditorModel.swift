@@ -163,6 +163,48 @@ final class EditorModel {
         String(text.characters)
     }
 
+    /// The painting the text's painting line names, or `nil` without one.
+    var tableau: Tableau? {
+        PaintingLine.tableau(in: plainText)
+    }
+
+    /// The painting of the daily prompt this writing started from, which the picker
+    /// opens on: the first prompt whose English note is in the text.
+    var promptTableau: Tableau? {
+        let text = plainText
+        return PromptCatalog.bundled()
+            .first { text.contains("// \($0.text)") }
+            .flatMap(TableauCatalog.tableau(for:))
+    }
+
+    /// What Share as Postcard shows, or `nil` without a painting or French to send.
+    var postcardContent: PostcardContent? {
+        guard let tableau, hasFrench else { return nil }
+        let translation: String? = if case .translated(let text) = english { text } else { nil }
+        return PostcardContent(
+            tableau: tableau,
+            french: PostcardContent.backText(from: plainText),
+            english: translation,
+            date: postcardDate
+        )
+    }
+
+    /// The day the postmark shows: a saved entry's date from its file name, else the
+    /// day the unsaved writing will be saved for.
+    private var postcardDate: Date {
+        if case .entry(let url) = document, let entry = journal?.entry(at: url) {
+            return entry.date
+        }
+        return entryDate
+    }
+
+    /// A line for the Save question when the painting changed since the last save, or `nil`.
+    var paintingChange: String? {
+        let saved = PaintingLine.tableau(in: savedText)
+        guard saved != tableau else { return nil }
+        return tableau == nil ? "The painting was removed." : "The painting was changed."
+    }
+
     /// The French alone: the text with every note and Markdown symbol blanked out, each
     /// character at the same offset as in `plainText`.
     var frenchText: String {
@@ -299,6 +341,15 @@ final class EditorModel {
         text = completed
         let end = text.characters.index(text.startIndex, offsetBy: marker.range.lowerBound + completion.count)
         selection = AttributedTextSelection(insertionPoint: end)
+    }
+
+    /// Gives the entry `tableau` by writing its painting line, or takes the painting away
+    /// when `tableau` is `nil`. It's an ordinary edit, kept or dropped by Save or Don't Save.
+    func setTableau(_ tableau: Tableau?) {
+        guard let edit = PaintingLine.edit(setting: tableau, in: plainText),
+              let range = attributedRange(for: edit.range) else { return }
+        text.replaceSubrange(range, with: AttributedString(edit.replacement))
+        lintNow()
     }
 
     /// Lints right away if the text changed since the last lint, so play and English
@@ -868,11 +919,12 @@ final class EditorModel {
     }
 
     /// Clears every text color in `styled`, then colors each note and Markdown symbol the
-    /// secondary grey and each review marker the brand color.
+    /// secondary grey and each review marker the brand color. A painting line that shows
+    /// no painting, from an unknown title or after the first, stays grey like a note.
     private static func greyNotes(in styled: inout AttributedString) {
         styled.foregroundColor = nil
         let plain = String(styled.characters)
-        let markers = Set(Notes.markerRanges(in: plain))
+        let markers = Set(Notes.markerRanges(in: plain)).subtracting(PaintingLine.inactiveRanges(in: plain))
         for note in Notes.ranges(in: plain) {
             color(note, markers.contains(note) ? markerColor : noteColor, in: &styled)
         }
