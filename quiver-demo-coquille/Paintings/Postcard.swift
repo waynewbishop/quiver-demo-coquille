@@ -566,9 +566,10 @@ struct PostcardSheet: View {
             }
             .pickerStyle(.segmented)
 
-            ShareLink(items: shares) { share in
-                SharePreview(PostcardRenderer.fileName(of: content, side: share.side),
-                             image: Image(content.tableau.imageName))
+            // The preview has no title: Messages shows it as a caption under the card,
+            // and a postcard should arrive like a photo. The files keep their names.
+            ShareLink(items: shares) { _ in
+                SharePreview("", image: Image(content.tableau.imageName))
             } label: {
                 Label("Share Postcard", systemImage: "square.and.arrow.up")
                     .frame(maxWidth: .infinity, minHeight: 32)

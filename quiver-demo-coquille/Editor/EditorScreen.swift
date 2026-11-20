@@ -819,7 +819,9 @@ struct EditorScreen: View {
                 }
             }
             .navigationTitle(documentName)
-            .navigationSubtitle(documentStatus)
+            // The typing title draws its own status line, and the system still draws the
+            // subtitle beneath a principal item, so the status would show twice.
+            .navigationSubtitle(showsTypingTitle ? "" : documentStatus)
             .navigationBarTitleDisplayMode(.inline)
             // In landscape the keyboard leaves room for only a line or two, so the
             // navigation bar steps aside while typing; hiding the keyboard brings it back.
@@ -828,7 +830,7 @@ struct EditorScreen: View {
             .toolbar {
                 CompactToolbar(model: model, showsProgress: $showsProgress, showsPhrasebook: showsPanel(.phrasebook), showsExplanation: showsPanel(.explanation), showsEntries: $showsEntries, showsSettings: $showsSettings, perform: handle)
                 // While typing, the stamp row steps aside and a tiny stamp rides beside the title.
-                if let tableau = model.tableau, !showsStampRow {
+                if let tableau = model.tableau, showsTypingTitle {
                     ToolbarItem(placement: .principal) {
                         typingTitle(with: tableau)
                     }
@@ -841,6 +843,12 @@ struct EditorScreen: View {
             }
             .task(id: titleSource) { await retitle() }
         }
+    }
+
+    /// Whether the navigation bar shows the typing title: while the stamp row steps aside
+    /// for the keyboard and the writing has a painting.
+    private var showsTypingTitle: Bool {
+        model.tableau != nil && !showsStampRow
     }
 
     /// The navigation bar's title and status while typing, with a tiny stamp of the painting.
