@@ -190,8 +190,16 @@ final class EditorModel {
             tableau: tableau,
             french: PostcardContent.backText(from: plainText),
             english: translation,
-            date: postcardDate
+            date: postcardDate,
+            entryTitle: postcardEntryTitle
         )
+    }
+
+    /// The saved entry's title, which names the postcard's files, or `nil` for unsaved or
+    /// untitled writing.
+    private var postcardEntryTitle: String? {
+        guard case .entry(let url) = document else { return nil }
+        return journal?.entry(at: url)?.title ?? Journal.title(of: url)
     }
 
     /// The day the postmark shows: a saved entry's date from its file name, else the

@@ -24,6 +24,14 @@ struct PostcardContent: Equatable {
     /// The English pane's translation, or `nil` while there isn't one.
     let english: String?
     let date: Date
+    /// The journal entry's title, or `nil` for unsaved or untitled writing.
+    var entryTitle: String? = nil
+
+    /// The name the postcard's files share: the entry's title, else the painting's.
+    var name: String {
+        let title = entryTitle?.trimmingCharacters(in: .whitespaces) ?? ""
+        return title.isEmpty ? tableau.title : title
+    }
 
     /// The French text for the back: `text` without its notes, review markers and the
     /// date heading a new entry starts with, since the postmark carries the date.
@@ -282,9 +290,10 @@ enum PostcardRenderer {
         return data
     }
 
-    /// The file name of one side, as in "Le parc – verso.jpg".
+    /// The file name of one side, as in "Au parc avec Paul – verso.jpg", named for the
+    /// entry, or for its painting while the writing has no title.
     static func fileName(of content: PostcardContent, side: PostcardSide) -> String {
-        "\(content.tableau.title) – \(side == .back ? "verso" : "recto").jpg"
+        "\(content.name) – \(side == .back ? "verso" : "recto").jpg"
     }
 
     /// Draws the chosen sides and writes them to temporary JPEG files for sharing, back first,
@@ -367,6 +376,7 @@ struct PostcardSheet: View {
     let content: PostcardContent
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var side = PostcardSide.back
     @State private var showsEnglish = true
     @State private var showsWord = true
@@ -497,18 +507,36 @@ struct PostcardSheet: View {
     }
 
     /// The chosen side, scaled to fit, with a shadow like a card on a table.
+    /// Tapping it turns the card over: a flip, or a fade with Reduce Motion on.
     private var preview: some View {
-        PostcardView(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
-            .id(side)
-            .transition(.opacity)
-            .scaleToFit(PostcardView.size)
-            .clipShape(.rect(cornerRadius: 4))
-            .shadow(color: .black.opacity(0.2), radius: 14, y: 8)
-            .animation(.easeInOut(duration: 0.25), value: side)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(side == .front
-                ? Text("Postcard front: \(frenchText(content.tableau.title))")
-                : Text("Postcard back: \(frenchText(content.french))"))
+        Group {
+            if reduceMotion {
+                PostcardCard(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
+                    .id(side)
+                    .transition(.opacity)
+            } else {
+                FlippingPostcard(content: content, showsWord: showsWord, showsEnglish: showsEnglish,
+                                 angle: side == .back ? 180 : 0)
+            }
+        }
+        .animation(.easeInOut(duration: reduceMotion ? 0.25 : 0.45), value: side)
+        .contentShape(.rect)
+        .onTapGesture(perform: turnOver)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(side == .front
+            ? Text("Postcard front: \(frenchText(content.tableau.title))")
+            : Text("Postcard back: \(frenchText(content.french))"))
+        .accessibilityHint("Turns the postcard over")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(.default, turnOver)
+        #if os(macOS)
+        .help("Click to turn over")
+        #endif
+    }
+
+    /// Shows the other side of the postcard.
+    private func turnOver() {
+        side = side == .front ? .back : .front
     }
 
     /// The side, the options, what to send, and the actions.
@@ -602,6 +630,46 @@ private extension View {
                 }
             }
             .clipped()
+    }
+}
+
+/// One postcard side as the sheet previews it: scaled to fit, with rounded corners and a
+/// shadow like a card on a table.
+private struct PostcardCard: View {
+    let content: PostcardContent
+    let side: PostcardSide
+    let showsWord: Bool
+    let showsEnglish: Bool
+
+    var body: some View {
+        PostcardView(content: content, side: side, showsWord: showsWord, showsEnglish: showsEnglish)
+            .scaleToFit(PostcardView.size)
+            .clipShape(.rect(cornerRadius: 4))
+            .shadow(color: .black.opacity(0.2), radius: 14, y: 8)
+    }
+}
+
+/// The preview card turned about its vertical axis: 0 degrees shows the front, 180 the back.
+///
+/// The angle animates, and the card shows whichever side faces the viewer, so the side
+/// changes halfway through the turn. The back is turned a further half turn so its
+/// writing never reads mirrored.
+private struct FlippingPostcard: View, Animatable {
+    let content: PostcardContent
+    let showsWord: Bool
+    let showsEnglish: Bool
+    var angle: Double
+
+    var animatableData: Double {
+        get { angle }
+        set { angle = newValue }
+    }
+
+    var body: some View {
+        let showsBack = angle > 90
+        PostcardCard(content: content, side: showsBack ? .back : .front,
+                     showsWord: showsWord, showsEnglish: showsEnglish)
+            .rotation3DEffect(.degrees(showsBack ? angle - 180 : angle), axis: (x: 0, y: 1, z: 0), perspective: 0.5)
     }
 }
 

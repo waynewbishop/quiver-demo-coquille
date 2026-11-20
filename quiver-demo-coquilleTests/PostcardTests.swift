@@ -58,6 +58,24 @@ final class PostcardTests: XCTestCase {
         XCTAssertEqual(PostcardContent.backText(from: "Lundi, je vais au parc."), "Lundi, je vais au parc.")
     }
 
+    // MARK: - File names
+
+    /// A titled entry names the postcard's files.
+    func testFilesAreNamedForTheEntry() throws {
+        var postcard = try content()
+        postcard.entryTitle = "Au parc avec Paul"
+        XCTAssertEqual(PostcardRenderer.fileName(of: postcard, side: .back), "Au parc avec Paul – verso.jpg")
+        XCTAssertEqual(PostcardRenderer.fileName(of: postcard, side: .front), "Au parc avec Paul – recto.jpg")
+    }
+
+    /// Unsaved or untitled writing names the files for its painting.
+    func testUntitledWritingIsNamedForItsPainting() throws {
+        var postcard = try content()
+        XCTAssertEqual(PostcardRenderer.fileName(of: postcard, side: .back), "Le parc – verso.jpg")
+        postcard.entryTitle = "  "
+        XCTAssertEqual(PostcardRenderer.fileName(of: postcard, side: .back), "Le parc – verso.jpg")
+    }
+
     // MARK: - Dates
 
     /// The heading is the French date in capitals, with "1er" on the first of the month.
