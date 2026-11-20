@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "les-pyramides-de-gizeh.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

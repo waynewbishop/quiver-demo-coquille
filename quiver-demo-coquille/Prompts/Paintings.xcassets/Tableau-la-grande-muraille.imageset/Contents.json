@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-grande-muraille.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

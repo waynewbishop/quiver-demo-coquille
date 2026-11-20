@@ -41,6 +41,12 @@
       "french": "Le sport",
       "english": "Outdoor sports",
       "short": "Sports"
+    },
+    {
+      "id": "merveilles",
+      "french": "Les merveilles du monde",
+      "english": "Wonders of the world",
+      "short": "Wonders"
     }
   ],
   "paintings": [
@@ -601,6 +607,86 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "A player with a boule on a gravel square under plane trees"
+    },
+    {
+      "id": "la-tour-de-pise",
+      "title": "La tour de Pise",
+      "word": "la tour",
+      "wordEnglish": "the tower",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Leaning Tower of Pisa on a green lawn under a blue summer sky"
+    },
+    {
+      "id": "l-acropole",
+      "title": "L’Acropole",
+      "word": "la colonne",
+      "wordEnglish": "the column",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Parthenon's columns on the hill in warm light, olive trees below"
+    },
+    {
+      "id": "le-colisee",
+      "title": "Le Colisée",
+      "word": "les ruines",
+      "wordEnglish": "the ruins",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Colosseum's arches in golden evening sun, umbrella pines beside it"
+    },
+    {
+      "id": "la-grande-muraille",
+      "title": "La Grande Muraille",
+      "word": "le mur",
+      "wordEnglish": "the wall",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Great Wall winding over green hills into the haze"
+    },
+    {
+      "id": "les-pyramides-de-gizeh",
+      "title": "Les pyramides de Gizeh",
+      "word": "le désert",
+      "wordEnglish": "the desert",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The pyramids of Giza under a pink and gold sunrise sky"
+    },
+    {
+      "id": "le-mont-saint-michel",
+      "title": "Le mont Saint-Michel",
+      "word": "la marée",
+      "wordEnglish": "the tide",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The abbey on its island, the tide coming in under a pale sky"
+    },
+    {
+      "id": "le-pont-du-gard",
+      "title": "Le pont du Gard",
+      "word": "la rivière",
+      "wordEnglish": "the river",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Pont du Gard's tiers of arches over a calm green river"
+    },
+    {
+      "id": "l-arc-de-triomphe",
+      "title": "L’Arc de triomphe",
+      "word": "l’avenue",
+      "wordEnglish": "the avenue",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The Arc de Triomphe at the end of a tree-lined avenue in spring"
     }
   ]
 }

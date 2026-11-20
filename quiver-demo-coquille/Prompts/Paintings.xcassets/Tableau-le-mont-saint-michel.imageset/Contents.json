@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-mont-saint-michel.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
