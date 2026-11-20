@@ -34,7 +34,7 @@ enum TourPage: Int, CaseIterable, Identifiable {
         case .notes: "Correct isn't always natural."
         case .phrasebook: "Borrow a phrase, make it yours."
         case .journal: "A little French, every day."
-        case .ready: "One download, then write."
+        case .ready: "Ready to write."
         }
     }
 
@@ -57,15 +57,15 @@ enum TourPage: Int, CaseIterable, Identifiable {
             #endif
         case .unlock:
             #if os(macOS)
-            return "Correct your errors to unlock French playback and English translation. It's a chance to learn from each mistake before hearing or reading the answer. Warnings won't keep these features locked."
+            return "Fix or ignore your errors to unlock French playback and English translation. It's a chance to learn from each mistake before hearing or reading the answer. Warnings won't keep these features locked."
             #else
-            return "Correct your errors to unlock French playback and English translation. Warnings won't keep them locked."
+            return "Fix or ignore your errors to unlock French playback and English. Warnings won't keep them locked."
             #endif
         case .notes:
             #if os(macOS)
-            return "A sentence can be correct but still sound unusual in French. Ask for a more natural way to say it, or add notes with // that Coquille won't check. Share your writing, including its notes and corrections, when you're ready."
+            return "A sentence can be correct but still sound unusual in French. Turn on Show suggestions to see phrases that could sound more natural. Add notes with // that Coquille won't check, or start one with //: natural to ask your reviewer. Share Text sends your writing with its notes."
             #else
-            return "Ask for a more natural way to say it, or add notes with // that Coquille won't check. Share when you're ready."
+            return "Show suggestions marks phrases that could sound more natural. Add notes with // that Coquille won't check."
             #endif
         case .phrasebook:
             #if os(macOS)
@@ -75,15 +75,15 @@ enum TourPage: Int, CaseIterable, Identifiable {
             #endif
         case .journal:
             #if os(macOS)
-            return "A short sentence is enough to get started. Your journal saves your writing, corrections, and progress so you can see how far you've come."
+            return "A short sentence is enough to get started. Click Save to keep it in your journal, then choose File › Painting to add a painting and Share as Postcard to send it. Open Progress to see how far you've come."
             #else
-            return "A short sentence is enough to start. Your journal saves your writing, corrections, and progress."
+            return "A short sentence is enough to start. Save it to your journal, add a painting, and share it as a postcard."
             #endif
         case .ready:
             #if os(macOS)
-            return "Coquille works offline, with no account needed. Download the French-English translation pack if you want English translations; French voice uses your device's voice settings. Then write your first sentence, or try an example to see how Coquille works."
+            return "Coquille works offline, with no account needed. English translations are optional: download the French-English translation pack if you want them. French voice uses your device's voice settings. Then start today's entry, or try an example to see how Coquille works."
             #else
-            return "Works offline, no account needed. Download the translation pack for English; French voice uses your device's settings."
+            return "Works offline, no account needed. English needs the translation pack. Start today's entry or try an example."
             #endif
         }
     }

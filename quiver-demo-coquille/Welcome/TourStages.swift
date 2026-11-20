@@ -1185,7 +1185,12 @@ private struct JournalStage: View {
         let iso: String
         let preview: String
         let hasErrors: Bool
+        /// The title of the painting the writer chose for the entry, or `nil` for none.
+        let paintingTitle: String?
         var id: String { iso }
+
+        /// The entry's painting from the catalog, or `nil` when it has none.
+        var tableau: Tableau? { paintingTitle.flatMap(TableauCatalog.tableau(titled:)) }
     }
 
     private struct Correction: Identifiable {
@@ -1197,9 +1202,9 @@ private struct JournalStage: View {
     }
 
     private static let entries = [
-        Entry(title: "Le week-end", date: "10 Nov", iso: "2026-11-10", preview: "Samedi, nous avons fait du vélo.", hasErrors: false),
-        Entry(title: "Ma famille", date: "8 Nov", iso: "2026-11-08", preview: "J'ai deux frères et une sœur.", hasErrors: true),
-        Entry(title: "Une journée au marché", date: "31 Oct", iso: "2026-10-31", preview: "Ce matin, je suis allé au marché.", hasErrors: false)
+        Entry(title: "Le week-end", date: "10 Nov", iso: "2026-11-10", preview: "Samedi, nous avons fait du vélo.", hasErrors: false, paintingTitle: "Le lac de montagne"),
+        Entry(title: "Ma famille", date: "8 Nov", iso: "2026-11-08", preview: "J'ai deux frères et une sœur.", hasErrors: true, paintingTitle: nil),
+        Entry(title: "Une journée au marché", date: "31 Oct", iso: "2026-10-31", preview: "Ce matin, je suis allé au marché.", hasErrors: false, paintingTitle: "Le thé du matin")
     ]
 
     private static let corrections = [
@@ -1222,15 +1227,19 @@ private struct JournalStage: View {
                                 .padding(.horizontal, 6)
                                 .padding(.bottom, 4)
                             ForEach(Self.entries) { entry in
-                                VStack(alignment: .leading, spacing: 1) {
-                                    HStack(spacing: 5) {
-                                        Text(entry.title)
-                                            .font(.plexSans(12, weight: .medium, relativeTo: .caption))
-                                        if entry.hasErrors { errorDot(size: 6) }
+                                HStack(spacing: 8) {
+                                    thumbnail(for: entry, width: 40)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        HStack(spacing: 5) {
+                                            Text(entry.title)
+                                                .font(.plexSans(12, weight: .medium, relativeTo: .caption))
+                                                .lineLimit(1)
+                                            if entry.hasErrors { errorDot(size: 6) }
+                                        }
+                                        Text(entry.date)
+                                            .font(.plexSans(10, relativeTo: .caption2))
+                                            .foregroundStyle(.secondary)
                                     }
-                                    Text(entry.date)
-                                        .font(.plexSans(10, relativeTo: .caption2))
-                                        .foregroundStyle(.secondary)
                                 }
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 5)
@@ -1240,19 +1249,26 @@ private struct JournalStage: View {
                             Spacer(minLength: 0)
                         }
                         .padding(8)
-                        .frame(width: 150)
+                        .frame(width: 176)
                         .frame(maxHeight: .infinity)
                         .background(.quaternary.opacity(0.4))
 
                         Divider()
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("// What did you do this morning?")
-                                .foregroundStyle(.secondary)
-                            Text("Ce matin, je suis allé au marché avec ma sœur.")
+                        VStack(alignment: .leading, spacing: 0) {
+                            if let tableau = Self.entries.last?.tableau {
+                                stampRow(tableau)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("// What did you do this morning?")
+                                    .foregroundStyle(.secondary)
+                                Text("Ce matin, je suis allé au marché avec ma sœur.")
+                            }
+                            .font(.plexMono(12, relativeTo: .caption))
+                            .padding(.horizontal, 14)
+                            .padding(.top, 6)
+                            .padding(.bottom, 14)
                         }
-                        .font(.plexMono(12, relativeTo: .caption))
-                        .padding(14)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     }
                 }
@@ -1275,6 +1291,35 @@ private struct JournalStage: View {
             .frame(height: 360, alignment: .topLeading)
             StageLabel("SAMPLE DATA", isMuted: true)
         }
+    }
+
+    /// The open entry's painting row, drawn small: its word on the left and the painting
+    /// as a stamp in the top-right corner, as the French pane shows it.
+    private func stampRow(_ tableau: Tableau) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("LE MOT DU TABLEAU")
+                    .font(.plexMono(9, weight: .medium, relativeTo: .caption2))
+                    .tracking(0.7)
+                    .foregroundStyle(Color.brand)
+                Text("\(Text(frenchText(tableau.word)).foregroundStyle(Color.brand).fontWeight(.semibold)) · \(tableau.wordEnglish)")
+                    .font(.plexSans(11, relativeTo: .caption))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.top, 6)
+            .accessibilityElement(children: .combine)
+
+            Spacer(minLength: 0)
+
+            PaintingStamp(tableau: tableau, width: 84)
+                .padding(3)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Painting: \(frenchText(tableau.title))"))
+                .accessibilityAddTraits(.isImage)
+        }
+        .padding(.leading, 16)
+        .padding(.trailing, 10)
+        .padding(.top, 6)
     }
     #else
     private enum Tab: String, CaseIterable, Identifiable {
@@ -1307,38 +1352,28 @@ private struct JournalStage: View {
         .stageGround()
     }
 
-    /// Today's prompt and the sample entries.
+    /// The sample entries with their paintings, and where to add one.
     private var journal: some View {
         VStack(alignment: .leading, spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("TODAY'S PROMPT")
-                    .font(.plexMono(11, weight: .medium, relativeTo: .caption2))
-                    .tracking(1)
-                    .foregroundStyle(.secondary)
-                Text("What did you do this morning?")
-                    .font(.plexSans(15, weight: .medium, relativeTo: .body))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .paperCard(cornerRadius: 12)
-
             VStack(spacing: 0) {
                 ForEach(Self.entries) { entry in
                     Button { picked = entry.iso } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text(entry.title)
-                                    .font(.plexSans(14, weight: .medium, relativeTo: .subheadline))
-                                if entry.hasErrors { errorDot(size: 7) }
+                        HStack(spacing: 10) {
+                            thumbnail(for: entry, width: 64)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(entry.title)
+                                        .font(.plexSans(14, weight: .medium, relativeTo: .subheadline))
+                                    if entry.hasErrors { errorDot(size: 7) }
+                                }
+                                Text("\(entry.date) · \(entry.preview)")
+                                    .font(.plexSans(12, relativeTo: .caption))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
                             }
-                            Text("\(entry.date) · \(entry.preview)")
-                                .font(.plexSans(12, relativeTo: .caption))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
                         }
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 6)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(picked == entry.iso ? Color.brand.opacity(0.12) : Color.clear)
                         .contentShape(Rectangle())
@@ -1349,6 +1384,10 @@ private struct JournalStage: View {
             }
             .paperCard(cornerRadius: 12)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            Text("Add a painting from More › Add Painting…, then share the entry as a postcard.")
+                .font(.plexSans(12, relativeTo: .caption))
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -1415,6 +1454,19 @@ private struct JournalStage: View {
         .accessibilityElement(children: .combine)
     }
     #endif
+
+    /// The entry's painting as a journal-list thumbnail, or a blank space the same size,
+    /// so titles line up as they do in the journal once any entry has a painting.
+    @ViewBuilder
+    private func thumbnail(for entry: Entry, width: CGFloat) -> some View {
+        if let tableau = entry.tableau {
+            PaintingThumbnail(tableau: tableau, width: width)
+        } else {
+            Color.clear
+                .frame(width: width, height: width * 3 / 4)
+                .accessibilityHidden(true)
+        }
+    }
 
     /// The small red dot that marks an entry with errors.
     private func errorDot(size: Double) -> some View {
