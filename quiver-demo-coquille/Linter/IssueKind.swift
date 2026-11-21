@@ -40,6 +40,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case preposition
     case capitalization
     case number
+    case quotation
 
     /// The short uppercase label shown at the top of an issue card.
     var label: String {
@@ -69,6 +70,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .preposition: "PREPOSITION"
         case .capitalization: "CAPITAL LETTERS"
         case .number: "NUMBERS"
+        case .quotation: "QUOTATION"
         }
     }
 
@@ -100,6 +102,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .preposition: "Prepositions (au Canada)"
         case .capitalization: "Capital letters (le lundi)"
         case .number: "Numbers and times (vingt-deux)"
+        case .quotation: "Quotation marks"
         }
     }
 }

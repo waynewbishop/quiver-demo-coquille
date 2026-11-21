@@ -218,15 +218,15 @@ final class EditorModel {
         return tableau == nil ? "The painting was removed." : "The painting was changed."
     }
 
-    /// The French alone: the text with every note and Markdown symbol blanked out, each
+    /// The French alone: the text with every note, quoted name and Markdown symbol blanked out, each
     /// character at the same offset as in `plainText`.
     var frenchText: String {
         Self.frenchOnly(plainText)
     }
 
-    /// `text` with every note and Markdown symbol blanked out, each character at the same offset.
+    /// `text` with every note, quoted name and Markdown symbol blanked out, each character at the same offset.
     private static func frenchOnly(_ text: String) -> String {
-        Markdown.masked(Notes.masked(text))
+        Markdown.masked(Quotes.masked(Notes.masked(text)))
     }
 
     /// Issues not ignored, and not suggestions when suggestions are hidden.

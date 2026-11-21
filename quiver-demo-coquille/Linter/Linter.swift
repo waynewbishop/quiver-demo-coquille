@@ -41,11 +41,14 @@ struct Linter {
     /// Returns every issue in `text` from the filters at or below `level`, ordered by
     /// position, with no two issues overlapping. The default level runs every filter.
     ///
-    /// The learner's notes and Markdown symbols are blanked out first, so no filter ever
-    /// sees them, while every issue's offsets still match `text`.
+    /// The learner's notes, quoted text and Markdown symbols are blanked out first, so no
+    /// filter ever sees them, while every issue's offsets still match `text`. A quote that
+    /// never closes raises a warning at its opening mark.
     func lint(_ text: String, through level: CefrLevel = .c2) -> [Issue] {
-        let context = LintContext(text: Markdown.masked(Notes.masked(text)), tag: tag)
+        let withoutNotes = Notes.masked(text)
+        let context = LintContext(text: Markdown.masked(Quotes.masked(withoutNotes)), tag: tag)
         let active = filters.filter { $0.targetLevel <= level }
-        return ResolutionMatrix.resolve(active.flatMap { $0.evaluate(context) })
+        let issues = active.flatMap { $0.evaluate(context) } + Quotes.unclosedIssues(in: withoutNotes)
+        return ResolutionMatrix.resolve(issues)
     }
 }
