@@ -278,6 +278,12 @@ final class EditorModel {
         return Notes.markerBeingCompleted(at: caret, in: plainText)?.keywords ?? []
     }
 
+    /// What the finished keyword of the review marker at the caret tells the reviewer, if any.
+    var markerDescription: String? {
+        guard let caret = caretOffset() else { return nil }
+        return Notes.markerDescription(at: caret, in: plainText)
+    }
+
     // MARK: - Loading
 
     /// Loads the French pack off the main actor, then wires up the linter and translator.

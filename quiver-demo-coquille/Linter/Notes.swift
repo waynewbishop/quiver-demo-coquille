@@ -27,7 +27,33 @@
 enum Notes {
 
     /// The keywords a review marker can start with, as the editor offers them.
-    static let markerKeywords = ["check", "ask", "natural", "todo", "ok"]
+    static let markerKeywords = ["check", "ask", "natural", "todo", "ok", "tableau"]
+
+    /// The keywords a topic, question or painting title follows, so their marker ends with a space.
+    private static let keywordsWithText: Set<String> = ["check", "ask", "tableau"]
+
+    /// What `keyword` tells the reviewer, in a short sentence for the tour.
+    static func hint(for keyword: String) -> String {
+        switch keyword {
+        case "check": "Verify a specific point, such as verb tense or agreement."
+        case "ask": "Pose a question to the reviewer, such as “Why is y needed here?”"
+        case "natural": "Ask whether the French sounds idiomatic."
+        case "todo": "Flag a passage for your own revision."
+        case "ok": "Mark a passage as reviewed."
+        case "tableau": "Set the entry’s painting from its French title."
+        default: ""
+        }
+    }
+
+    /// A sample marker line for `keyword`, as the tour writes it.
+    static func sample(for keyword: String) -> String {
+        switch keyword {
+        case "check": "check passé composé"
+        case "ask": "ask Why is y needed here?"
+        case "tableau": "tableau Les voiliers"
+        default: keyword
+        }
+    }
 
     /// The character offsets of every note in `text`, in order, each including its markers.
     static func ranges(in text: String) -> [Range<Int>] {
@@ -55,6 +81,21 @@ enum Notes {
         return ranges
     }
 
+    /// What the marker keyword just before the caret tells the reviewer, or `nil` when the
+    /// caret isn't on a review marker, is before its keyword ends, or the keyword is unknown.
+    static func markerDescription(at caret: Int, in text: String) -> String? {
+        guard let marker = markerRanges(in: text).first(where: { $0.lowerBound <= caret && caret <= $0.upperBound }) else {
+            return nil
+        }
+        let afterColon = Array(text)[(marker.lowerBound + 3)..<marker.upperBound]
+        let body = afterColon.drop(while: \.isWhitespace)
+        let word = body.prefix(while: { !$0.isWhitespace })
+        let keyword = String(word).lowercased()
+        let keywordEnd = marker.lowerBound + 3 + (afterColon.count - body.count) + word.count
+        guard markerKeywords.contains(keyword), caret >= keywordEnd else { return nil }
+        return hint(for: keyword)
+    }
+
     /// The character offsets of every review marker in `text`: each `//:` note with only
     /// spaces before it on its line.
     static func markerRanges(in text: String) -> [Range<Int>] {
@@ -79,9 +120,9 @@ enum Notes {
         return keywords.isEmpty ? nil : (marker, keywords)
     }
 
-    /// The whole marker for `keyword`, with a space after the keywords a topic or question can follow.
+    /// The whole marker for `keyword`, with a space after the keywords a topic, question or title can follow.
     static func markerText(for keyword: String) -> String {
-        "//: \(keyword)" + (keyword == "check" || keyword == "ask" ? " " : "")
+        "//: \(keyword)" + (keywordsWithText.contains(keyword) ? " " : "")
     }
 
     /// `text` with every note's characters turned to spaces, keeping its line breaks, so

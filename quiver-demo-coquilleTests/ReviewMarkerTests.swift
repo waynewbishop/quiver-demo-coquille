@@ -104,4 +104,33 @@ final class ReviewMarkerTests: XCTestCase {
         model.completeMarker(with: "natural")
         XCTAssertEqual(model.plainText, "//: natural")
     }
+
+    /// Tableau is offered, and finishes with a space so the title can follow.
+    func testTableauIsOfferedAndLeavesRoomForATitle() throws {
+        XCTAssertTrue(Notes.markerKeywords.contains("tableau"))
+        let model = try makeModel()
+        type("//: ta", into: model)
+        XCTAssertEqual(model.offeredMarkerKeywords, ["tableau"])
+        model.completeMarker(with: "tableau")
+        XCTAssertEqual(model.plainText, "//: tableau ")
+    }
+
+    /// Every keyword the editor offers has a description for the tour.
+    func testEveryKeywordHasAHint() {
+        for keyword in Notes.markerKeywords {
+            XCTAssertFalse(Notes.hint(for: keyword).isEmpty, keyword)
+        }
+    }
+
+    /// A finished keyword shows its description, for every callout, and an unfinished one doesn't.
+    func testFinishedKeywordShowsItsDescription() {
+        for keyword in Notes.markerKeywords {
+            let text = "//: \(keyword) "
+            XCTAssertEqual(Notes.markerDescription(at: text.count, in: text), Notes.hint(for: keyword), keyword)
+        }
+        XCTAssertNil(Notes.markerDescription(at: 6, in: "//: ch"))
+        XCTAssertNil(Notes.markerDescription(at: 4, in: "//: check "))
+        XCTAssertNil(Notes.markerDescription(at: 5, in: "//: zzzz "))
+        XCTAssertNil(Notes.markerDescription(at: 6, in: "Salut. //: check "))
+    }
 }

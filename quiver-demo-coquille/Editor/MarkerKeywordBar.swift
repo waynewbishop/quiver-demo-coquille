@@ -14,28 +14,39 @@
 import SwiftUI
 
 /// The keywords that could finish the review marker being typed, shown under the editor.
+/// Once a keyword is finished, its description takes the place of the list.
 struct MarkerKeywordBar: View {
 
     let model: EditorModel
 
     var body: some View {
         let keywords = model.offeredMarkerKeywords
-        if !keywords.isEmpty {
+        let description = model.markerDescription
+        if !keywords.isEmpty || description != nil {
             VStack(spacing: 0) {
                 Divider()
-                ScrollView(.horizontal) {
-                    HStack(spacing: 8) {
-                        ForEach(keywords, id: \.self) { keyword in
-                            Button(keyword) { model.completeMarker(with: keyword) }
-                                .font(.plexMono(14, relativeTo: .callout))
-                                .accessibilityLabel("Marker: \(keyword)")
+                if !keywords.isEmpty {
+                    ScrollView(.horizontal) {
+                        HStack(spacing: 8) {
+                            ForEach(keywords, id: \.self) { keyword in
+                                Button(keyword) { model.completeMarker(with: keyword) }
+                                    .font(.plexMono(14, relativeTo: .callout))
+                                    .accessibilityLabel("Marker: \(keyword)")
+                            }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 8)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
+                    .scrollIndicators(.hidden)
+                    .buttonStyle(.bordered)
+                } else if let description {
+                    Text(description)
+                        .font(.plexMono(14, relativeTo: .callout))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
                 }
-                .scrollIndicators(.hidden)
-                .buttonStyle(.bordered)
             }
         }
     }

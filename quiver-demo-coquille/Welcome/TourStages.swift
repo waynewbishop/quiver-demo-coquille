@@ -824,7 +824,7 @@ private struct NotesStage: View {
         var lines = opening + [
             "",
             "Ce matin, je suis allé au marché. // went to the market",
-            "//: \(keyword)"
+            "//: \(Notes.sample(for: keyword))"
         ]
         #if os(macOS)
         lines.append("J'ai acheté des choses pour manger. /* groceries? */")
@@ -847,7 +847,7 @@ private struct NotesStage: View {
                 if keyword.isEmpty {
                     Caret()
                 } else {
-                    Text(keyword)
+                    Text(Notes.sample(for: keyword))
                         .font(.plexMono(Self.textSize, weight: .medium, relativeTo: .callout))
                         .foregroundStyle(.tint)
                 }
@@ -903,6 +903,17 @@ private struct NotesStage: View {
         .overlay(alignment: .top) { Divider() }
     }
 
+    /// What the chosen keyword tells the reviewer.
+    private var keywordHint: some View {
+        Text(keyword.isEmpty ? "Choose a marker to see what it tells the reviewer." : Notes.hint(for: keyword))
+            .font(.plexMono(14, relativeTo: .callout))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     /// What Share sends, or on the Mac where the exported copy went.
     private var sentNote: String {
         if let exportedName {
@@ -945,6 +956,7 @@ private struct NotesStage: View {
                     .padding(.vertical, 16)
                 keywordBar
                     .controlSize(.small)
+                keywordHint
             }
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(exportedName == nil ? "Click Share in the toolbar to send the whole page, notes and all." : sentNote)
@@ -970,6 +982,8 @@ private struct NotesStage: View {
             .background(.background)
 
             keywordBar
+                .background(.background)
+            keywordHint
                 .background(.background)
 
             VStack(alignment: .leading, spacing: 6) {
