@@ -134,7 +134,7 @@ struct AboutView: View {
     private var captionBar: some View {
         HStack(alignment: .bottom, spacing: 10) {
             Text(french(slide.tableau.title))
-                .font(.system(size: isCompact ? 22 : 18, design: .serif).italic())
+                .font(.cormorant(fixed: isCompact ? 26 : 22))
                 .lineLimit(2)
             Spacer(minLength: 8)
             HStack(spacing: isCompact ? 4 : 3) {
@@ -196,7 +196,7 @@ struct AboutView: View {
                 .font(.system(size: isCompact ? 14 : 12))
                 .foregroundStyle(.secondary)
             Text(french("Un compilateur pour votre français."))
-                .font(.system(size: isCompact ? 18 : 15, design: .serif).italic())
+                .font(.cormorant(fixed: isCompact ? 22 : 18))
             Divider()
                 .overlay(Color("AboutRule"))
                 .padding(.vertical, 14)
@@ -205,7 +205,7 @@ struct AboutView: View {
                 .tracking(1)
                 .foregroundStyle(.secondary)
             Text(french(slide.french))
-                .font(.system(size: isCompact ? 24 : 19, design: .serif).italic())
+                .font(.cormorant(fixed: isCompact ? 28 : 23))
                 .fixedSize(horizontal: false, vertical: true)
             Text(slide.english)
                 .font(.system(size: isCompact ? 14 : 13))
@@ -298,7 +298,7 @@ private struct PrivacyPage: View {
     var body: some View {
         AboutSubpage(title: "Privacy", isCompact: isCompact, back: back) {
             Text(french("Votre français reste chez vous."))
-                .font(.system(size: isCompact ? 18 : 15, design: .serif).italic())
+                .font(.cormorant(fixed: isCompact ? 22 : 18))
             Text("Your journal and your stats stay on this device. Coquille doesn't sync them.")
             Text("The checker, Explain, the English translation and French playback all run on the device. Nothing you write is sent to a server.")
             Text("Coquille has no account, no ads and no tracking.")
