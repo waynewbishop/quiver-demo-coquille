@@ -71,6 +71,12 @@
       "french": "Les loisirs",
       "english": "Hobbies",
       "short": "Hobbies"
+    },
+    {
+      "id": "technologie",
+      "french": "La technologie",
+      "english": "Everyday technology",
+      "short": "Tech"
     }
   ],
   "paintings": [
@@ -981,6 +987,86 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "A painter at an easel in a green garden"
+    },
+    {
+      "id": "le-telephone",
+      "title": "Le téléphone",
+      "word": "le téléphone",
+      "wordEnglish": "the phone",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A phone lying on a café table beside a cup of tea and a croissant"
+    },
+    {
+      "id": "l-ordinateur-portable",
+      "title": "L’ordinateur portable",
+      "word": "l’ordinateur",
+      "wordEnglish": "the computer",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "An open laptop on a wooden desk by a sunny window"
+    },
+    {
+      "id": "la-tablette",
+      "title": "La tablette",
+      "word": "la tablette",
+      "wordEnglish": "the tablet",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A tablet with a drawing of the sun, resting on a blue sofa"
+    },
+    {
+      "id": "les-ecouteurs",
+      "title": "Les écouteurs",
+      "word": "les écouteurs",
+      "wordEnglish": "headphones",
+      "theme": "technologie",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Red headphones left on a park bench under green trees"
+    },
+    {
+      "id": "la-montre",
+      "title": "La montre",
+      "word": "la montre",
+      "wordEnglish": "the watch",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A wristwatch with a white face on a forearm"
+    },
+    {
+      "id": "le-clavier",
+      "title": "Le clavier",
+      "word": "le clavier",
+      "wordEnglish": "the keyboard",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A monitor, a white keyboard and a mouse on a desk"
+    },
+    {
+      "id": "la-television",
+      "title": "La télévision",
+      "word": "la télévision",
+      "wordEnglish": "the television",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A television showing a sunset in a cozy living room"
+    },
+    {
+      "id": "l-appareil-photo",
+      "title": "L’appareil photo",
+      "word": "l’appareil photo",
+      "wordEnglish": "the camera",
+      "theme": "technologie",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A camera on a table by a window, with printed photos around it"
     }
   ]
 }
