@@ -459,7 +459,10 @@ private struct DayEntriesList: View {
             }
         }
         #if os(macOS)
-        .frame(width: 340, height: min(CGFloat(day.entries.count) * 76 + 84, 420))
+        // The popover takes the height its header and rows need, up to a cap past which the list scrolls.
+        .frame(width: 340)
+        .frame(maxHeight: 420)
+        .fixedSize(horizontal: false, vertical: true)
         #endif
     }
 
