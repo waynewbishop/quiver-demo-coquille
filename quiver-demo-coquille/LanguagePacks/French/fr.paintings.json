@@ -47,6 +47,30 @@
       "french": "Les merveilles du monde",
       "english": "Wonders of the world",
       "short": "Wonders"
+    },
+    {
+      "id": "fetes",
+      "french": "Les fêtes",
+      "english": "Holidays and celebrations",
+      "short": "Holidays"
+    },
+    {
+      "id": "gens",
+      "french": "Les gens",
+      "english": "Family and friends",
+      "short": "People"
+    },
+    {
+      "id": "ville",
+      "french": "En ville",
+      "english": "City life",
+      "short": "City"
+    },
+    {
+      "id": "loisirs",
+      "french": "Les loisirs",
+      "english": "Hobbies",
+      "short": "Hobbies"
     }
   ],
   "paintings": [
@@ -687,6 +711,276 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "The Arc de Triomphe at the end of a tree-lined avenue in spring"
+    },
+    {
+      "id": "le-sapin-de-noel",
+      "title": "Le sapin de Noël",
+      "word": "Noël",
+      "wordEnglish": "Christmas",
+      "theme": "fetes",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A decorated Christmas tree with a gold star and presents beneath it"
+    },
+    {
+      "id": "le-nouvel-an",
+      "title": "Le Nouvel An",
+      "word": "minuit",
+      "wordEnglish": "midnight",
+      "theme": "fetes",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Fireworks bursting over a city skyline at midnight"
+    },
+    {
+      "id": "le-14-juillet",
+      "title": "Le 14 juillet",
+      "word": "le drapeau",
+      "wordEnglish": "the flag",
+      "theme": "fetes",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Blue, white and red flags and fireworks on Bastille Day"
+    },
+    {
+      "id": "thanksgiving",
+      "title": "Thanksgiving",
+      "word": "la dinde",
+      "wordEnglish": "the turkey",
+      "theme": "fetes",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A roast turkey and side dishes on a candlelit table"
+    },
+    {
+      "id": "halloween",
+      "title": "Halloween",
+      "word": "la citrouille",
+      "wordEnglish": "the pumpkin",
+      "theme": "fetes",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Carved pumpkins glowing outside a house under a full moon"
+    },
+    {
+      "id": "paques",
+      "title": "Pâques",
+      "word": "l’œuf",
+      "wordEnglish": "the egg",
+      "theme": "fetes",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Painted eggs hidden in the grass under blossoming trees"
+    },
+    {
+      "id": "la-galette-des-rois",
+      "title": "La galette des rois",
+      "word": "la galette",
+      "wordEnglish": "the king cake",
+      "theme": "fetes",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A golden galette des rois with a paper crown"
+    },
+    {
+      "id": "le-diner-en-famille",
+      "title": "Le dîner en famille",
+      "word": "la famille",
+      "wordEnglish": "the family",
+      "theme": "gens",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A family sharing dinner around a table under a warm lamp"
+    },
+    {
+      "id": "sur-les-epaules",
+      "title": "Sur les épaules",
+      "word": "l’enfant",
+      "wordEnglish": "the child",
+      "theme": "gens",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A child riding on a parent’s shoulders in a sunny park"
+    },
+    {
+      "id": "les-grands-parents",
+      "title": "Les grands-parents",
+      "word": "les grands-parents",
+      "wordEnglish": "the grandparents",
+      "theme": "gens",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two grandparents on a park bench, a small dog nearby"
+    },
+    {
+      "id": "entre-amis",
+      "title": "Entre amis",
+      "word": "les amis",
+      "wordEnglish": "friends",
+      "theme": "gens",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Friends laughing together at a café table"
+    },
+    {
+      "id": "le-calin",
+      "title": "Le câlin",
+      "word": "le câlin",
+      "wordEnglish": "the hug",
+      "theme": "gens",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Two people sharing a warm hug"
+    },
+    {
+      "id": "le-bebe",
+      "title": "Le bébé",
+      "word": "le bébé",
+      "wordEnglish": "the baby",
+      "theme": "gens",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A parent pushing a baby in a blue pram along a park path"
+    },
+    {
+      "id": "les-voisins",
+      "title": "Les voisins",
+      "word": "le voisin",
+      "wordEnglish": "the neighbor",
+      "theme": "gens",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two neighbors chatting over a white picket fence"
+    },
+    {
+      "id": "la-terrasse",
+      "title": "La terrasse",
+      "word": "la terrasse",
+      "wordEnglish": "the terrace",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A café terrace with a red awning and small round tables"
+    },
+    {
+      "id": "le-metro",
+      "title": "Le métro",
+      "word": "le métro",
+      "wordEnglish": "the metro",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A green Art Nouveau metro entrance on a city square"
+    },
+    {
+      "id": "la-librairie",
+      "title": "La librairie",
+      "word": "la librairie",
+      "wordEnglish": "the bookshop",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A bookshop window full of colorful books"
+    },
+    {
+      "id": "le-musee",
+      "title": "Le musée",
+      "word": "le musée",
+      "wordEnglish": "the museum",
+      "theme": "ville",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Visitors looking at framed paintings in a museum gallery"
+    },
+    {
+      "id": "la-rue-la-nuit",
+      "title": "La rue la nuit",
+      "word": "la nuit",
+      "wordEnglish": "the night",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A city street at night with glowing windows and lamps"
+    },
+    {
+      "id": "le-bus",
+      "title": "Le bus",
+      "word": "le bus",
+      "wordEnglish": "the bus",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A green city bus at a stop on a sunny street"
+    },
+    {
+      "id": "la-poste",
+      "title": "La poste",
+      "word": "la poste",
+      "wordEnglish": "the post office",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A post office with a yellow sign and a yellow letter box"
+    },
+    {
+      "id": "les-toits-de-la-ville",
+      "title": "Les toits de la ville",
+      "word": "le toit",
+      "wordEnglish": "the roof",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Rows of grey city rooftops and chimneys at sunset"
+    },
+    {
+      "id": "la-lecture",
+      "title": "La lecture",
+      "word": "le livre",
+      "wordEnglish": "the book",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Someone reading in a red armchair beside a bookcase and lamp"
+    },
+    {
+      "id": "la-guitare",
+      "title": "La guitare",
+      "word": "la guitare",
+      "wordEnglish": "the guitar",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A person playing an acoustic guitar by a window"
+    },
+    {
+      "id": "la-patisserie",
+      "title": "La pâtisserie",
+      "word": "le gâteau",
+      "wordEnglish": "the cake",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A strawberry cake on a plate in a home kitchen"
+    },
+    {
+      "id": "le-jeu-de-societe",
+      "title": "Le jeu de société",
+      "word": "le jeu",
+      "wordEnglish": "the game",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Two friends playing a board game with dice"
+    },
+    {
+      "id": "la-peinture",
+      "title": "La peinture",
+      "word": "la peinture",
+      "wordEnglish": "painting",
+      "theme": "loisirs",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A painter at an easel in a green garden"
     }
   ]
 }

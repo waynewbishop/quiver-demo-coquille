@@ -145,5 +145,12 @@
   {"id":"quand-002","level":"B1","topic":"quand-future","rule":"grammar.futureAfterQuand","text":"Je t'appellerai quand j'arrive.","expect":"flag","flags":[{"find":"arrive","fix":"arriverai","severity":"error"}],"note":"The same rule with quand second."},
   {"id":"quand-003","level":"B1","topic":"quand-guard-habit","text":"Quand j'arrive à la maison, je bois un thé.","expect":"pass","flags":[],"note":"A habit takes the present in both clauses."},
   {"id":"quand-004","level":"B1","topic":"quand-guard-quand-meme","text":"Quand il pleut, je cours quand même.","expect":"pass","flags":[],"note":"A habit, and quand même is not a time word."},
-  {"id":"quand-005","level":"B1","topic":"quand-guard-future","text":"Quand je serai à Chamonix, je t'appellerai.","expect":"pass","flags":[],"note":"Already in the future."}
+  {"id":"quand-005","level":"B1","topic":"quand-guard-future","text":"Quand je serai à Chamonix, je t'appellerai.","expect":"pass","flags":[],"note":"Already in the future."},
+  {"id":"avoir-001","level":"A2","topic":"avoir-present-form","rule":"grammar.auxiliary","text":"Hier, j'ai dors très tard. Je me suis réveillé à dix heures.","expect":"flag","flags":[{"find":"j'ai dors","fix":"j'ai dormi","severity":"error"}],"note":"After avoir the verb is a past participle."},
+  {"id":"avoir-002","level":"A2","topic":"avoir-infinitive","rule":"grammar.auxiliary","text":"Ce matin, j'ai manger une pomme. C'était très bon.","expect":"flag","flags":[{"find":"j'ai manger","fix":"j'ai mangé","severity":"error"}],"note":"An infinitive after avoir becomes the participle."},
+  {"id":"avoir-003","level":"A2","topic":"avoir-present-form","rule":"grammar.auxiliary","text":"Hier soir, nous avons regardent un film. C'était drôle.","expect":"flag","flags":[{"find":"avons regardent","fix":"avons regardé","severity":"error"}],"note":"A present form after avoir becomes the participle."},
+  {"id":"avoir-004","level":"A2","topic":"avoir-participle","text":"Hier, j'ai dormi tard. J'ai mangé une pomme.","expect":"pass","flags":[],"note":"Both verbs are already past participles."},
+  {"id":"avoir-005","level":"A2","topic":"avoir-noun","text":"J'ai faim et j'ai envie de manger. Il a cours à neuf heures.","expect":"pass","flags":[],"note":"Faim, envie and cours are nouns after avoir."},
+  {"id":"avoir-006","level":"A2","topic":"avoir-noun-or-adjective","text":"Elle a vue sur la mer. Nous avons chaud et il a raison.","expect":"pass","flags":[],"note":"Vue, chaud and raison are not verbs here."},
+  {"id":"avoir-007","level":"A2","topic":"avoir-infinitive-after-a","text":"J'ai à travailler demain. Je n'ai pas le temps de dormir.","expect":"pass","flags":[],"note":"À and de come between avoir and the infinitive."}
 ]

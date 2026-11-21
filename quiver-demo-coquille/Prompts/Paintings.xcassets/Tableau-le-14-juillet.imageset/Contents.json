@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-14-juillet.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

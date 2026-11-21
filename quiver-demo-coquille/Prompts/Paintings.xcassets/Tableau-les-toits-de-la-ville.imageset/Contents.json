@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "les-toits-de-la-ville.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

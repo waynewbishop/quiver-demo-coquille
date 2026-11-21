@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-galette-des-rois.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -123,6 +123,11 @@
     "template": "With avoir, the past participle doesn't change to match the subject, so it stays {fix}.",
     "example": "With avoir, the past participle doesn't change to match the subject, so it stays mangé."
   },
+  "participleAfterAvoir": {
+    "hint": "After avoir, the verb is a past participle, not the present or the infinitive.",
+    "template": "After avoir, {verb} takes its past participle, so it's {fix}.",
+    "example": "After avoir, dormir takes its past participle, so it's dormi."
+  },
   "participleWithEtre": {
     "hint": "With être, the past participle agrees with {subject}.",
     "template": "With être, the past participle agrees with {subject}, so it's {fix}.",

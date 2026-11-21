@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-calin.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

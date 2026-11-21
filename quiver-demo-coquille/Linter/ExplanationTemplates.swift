@@ -41,6 +41,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case graveInIlYA
     case auxiliaryChoice
     case participleWithAvoir
+    case participleAfterAvoir
     case participleWithEtre
     case generalArticle
     case subjectVerb
@@ -93,6 +94,7 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .graveAfterSubject: ["subject"]
         case .auxiliaryChoice: ["verb", "fix"]
         case .participleWithAvoir: ["fix"]
+        case .participleAfterAvoir: ["verb", "fix"]
         case .participleWithEtre: ["subject", "fix"]
         case .generalArticle: ["verb", "fix"]
         case .subjectVerb: ["subject", "verb", "fix"]

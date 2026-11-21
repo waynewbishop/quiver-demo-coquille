@@ -116,7 +116,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 accentIssues(in: $0)
             },
             GrammarRule(identifier: "grammar.auxiliary", layer: .relationalGrammar, targetLevel: .a2) {
-                auxiliaryIssues(in: $0) + reflexiveAuxiliaryIssues(in: $0.tokens)
+                auxiliaryIssues(in: $0) + reflexiveAuxiliaryIssues(in: $0.tokens) + participleAfterAvoirIssues(in: $0.tokens)
             },
             // Before conjugation, so "il faut que je va" gets the subjunctive aille, not vais.
             GrammarRule(identifier: "grammar.subjunctive", layer: .relationalGrammar, targetLevel: .b1) {
@@ -959,6 +959,67 @@ nonisolated struct FrenchGrammar: Grammar {
                     source: "Participle rule · Lexique"
                 ))
             }
+        }
+        return issues
+    }
+
+    /// Words Lexique lists as verb forms that are never the verb straight after avoir.
+    private static let notVerbAfterAvoir: Set<String> = ["entre", "puis", "soit"]
+
+    /// Flags a present-tense form or an infinitive straight after avoir, where the past
+    /// participle belongs: "j'ai dors" → "j'ai dormi", "j'ai manger" → "j'ai mangé".
+    ///
+    /// Only a subject pronoun directly followed by avoir and the word is judged. The word
+    /// must be a form of one verb and nothing else: no noun (an infinitive aside), adjective or
+    /// participle reading,
+    /// so "j'ai faim", "il a cours" and "elle a vue" stay silent. An infinitive may also be a
+    /// noun ("manger"), and still counts. The learner's verb is kept.
+    private func participleAfterAvoirIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        guard tokens.count >= 3 else { return issues }
+        for index in 0..<(tokens.count - 2) {
+            let subject = tokens[index]
+            let auxiliary = tokens[index + 1]
+            let form = tokens[index + 2]
+            guard Self.subjectPronouns.contains(subject.normalized),
+                  subject.isAdjacentToNext, auxiliary.isAdjacentToNext,
+                  Self.avoirTenses[auxiliary.normalized] != nil,
+                  !isCoordinated(tokens, subjectAt: index),
+                  // "vous nous avez vus": nous is the object here, not the subject.
+                  index == 0 || !tokens[index - 1].isAdjacentToNext
+                    || !Self.subjectPronouns.contains(tokens[index - 1].normalized),
+                  // "la pomme qu'il a mange": a relative clause, which this rule leaves alone.
+                  index == 0 || !["que", "qu'"].contains(tokens[index - 1].normalized),
+                  form.text.first?.isLowercase == true,
+                  !Self.preverbalWords.contains(form.normalized),
+                  !Self.notVerbAfterAvoir.contains(form.normalized),
+                  !form.normalized.hasSuffix("'"),
+                  lexicon.participles(form.normalized).isEmpty,
+                  lexicon.adjectiveLemmas(of: form.normalized).isEmpty else { continue }
+
+            let verb: String
+            if lexicon.isInfinitive(form.normalized) {
+                // "manger" is also a noun, so an infinitive may keep a noun reading, unless
+                // de or à follows: "j'ai souvenir de" is the noun.
+                if lexicon.noun(form.normalized) != nil {
+                    let next = index + 3 < tokens.count ? tokens[index + 3].normalized : ""
+                    guard !["de", "d'", "à", "au", "aux"].contains(next) else { continue }
+                }
+                verb = form.normalized
+            } else {
+                let readings = lexicon.conjugations(form.normalized)
+                guard lexicon.noun(form.normalized) == nil,
+                      let first = readings.first, readings.allSatisfy({ $0.verb == first.verb }) else { continue }
+                verb = first.verb
+            }
+            guard let participle = lexicon.participle(of: verb, gender: .masculine, number: .singular),
+                  participle != form.normalized else { continue }
+            issues.append(issue(
+                .participle, .error, from: index + 2, through: index + 2, in: tokens,
+                replacement: matchingCase(of: form.text, participle),
+                explanation: explanations.render(.participleAfterAvoir, ["verb": verb, "fix": participle]),
+                source: "Participle rule · Lexique"
+            ))
         }
         return issues
     }
