@@ -24,7 +24,7 @@ import SwiftUI
         }
         .commands {
             FileCommands()
-            SidebarCommands()
+            SidebarCommands()ok,
             FontSizeCommands()
             PlaybackCommands()
             #if os(macOS)

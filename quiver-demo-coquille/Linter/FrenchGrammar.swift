@@ -1327,12 +1327,71 @@ nonisolated struct FrenchGrammar: Grammar {
         /// `nil` when the object doesn't settle a gender, as with the pronoun les.
         let gender: Gender?
         let number: GrammaticalNumber
+        /// Whether the gender came from a noun elsewhere in the text rather than the object itself.
+        var isInferred = false
     }
+
+    /// Determiners that mark a plural noun, which a later les can stand for.
+    private static let pluralDeterminers: Set<String> = [
+        "des", "les", "ces", "mes", "tes", "ses", "nos", "vos", "leurs", "quelques", "plusieurs"
+    ]
 
     /// Whether a noun, singular or plural, is one that a conjunction que often follows.
     private func isConjunctionNoun(_ noun: String) -> Bool {
         Self.nounsBeforeConjunctionQue.contains(noun)
             || (noun.hasSuffix("s") && Self.nounsBeforeConjunctionQue.contains(String(noun.dropLast())))
+    }
+
+    /// Whether the word at `index` is an adjective the rules can be sure of, so it can sit
+    /// between a determiner and its noun, or right after the noun, without hiding the noun.
+    private func isSureAdjective(at index: Int, in text: TaggedText) -> Bool {
+        let tokens = text.tokens
+        guard tokens[index].text.first?.isLowercase == true,
+              !lexicon.adjectiveLemmas(of: tokens[index].normalized).isEmpty else { return false }
+        return lexicon.noun(tokens[index].normalized) == nil || text.isAdjective(index, certainty: Self.adjectiveLean)
+    }
+
+    /// The noun and its determiner for the object that ends at `end`, which is either the noun
+    /// itself ("les photos"), the noun after an adjective ("les belles photos"), or an adjective
+    /// after the noun ("les photos magnifiques"). Returns nil when no determiner opens the phrase.
+    private func objectPhrase(endingAt end: Int, in text: TaggedText) -> (determiner: Int, noun: Int)? {
+        let tokens = text.tokens
+        if isNounAfterDeterminer(at: end, in: text) { return (end - 1, end) }
+        // "les belles photos": the adjective sits before the noun.
+        if end >= 2, tokens[end - 1].isAdjacentToNext, tokens[end - 2].isAdjacentToNext,
+           Self.determiners[tokens[end - 2].normalized] != nil, !text.mayBePronoun[end - 2],
+           isSureAdjective(at: end - 1, in: text),
+           tokens[end].text.first?.isLowercase == true, lexicon.noun(tokens[end].normalized) != nil,
+           (text.verbProbability[end] ?? 0) < 0.5 { return (end - 2, end) }
+        // "les photos magnifiques": the adjective sits after the noun.
+        if end >= 2, isSureAdjective(at: end, in: text), tokens[end - 1].isAdjacentToNext,
+           isNounAfterDeterminer(at: end - 1, in: text) { return (end - 2, end - 1) }
+        return nil
+    }
+
+    /// The gender a later les can take from the plural nouns just before it, or nil when they
+    /// don't agree or there are none to read.
+    ///
+    /// Only the sentence holding les and the one before it are read. The nouns must each follow
+    /// a plural determiner and have a gender Lexique is sure of, and all must share one gender,
+    /// so "des photos et des livres" leaves les open. Returns the label of the last noun too.
+    private func lesAntecedent(before index: Int, in text: TaggedText) -> (gender: Gender, label: String)? {
+        let tokens = text.tokens
+        let sentences = sentenceRanges(of: tokens)
+        guard let current = sentences.firstIndex(where: { $0.contains(index) }) else { return nil }
+        let start = sentences[max(current - 1, 0)].lowerBound
+        var found: [(gender: Gender, label: String)] = []
+        for noun in start..<index where noun >= 1 {
+            guard tokens[noun - 1].isAdjacentToNext,
+                  Self.pluralDeterminers.contains(tokens[noun - 1].normalized),
+                  let entry = lexicon.noun(tokens[noun].normalized), entry.number == .plural,
+                  !isConjunctionNoun(tokens[noun].normalized) else { continue }
+            // A word that may be a verb, or a noun with no single gender, leaves the pronoun open.
+            guard isNounAfterDeterminer(at: noun, in: text, mayEndSentence: true), let gender = entry.gender else { return nil }
+            found.append((gender, tokens[noun - 1].normalized + " " + tokens[noun].normalized))
+        }
+        guard let last = found.last, found.allSatisfy({ $0.gender == last.gender }) else { return nil }
+        return last
     }
 
     /// Finds the direct object before the form of avoir at `auxiliary`, in the two forms
@@ -1349,6 +1408,9 @@ nonisolated struct FrenchGrammar: Grammar {
                   Self.subjectPronouns.contains(tokens[subject].normalized),
                   !isCoordinated(tokens, subjectAt: subject),
                   subject == 0 || !["que", "qu'"].contains(tokens[subject - 1].normalized) else { return nil }
+            if let antecedent = lesAntecedent(before: auxiliary - 1, in: text) {
+                return PrecedingObject(label: antecedent.label, gender: antecedent.gender, number: .plural, isInferred: true)
+            }
             return PrecedingObject(label: "les", gender: nil, number: .plural)
         }
 
@@ -1359,14 +1421,13 @@ nonisolated struct FrenchGrammar: Grammar {
               Self.subjectPronouns.contains(tokens[subject].normalized),
               ["que", "qu'"].contains(tokens[subject - 1].normalized),
               tokens[subject - 2].isAdjacentToNext, tokens[subject - 1].isAdjacentToNext || tokens[subject - 1].normalized == "qu'",
-              isNounAfterDeterminer(at: subject - 2, in: text),
-              !isConjunctionNoun(tokens[subject - 2].normalized),
-              let noun = lexicon.noun(tokens[subject - 2].normalized),
+              let phrase = objectPhrase(endingAt: subject - 2, in: text),
+              !isConjunctionNoun(tokens[phrase.noun].normalized),
+              let noun = lexicon.noun(tokens[phrase.noun].normalized),
               let gender = noun.gender, let number = noun.number else { return nil }
-        return PrecedingObject(
-            label: tokens[subject - 3].normalized + (tokens[subject - 3].normalized.hasSuffix("'") ? "" : " ") + tokens[subject - 2].normalized,
-            gender: gender, number: number
-        )
+        let words = tokens[phrase.determiner...(subject - 2)]
+        let label = words.map(\.normalized).joined(separator: " ").replacingOccurrences(of: "' ", with: "'")
+        return PrecedingObject(label: label, gender: gender, number: number)
     }
 
     /// Flags a past participle that doesn't agree with a direct object placed before avoir:
@@ -1407,6 +1468,10 @@ nonisolated struct FrenchGrammar: Grammar {
             guard !fits,
                   let fix = lexicon.participle(of: verb, gender: object.gender ?? .masculine, number: object.number),
                   fix != participle.normalized else { continue }
+            // A gender read from another sentence could be wrong, so when the number is already
+            // right, only the gender is in question and it stays a warning.
+            let numberFits = readings.contains { $0.number == nil || $0.number == object.number }
+            let severity: Severity = object.isInferred && numberFits ? .warning : .error
 
             let explanation: Explanation
             if object.gender == nil {
@@ -1416,7 +1481,7 @@ nonisolated struct FrenchGrammar: Grammar {
                 explanation = explanations.render(.participleAgreesWithObject, ["object": object.label, "fix": fix])
             }
             issues.append(issue(
-                .participle, .error, from: index, through: index, in: tokens,
+                .participle, severity, from: index, through: index, in: tokens,
                 replacement: matchingCase(of: participle.text, fix),
                 explanation: explanation,
                 source: "Participle agreement rule · Lexique"
@@ -1534,7 +1599,18 @@ nonisolated struct FrenchGrammar: Grammar {
         var reported: Set<Int> = []
         for (position, range) in sentences.enumerated() {
             guard let anchor = pastAnchor(in: range, of: tokens), hasPastVerb(in: range, of: tokens) else { continue }
+            // A scene in the same sentence as the anchor, unless a word says it's true now or it's quoted.
+            let ownWords = tokens[range].map(\.normalized)
+            let ownQuote = tokens[range].contains { "«»\"“”".contains($0.text.first ?? " ") || $0.gap.contains("«") }
+            if !ownQuote, !ownWords.contains(where: { Self.presentMarkers.contains($0) }) {
+                for scene in presentSceneVerbs(in: range, of: tokens) where !reported.contains(scene.index) {
+                    reported.insert(scene.index)
+                    issues.append(tenseIssue(scene, anchor: anchor, in: tokens))
+                }
+            }
             for next in (position + 1)..<min(position + 3, sentences.count) {
+                // A blank line ends the account: the next paragraph starts fresh.
+                if tokens[range.upperBound - 1].gap.filter(\.isNewline).count >= 2 { break }
                 let following = sentences[next]
                 let words = tokens[following].map(\.normalized)
                 let hasQuote = tokens[following].contains { "«»\"“”".contains($0.text.first ?? " ") || $0.gap.contains("«") }
@@ -1542,18 +1618,27 @@ nonisolated struct FrenchGrammar: Grammar {
                       pastAnchor(in: following, of: tokens) == nil else { break }
                 for scene in presentSceneVerbs(in: following, of: tokens) where !reported.contains(scene.index) {
                     reported.insert(scene.index)
-                    issues.append(issue(
-                        .tense, .suggestion, from: scene.index, through: scene.index, in: tokens,
-                        replacement: matchingCase(of: tokens[scene.index].text, scene.fix),
-                        explanation: explanations.render(.tenseInNarrative, [
-                            "anchor": anchor, "present": scene.present, "fix": scene.fix
-                        ]),
-                        source: "Narrative tense rule"
-                    ))
+                    issues.append(tenseIssue(scene, anchor: anchor, in: tokens))
                 }
             }
         }
         return issues
+    }
+
+    /// The imparfait suggestion for one present scene verb.
+    private func tenseIssue(
+        _ scene: (index: Int, present: String, fix: String),
+        anchor: String,
+        in tokens: [Token]
+    ) -> Issue {
+        issue(
+            .tense, .suggestion, from: scene.index, through: scene.index, in: tokens,
+            replacement: matchingCase(of: tokens[scene.index].text, scene.fix),
+            explanation: explanations.render(.tenseInNarrative, [
+                "anchor": anchor, "present": scene.present, "fix": scene.fix
+            ]),
+            source: "Narrative tense rule"
+        )
     }
 
     /// The reflexive pronouns each subject takes: je me, tu te, il se, nous nous.
@@ -2238,7 +2323,10 @@ nonisolated struct FrenchGrammar: Grammar {
     private static let nounsBeforeConjunctionQue: Set<String> = [
         "fait", "idée", "impression", "sentiment", "preuve", "espoir", "certitude", "conviction",
         "nouvelle", "signe", "pensée", "crainte", "peur", "doute", "hypothèse", "possibilité",
-        "chance", "risque", "temps", "moment", "jour", "façon", "manière", "point", "sorte"
+        "chance", "risque", "temps", "moment", "jour", "façon", "manière", "point", "sorte",
+        "confirmation", "annonce", "information", "garantie", "assurance", "promesse", "rumeur",
+        "déclaration", "affirmation", "croyance", "sensation", "évidence", "constatation", "démonstration",
+        "intuition", "crainte", "conclusion", "condition", "hypothèse"
     ]
 
     /// Avoir expressions whose noun takes de: "j'ai besoin de ce livre".
@@ -2261,9 +2349,9 @@ nonisolated struct FrenchGrammar: Grammar {
     /// Where Lexique also lists the word as an adjective, the tagger must be sure it is a noun.
     /// Where it also lists a verb form, as livre (livrer), the article model has already ruled
     /// out "je le livre", so the tagger need only lean toward the noun.
-    private func isNounAfterDeterminer(at index: Int, in text: TaggedText) -> Bool {
+    private func isNounAfterDeterminer(at index: Int, in text: TaggedText, mayEndSentence: Bool = false) -> Bool {
         let tokens = text.tokens
-        guard index > 0, tokens[index - 1].isAdjacentToNext, tokens[index].isAdjacentToNext,
+        guard index > 0, tokens[index - 1].isAdjacentToNext, mayEndSentence || tokens[index].isAdjacentToNext,
               Self.determiners[tokens[index - 1].normalized] != nil, !text.mayBePronoun[index - 1],
               tokens[index].text.first?.isLowercase == true,
               lexicon.noun(tokens[index].normalized) != nil else { return false }

@@ -80,11 +80,69 @@ final class PastTenseStoryTests: XCTestCase {
             "Je pense que j'ai pris la route.",
             "L'idée que j'ai perdu mon téléphone me fait peur.",
             "Les années que j'ai vécu ici étaient belles.",
-            "Les photos que j'ai laissé partir étaient floues."
+            "Les photos que j'ai laissé partir étaient floues.",
+            "La confirmation qu'elle a réussi a rassuré ses parents.",
+            "L'annonce qu'il a réussi son examen a surpris tout le monde.",
+            "La preuve qu'ils ont gagné nous rassure."
         ]
         for text in clean {
             XCTAssertEqual(try report(text), [], text)
         }
+    }
+
+    // MARK: - Les with a clear antecedent
+
+    // When the sentence before names the only plural noun les can stand for, the fix gets its gender.
+    func testLesTakesItsGenderFromAClearAntecedent() throws {
+        XCTAssertEqual(try report("J'ai pris des photos. Je les ai envoyé à ma sœur."), ["envoyé → envoyées (error)"])
+        XCTAssertEqual(try report("J'ai acheté des livres. Je les ai déjà lu."), ["lu → lus (error)"])
+    }
+
+    // A wrong gender on a plural participle is only a warning, since les could stand for something else.
+    func testWrongGenderAfterLesIsOnlyAWarning() throws {
+        XCTAssertEqual(try report("J'ai pris des photos. Je les ai envoyés à ma sœur."), ["envoyés → envoyées (warning)"])
+    }
+
+    // Two plural nouns of different gender, or none, keep both forms in the explanation.
+    func testAmbiguousLesShowsBothForms() throws {
+        let issues = try linter().lint("J'ai pris des photos et des livres. Je les ai envoyé à ma sœur.")
+        XCTAssertEqual(issues.map(\.replacement), ["envoyés"])
+        XCTAssertTrue(issues.first?.reason.contains("envoyées") == true)
+    }
+
+    // A correct gender after a clear antecedent stays quiet.
+    func testLesWithACorrectGenderStaysQuiet() throws {
+        XCTAssertEqual(try report("J'ai pris des photos. Je les ai envoyées à ma sœur."), [])
+    }
+
+    // MARK: - A relative que after an adjective
+
+    // An adjective between the determiner and the noun, or right after it, doesn't hide the object.
+    func testRelativeQueSeesThroughAnAdjective() throws {
+        XCTAssertEqual(try report("Les belles photos que j'ai pris sont floues."), ["pris → prises (error)"])
+        XCTAssertEqual(try report("Les photos magnifiques que j'ai pris sont floues."), ["pris → prises (error)"])
+        XCTAssertEqual(try report("Les belles photos que j'ai prises sont floues."), [])
+    }
+
+    // MARK: - Tense in one sentence
+
+    // A present weather clause in the same sentence as a past verb and anchor is suggested too.
+    func testPresentSceneInTheAnchorSentence() throws {
+        let issues = try linter().lint("Hier, j'ai pris des photos et il fait froid.")
+        XCTAssertEqual(issues.map(\.original), ["fait"])
+        XCTAssertEqual(issues.map(\.replacement), ["faisait"])
+        XCTAssertTrue(issues.allSatisfy { $0.severity == .suggestion })
+    }
+
+    // A word that says it's true now keeps the same sentence's present alone.
+    func testPresentMarkerInTheAnchorSentenceStaysQuiet() throws {
+        XCTAssertEqual(try report("Hier, j'ai pris des photos, mais aujourd'hui il fait froid."), [])
+    }
+
+    // A blank line ends the account, so the past cue doesn't reach the next paragraph.
+    func testPastCueStopsAtABlankLine() throws {
+        XCTAssertEqual(try report("Hier, j'ai pris des photos.\n\nIl fait froid."), [])
+        XCTAssertEqual(try report("Hier, j'ai pris des photos.\nIl fait froid.").count, 1)
     }
 
     // MARK: - Tense after a past anchor
