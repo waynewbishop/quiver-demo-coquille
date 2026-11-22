@@ -33,10 +33,10 @@ struct PostcardContent: Equatable {
         return title.isEmpty ? tableau.title : title
     }
 
-    /// The French text for the back: `text` without its notes, review markers and the
-    /// date heading a new entry starts with, since the postmark carries the date.
+    /// The French text for the back: `text` without its notes, review markers, Markdown
+    /// symbols and the date heading a new entry starts with, since the postmark carries the date.
     static func backText(from text: String) -> String {
-        var lines = Notes.removed(text)
+        var lines = Markdown.plain(Notes.removed(text))
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.trimmingCharacters(in: .whitespaces) }
         lines = Array(lines.drop(while: \.isEmpty))

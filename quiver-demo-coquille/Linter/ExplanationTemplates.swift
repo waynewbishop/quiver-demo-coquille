@@ -43,6 +43,15 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
     case participleWithAvoir
     case participleAfterAvoir
     case participleWithEtre
+    case participleAgreesWithObject
+    case participleAgreesWithLes
+    case tenseInNarrative
+    case hyphenatedWords
+    case doubleDeterminer
+    case doubleDeterminerDrop
+    case bareVerbAfterEtre
+    case quantityDe
+    case infinitiveAfterEtre
     case generalArticle
     case subjectVerb
     case nearFutureInfinitive
@@ -96,6 +105,15 @@ nonisolated enum ExplanationKey: String, CaseIterable, Codable, Sendable {
         case .participleWithAvoir: ["fix"]
         case .participleAfterAvoir: ["verb", "fix"]
         case .participleWithEtre: ["subject", "fix"]
+        case .participleAgreesWithObject: ["object", "fix"]
+        case .participleAgreesWithLes: ["fix", "feminine"]
+        case .tenseInNarrative: ["anchor", "present", "fix"]
+        case .hyphenatedWords: ["word", "fix"]
+        case .doubleDeterminer: ["first", "second"]
+        case .doubleDeterminerDrop: ["drop", "keep"]
+        case .bareVerbAfterEtre: ["form"]
+        case .quantityDe: ["quantity"]
+        case .infinitiveAfterEtre: ["verb", "fix"]
         case .generalArticle: ["verb", "fix"]
         case .subjectVerb: ["subject", "verb", "fix"]
         case .nearFutureInfinitive: ["fix"]

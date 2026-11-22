@@ -140,6 +140,24 @@ nonisolated struct FrenchGrammar: Grammar {
             GrammarRule(identifier: "grammar.participle", layer: .relationalGrammar, targetLevel: .a2) {
                 participleWithEtreIssues(in: $0.tokens)
             },
+            GrammarRule(identifier: "grammar.hyphen", layer: .orthography, targetLevel: .a1) {
+                hyphenatedWordIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.doubleDeterminer", layer: .localMorphosyntax, targetLevel: .a1) {
+                doubleDeterminerIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.quantityDe", layer: .relationalGrammar, targetLevel: .a2) {
+                quantityDesAfterParticipleIssues(in: $0.tokens)
+            },
+            GrammarRule(identifier: "grammar.etreForm", layer: .relationalGrammar, targetLevel: .a2) {
+                verbFormAfterEtreIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.precedingObject", layer: .relationalGrammar, targetLevel: .b1) {
+                precedingObjectAgreementIssues(in: $0)
+            },
+            GrammarRule(identifier: "grammar.narrativeTense", layer: .contextualSemantics, targetLevel: .b1) {
+                narrativeTenseIssues(in: $0)
+            },
             GrammarRule(identifier: "grammar.article", layer: .localMorphosyntax, targetLevel: .a2) {
                 generalArticleIssues(in: $0.tokens) + negativeArticleIssues(in: $0.tokens)
             },
@@ -1031,6 +1049,511 @@ nonisolated struct FrenchGrammar: Grammar {
         guard text.isHelperVerb(index, certainty: Self.tagCertainty),
               index + 2 < tokens.count, tokens[index + 1].isAdjacentToNext else { return false }
         return Self.determiners[tokens[index + 2].normalized] != nil
+    }
+
+    // MARK: - Hyphenated words
+
+    /// Function words that open a phrase written as separate words, never hyphenated:
+    /// "parce que", "beaucoup de", "il y a". The system spellchecker accepts "parce-que"
+    /// because each part is a word, so this list names the heads a hyphen can't follow.
+    private static let neverHyphenatedHeads: Set<String> = [
+        "parce", "comme", "beaucoup", "peu", "trop", "assez", "que", "qui", "de", "du", "des", "le", "les",
+        "et", "ou", "mais", "je", "tu", "il", "elle", "nous", "vous", "ils", "elles",
+        "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses", "notre", "votre", "nos", "vos", "leurs",
+        "cette", "ces"
+    ]
+
+    /// Endings that make a hyphen right after such a head: "nous-mêmes", "de-ci de-là".
+    private static let hyphenEndings: Set<String> = ["même", "mêmes", "ci", "là"]
+
+    /// Flags a hyphen between words that are written apart: "parce-que" → "parce que",
+    /// "beaucoup-de" → "beaucoup de", "il-y-a" → "il y a".
+    ///
+    /// The word is judged only when its first part is a word that never takes a hyphen, the
+    /// lexicon doesn't list the whole word, and it has two or three parts. Real hyphenated
+    /// words such as "peut-être", "dit-on", "est-ce", "grand-mère" and "après-midi" never
+    /// start with one of those words, and "nous-mêmes" or "de-ci de-là" are left out by
+    /// their endings.
+    private func hyphenatedWordIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for (index, token) in tokens.enumerated() where token.text.contains("-") {
+            let parts = token.text.split(separator: "-", omittingEmptySubsequences: false).map(String.init)
+            guard (2...3).contains(parts.count), parts.allSatisfy({ !$0.isEmpty }),
+                  Self.neverHyphenatedHeads.contains(parts[0].lowercased()),
+                  !Self.hyphenEndings.contains(parts[parts.count - 1].lowercased()),
+                  !lexicon.contains(token.normalized) else { continue }
+            let fix = parts.joined(separator: " ")
+            issues.append(issue(
+                .spelling, .error, from: index, through: index, in: tokens,
+                replacement: fix,
+                explanation: explanations.render(.hyphenatedWords, ["word": token.text, "fix": fix.lowercased()]),
+                source: "Hyphen rule"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Two determiners in a row
+
+    /// Articles and demonstratives that open a noun phrase.
+    private static let articleLikeDeterminers: Set<String> = [
+        "le", "la", "les", "l'", "un", "une", "des", "du", "au", "aux", "ce", "cet", "cette", "ces"
+    ]
+
+    /// Possessives that always open a noun phrase. Ton and son are left out, as the nouns
+    /// "le ton" and "au son" are correct.
+    private static let possessiveDeterminers: Set<String> = [
+        "mon", "ma", "mes", "ta", "tes", "sa", "ses", "notre", "votre", "nos", "vos", "leurs"
+    ]
+
+    /// Flags two different determiners side by side, which is never French: "mon l'ami",
+    /// "le mon ami" and "un la maison".
+    ///
+    /// An article beside a possessive is dropped, since the possessive is what the learner
+    /// meant. Two articles name no fix, because either could be the one intended. Pairs that
+    /// are correct are left out: "l'un" and "l'une", "un des" and "une des", "plusieurs des",
+    /// and a pronoun le or la before leur.
+    private func doubleDeterminerIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices.dropLast() {
+            let first = tokens[index]
+            let second = tokens[index + 1]
+            let firstWord = first.normalized
+            let secondWord = second.normalized
+            guard first.isAdjacentToNext, firstWord != secondWord,
+                  first.text.first?.isLowercase == true || index == 0 || tokens[index - 1].endsClause,
+                  second.text.first?.isLowercase == true else { continue }
+            let firstIsArticle = Self.articleLikeDeterminers.contains(firstWord)
+            let firstIsPossessive = Self.possessiveDeterminers.contains(firstWord)
+            // Du, des, au and aux after an article are already handled by the article rule.
+            let secondIsArticle = Self.articleLikeDeterminers.contains(secondWord)
+                && !["un", "une", "ce", "du", "des", "au", "aux"].contains(secondWord)
+            let secondIsPossessive = Self.possessiveDeterminers.contains(secondWord)
+            guard (firstIsArticle || firstIsPossessive), (secondIsArticle || secondIsPossessive),
+                  // "un des" and "une des" are correct: one of the.
+                  !(["un", "une"].contains(firstWord) && secondWord == "des"),
+                  // Ce can be the pronoun before a pronoun: "ce le".
+                  !(firstWord == "ce" && ["le", "la", "les", "l'"].contains(secondWord)),
+                  // A pronoun before an article or possessive is not a determiner: "il le lui dit".
+                  !(["le", "la", "les", "l'"].contains(firstWord) && text.mayBePronoun[index]) else { continue }
+
+            if firstIsArticle && secondIsPossessive {
+                // "le mon ami" → "mon ami": drop the article, keep the possessive.
+                issues.append(issue(
+                    .article, .error, from: index, through: index + 1, in: tokens,
+                    replacement: matchingCase(of: first.text, second.text),
+                    explanation: explanations.render(.doubleDeterminerDrop, ["drop": firstWord, "keep": secondWord]),
+                    source: "Determiner rule"
+                ))
+            } else if firstIsPossessive && secondIsArticle {
+                // "mon l'ami" → "mon ami": drop the article. An elided one leaves a space behind.
+                let separator = secondWord.hasSuffix("'") ? " " : ""
+                issues.append(issue(
+                    .article, .error, from: index, through: index + 1, in: tokens,
+                    replacement: first.text + separator,
+                    explanation: explanations.render(.doubleDeterminerDrop, ["drop": secondWord, "keep": firstWord]),
+                    source: "Determiner rule"
+                ))
+            } else if firstIsArticle && secondIsArticle {
+                // "un la maison": either could be meant, so no fix is offered.
+                guard !(firstWord == "l'" && ["un", "une"].contains(secondWord)) else { continue }
+                issues.append(issue(
+                    .article, .error, from: index, through: index + 1, in: tokens,
+                    replacement: nil,
+                    explanation: explanations.render(.doubleDeterminer, ["first": firstWord, "second": secondWord]),
+                    source: "Determiner rule"
+                ))
+            }
+        }
+        return issues
+    }
+
+    // MARK: - Quantity and des after a past participle
+
+    /// Expressions of quantity that take de, not des, before a noun in general.
+    private static let quantityBeforeDes: Set<String> = ["beaucoup", "peu", "trop", "assez", "tant", "autant"]
+
+    /// Verbs that take de themselves, so "il a parlé beaucoup des vacances" is correct: des is
+    /// de and les, and beaucoup only says how much.
+    private static let verbsTakingDe: Set<String> = [
+        "parler", "rêver", "profiter", "dépendre", "discuter", "jouer", "abuser", "manquer", "vivre",
+        "souffrir", "douter", "plaindre", "occuper", "témoigner", "disposer", "bénéficier", "hériter",
+        "mourir", "rire", "moquer", "traiter", "souvenir", "servir", "user", "médire", "causer",
+        "entendre", "dire", "écrire", "penser", "répondre", "remercier", "changer"
+    ]
+
+    /// Words after the noun that show des means "of the" a particular group: "beaucoup des
+    /// gens que je connais".
+    private static let groupComplements: Set<String> = [
+        "que", "qu'", "qui", "dont", "de", "d'", "du", "parmi", "à", "chez", "en"
+    ]
+
+    /// Flags des after a quantity word that follows a past participle with avoir, where de
+    /// belongs: "j'ai perdu beaucoup des photos" → "j'ai perdu beaucoup de photos".
+    ///
+    /// The word-choice list already catches des right after avoir ("j'ai beaucoup des photos").
+    /// Here a participle comes between, so the rule is a warning: it stays quiet for verbs that
+    /// take de themselves ("il a parlé beaucoup des vacances") and for a noun followed by what
+    /// points to a particular group, such as que, qui, dont or de.
+    private func quantityDesAfterParticipleIssues(in tokens: [Token]) -> [Issue] {
+        var issues: [Issue] = []
+        for index in tokens.indices where index >= 2 && index + 2 < tokens.count {
+            let quantity = tokens[index]
+            let des = tokens[index + 1]
+            let noun = tokens[index + 2]
+            guard Self.quantityBeforeDes.contains(quantity.normalized), des.normalized == "des",
+                  Self.avoirTenses[tokens[index - 2].normalized] != nil,
+                  tokens[index - 2].isAdjacentToNext, tokens[index - 1].isAdjacentToNext,
+                  quantity.isAdjacentToNext, des.isAdjacentToNext,
+                  let verb = lexicon.participles(tokens[index - 1].normalized).first?.verb,
+                  lexicon.participles(tokens[index - 1].normalized).allSatisfy({ $0.verb == verb }),
+                  !Self.verbsTakingDe.contains(verb),
+                  noun.text.first?.isLowercase == true,
+                  lexicon.noun(noun.normalized) != nil,
+                  // De before a vowel elides ("d'amis"), but an h may or may not allow it, so the rule stays silent.
+                  noun.normalized.first != "h",
+                  !["autres", "uns", "unes", "mêmes"].contains(noun.normalized) else { continue }
+            // A complement after the noun points to a particular group, where des is correct.
+            var next = index + 3
+            if noun.isAdjacentToNext, next < tokens.count, !lexicon.adjectiveLemmas(of: tokens[next].normalized).isEmpty {
+                next += 1
+            }
+            if noun.isAdjacentToNext, next < tokens.count, Self.groupComplements.contains(tokens[next].normalized) { continue }
+            // "des amis" becomes "d'amis", and "des photos" becomes "de photos".
+            let elides = noun.startsWithVowel
+            issues.append(issue(
+                .article, .warning, from: index + 1, through: elides ? index + 2 : index + 1, in: tokens,
+                replacement: elides ? "d'" + noun.text : "de",
+                explanation: explanations.render(.quantityDe, ["quantity": quantity.normalized]),
+                source: "Quantity rule"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - A verb form after être
+
+    /// Adverbs that can stand between être and what follows it.
+    private static let adverbsAfterEtre: Set<String> = ["pas", "jamais", "plus", "déjà", "vraiment", "encore", "toujours"]
+
+    /// Flags a bare verb form straight after être, where an adjective, a past participle or a
+    /// noun belongs: "je suis aller" → "je suis allé", "il n'était pas marche", "je suis travailler".
+    ///
+    /// A verb of movement after être is read as a past participle and fixed. Anything else
+    /// names no fix, since the learner may mean en train de, a participle or another verb,
+    /// and it is only a warning. The subject must be a pronoun other than ce, so "c'est
+    /// partir" and "Partir, c'est mourir" stay correct. The word must be one verb's form and
+    /// nothing else: no participle, adjective or noun reading, so "il est fort", "elle est
+    /// pilote" and "il est parti" stay silent.
+    private func verbFormAfterEtreIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for index in tokens.indices where Self.etreForms.contains(tokens[index].normalized) {
+            guard index >= 1, tokens[index].isAdjacentToNext, tokens[index - 1].isAdjacentToNext else { continue }
+            var subject = index - 1
+            if ["ne", "n'"].contains(tokens[subject].normalized) {
+                subject -= 1
+                guard subject >= 0, tokens[subject].isAdjacentToNext else { continue }
+            }
+            guard Self.subjectPronouns.contains(tokens[subject].normalized),
+                  !isCoordinated(tokens, subjectAt: subject),
+                  subject == 0 || !["que", "qu'"].contains(tokens[subject - 1].normalized) else { continue }
+
+            var formIndex = index + 1
+            if formIndex < tokens.count, Self.adverbsAfterEtre.contains(tokens[formIndex].normalized), tokens[formIndex].isAdjacentToNext {
+                formIndex += 1
+            }
+            guard formIndex < tokens.count else { continue }
+            let form = tokens[formIndex]
+            guard form.text.first?.isLowercase == true,
+                  !Self.preverbalWords.contains(form.normalized), !Self.notVerbAfterAvoir.contains(form.normalized),
+                  !form.normalized.hasSuffix("'"), !form.normalized.contains("-"),
+                  lexicon.participles(form.normalized).isEmpty,
+                  lexicon.adjectiveLemmas(of: form.normalized).isEmpty else { continue }
+            let verb: String
+            if lexicon.isInfinitive(form.normalized) {
+                if lexicon.noun(form.normalized) != nil, (text.verbProbability[formIndex] ?? 0) < Self.tagCertainty { continue }
+                verb = form.normalized
+            } else {
+                let readings = lexicon.conjugations(form.normalized)
+                guard let first = readings.first, readings.allSatisfy({ $0.verb == first.verb }) else { continue }
+                // A noun reading ("marche") counts only when the tagger is sure it is the verb here.
+                if lexicon.noun(form.normalized) != nil, (text.verbProbability[formIndex] ?? 0) < Self.tagCertainty { continue }
+                verb = first.verb
+            }
+            guard verb != "être", verb != "avoir" else { continue }
+
+            if lexicon.isInfinitive(form.normalized), Self.etreVerbs.contains(verb) {
+                let agreement = Self.subjectAgreement[tokens[subject].normalized]
+                if let participle = lexicon.participle(of: verb, gender: agreement?.gender ?? .masculine, number: agreement?.number ?? .singular) {
+                    issues.append(issue(
+                        .participle, .error, from: formIndex, through: formIndex, in: tokens,
+                        replacement: matchingCase(of: form.text, participle),
+                        explanation: explanations.render(.infinitiveAfterEtre, ["verb": verb, "fix": participle]),
+                        source: "Verb form rule · Lexique"
+                    ))
+                    continue
+                }
+            }
+            issues.append(issue(
+                .participle, .warning, from: formIndex, through: formIndex, in: tokens,
+                replacement: nil,
+                explanation: explanations.render(.bareVerbAfterEtre, ["form": form.normalized]),
+                source: "Verb form rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Participle agreement with a preceding object
+
+    /// Words that may sit between avoir and its participle without changing the agreement.
+    private static let adverbsBeforeParticiple: Set<String> = [
+        "pas", "jamais", "plus", "déjà", "bien", "vraiment", "enfin", "toujours", "souvent", "encore", "mal"
+    ]
+
+    /// Verbs whose participle stays as it is after que, because que measures or fills time
+    /// rather than being their object: "les kilos que j'ai pesé", "les années que j'ai vécu".
+    private static let invariantParticipleVerbs: Set<String> = [
+        "coûter", "valoir", "peser", "mesurer", "vivre", "durer", "courir", "dormir", "marcher",
+        "pouvoir", "devoir", "vouloir", "falloir", "régner"
+    ]
+
+    /// The direct object that stands before a form of avoir.
+    private struct PrecedingObject {
+        /// The object as the explanation names it, such as "les photos".
+        let label: String
+        /// `nil` when the object doesn't settle a gender, as with the pronoun les.
+        let gender: Gender?
+        let number: GrammaticalNumber
+    }
+
+    /// Whether a noun, singular or plural, is one that a conjunction que often follows.
+    private func isConjunctionNoun(_ noun: String) -> Bool {
+        Self.nounsBeforeConjunctionQue.contains(noun)
+            || (noun.hasSuffix("s") && Self.nounsBeforeConjunctionQue.contains(String(noun.dropLast())))
+    }
+
+    /// Finds the direct object before the form of avoir at `auxiliary`, in the two forms
+    /// that leave no doubt: the pronoun les ("je les ai pris") and a relative que after a
+    /// noun with its determiner ("les photos que j'ai pris"). Returns nil for anything else.
+    private func precedingObject(beforeAuxiliaryAt auxiliary: Int, in text: TaggedText) -> PrecedingObject? {
+        let tokens = text.tokens
+
+        // "je les ai", "il ne les a": the subject comes first, with ne at most between.
+        if tokens[auxiliary - 1].normalized == "les" {
+            var subject = auxiliary - 2
+            if subject >= 1, ["ne", "n'"].contains(tokens[subject].normalized), tokens[subject].isAdjacentToNext { subject -= 1 }
+            guard subject >= 0, tokens[subject].isAdjacentToNext,
+                  Self.subjectPronouns.contains(tokens[subject].normalized),
+                  !isCoordinated(tokens, subjectAt: subject),
+                  subject == 0 || !["que", "qu'"].contains(tokens[subject - 1].normalized) else { return nil }
+            return PrecedingObject(label: "les", gender: nil, number: .plural)
+        }
+
+        // "les photos que j'ai", "la robe qu'elle n'a pas": a noun, que, the subject, avoir.
+        var subject = auxiliary - 1
+        if subject >= 1, ["ne", "n'"].contains(tokens[subject].normalized), tokens[subject].isAdjacentToNext { subject -= 1 }
+        guard subject >= 3, tokens[subject].isAdjacentToNext,
+              Self.subjectPronouns.contains(tokens[subject].normalized),
+              ["que", "qu'"].contains(tokens[subject - 1].normalized),
+              tokens[subject - 2].isAdjacentToNext, tokens[subject - 1].isAdjacentToNext || tokens[subject - 1].normalized == "qu'",
+              isNounAfterDeterminer(at: subject - 2, in: text),
+              !isConjunctionNoun(tokens[subject - 2].normalized),
+              let noun = lexicon.noun(tokens[subject - 2].normalized),
+              let gender = noun.gender, let number = noun.number else { return nil }
+        return PrecedingObject(
+            label: tokens[subject - 3].normalized + (tokens[subject - 3].normalized.hasSuffix("'") ? "" : " ") + tokens[subject - 2].normalized,
+            gender: gender, number: number
+        )
+    }
+
+    /// Flags a past participle that doesn't agree with a direct object placed before avoir:
+    /// "je les ai mangé" → "mangés", "les photos que j'ai pris" → "prises".
+    ///
+    /// Only two objects are judged, since only they are certain: the pronoun les, which fixes
+    /// the number but not the gender, and a relative que right after a noun with its
+    /// determiner. A participle that already fits is left alone, so is one before an
+    /// infinitive ("les photos que j'ai laissé partir"), after a verb that takes no object
+    /// here ("les années que j'ai vécu"), or after a noun that que often follows as a
+    /// conjunction ("l'idée que j'ai pris la route").
+    private func precedingObjectAgreementIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        var issues: [Issue] = []
+        for auxiliary in tokens.indices where auxiliary >= 2 && Self.avoirTenses[tokens[auxiliary].normalized] != nil {
+            guard tokens[auxiliary].isAdjacentToNext, auxiliary + 1 < tokens.count,
+                  let object = precedingObject(beforeAuxiliaryAt: auxiliary, in: text) else { continue }
+            var index = auxiliary + 1
+            if Self.adverbsBeforeParticiple.contains(tokens[index].normalized), tokens[index].isAdjacentToNext, index + 1 < tokens.count {
+                index += 1
+            }
+            let participle = tokens[index]
+            let readings = lexicon.participles(participle.normalized)
+            guard participle.text.first?.isLowercase == true,
+                  let verb = readings.first?.verb, readings.allSatisfy({ $0.verb == verb }),
+                  !Self.etreVerbs.contains(verb), !Self.eitherAuxiliaryVerbs.contains(verb),
+                  !Self.invariantParticipleVerbs.contains(verb) else { continue }
+            if index + 1 < tokens.count, participle.isAdjacentToNext {
+                let next = tokens[index + 1].normalized
+                // An infinitive follows: the participle may stay as it is. A determiner follows:
+                // que is a conjunction there, and the verb has its own object.
+                if lexicon.isInfinitive(next) || Self.determiners[next] != nil { continue }
+            }
+            let fits = readings.contains { reading in
+                (reading.gender == nil || object.gender == nil || reading.gender == object.gender)
+                    && (reading.number == nil || reading.number == object.number)
+            }
+            guard !fits,
+                  let fix = lexicon.participle(of: verb, gender: object.gender ?? .masculine, number: object.number),
+                  fix != participle.normalized else { continue }
+
+            let explanation: Explanation
+            if object.gender == nil {
+                let feminine = lexicon.participle(of: verb, gender: .feminine, number: .plural) ?? fix
+                explanation = explanations.render(.participleAgreesWithLes, ["fix": fix, "feminine": feminine])
+            } else {
+                explanation = explanations.render(.participleAgreesWithObject, ["object": object.label, "fix": fix])
+            }
+            issues.append(issue(
+                .participle, .error, from: index, through: index, in: tokens,
+                replacement: matchingCase(of: participle.text, fix),
+                explanation: explanation,
+                source: "Participle agreement rule · Lexique"
+            ))
+        }
+        return issues
+    }
+
+    // MARK: - Tense in an account of the past
+
+    /// Words that put the sentence they are in firmly in the past.
+    private static let pastAnchors: Set<String> = ["hier", "avant-hier", "autrefois", "jadis"]
+
+    /// Time nouns that "dernier" or "dernière" follows to say the past: "la semaine dernière".
+    private static let lastTimeNouns: Set<String> = [
+        "semaine", "mois", "année", "an", "week-end", "weekend", "soir", "nuit", "été", "hiver", "printemps", "automne",
+        "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"
+    ]
+
+    /// Words that say something is true now or often, which make a present verb right.
+    private static let presentMarkers: Set<String> = [
+        "aujourd'hui", "maintenant", "encore", "toujours", "demain", "actuellement", "ici", "souvent",
+        "d'habitude", "généralement", "chaque", "habituellement", "désormais", "bientôt", "ce", "cette", "cet"
+    ]
+
+    /// The weather and conditions a present "il fait ..." names.
+    private static let weatherWords: Set<String> = [
+        "beau", "froid", "chaud", "mauvais", "gris", "sombre", "lourd", "humide", "doux", "frais", "nuit", "jour"
+    ]
+
+    /// What "il y a du ..." can name when it describes the weather.
+    private static let weatherNouns: Set<String> = ["vent", "soleil", "brouillard", "nuages", "brume", "orage"]
+
+    /// Forms of être in the present, for a compound past such as "je suis allé".
+    private static let presentEtreForms: Set<String> = ["suis", "es", "est", "sommes", "êtes", "sont"]
+
+    /// The token ranges of each sentence, which end at . ! ? … or a line break.
+    private func sentenceRanges(of tokens: [Token]) -> [Range<Int>] {
+        var ranges: [Range<Int>] = []
+        var start = 0
+        for index in tokens.indices where tokens[index].gap.contains(where: { $0.isNewline || ".!?…".contains($0) }) {
+            ranges.append(start..<(index + 1))
+            start = index + 1
+        }
+        if start < tokens.count { ranges.append(start..<tokens.count) }
+        return ranges
+    }
+
+    /// The word that puts a sentence in the past, such as "hier" or "dernière" after "semaine".
+    private func pastAnchor(in range: Range<Int>, of tokens: [Token]) -> String? {
+        for index in range {
+            let word = tokens[index].normalized
+            if Self.pastAnchors.contains(word) { return word }
+            if ["dernier", "dernière"].contains(word), index > range.lowerBound,
+               Self.lastTimeNouns.contains(tokens[index - 1].normalized) {
+                return "\(tokens[index - 1].normalized) \(word)"
+            }
+        }
+        return nil
+    }
+
+    /// Whether the sentence has a verb already in the past: a compound with avoir or être,
+    /// or an imparfait form.
+    private func hasPastVerb(in range: Range<Int>, of tokens: [Token]) -> Bool {
+        for index in range {
+            let word = tokens[index].normalized
+            let readings = lexicon.conjugations(word)
+            if !readings.isEmpty, readings.allSatisfy({ $0.codes.allSatisfy { $0.hasPrefix("ii") } }) { return true }
+            let isAuxiliary = ["ai", "as", "a", "avons", "avez", "ont"].contains(word) || Self.presentEtreForms.contains(word)
+            guard isAuxiliary else { continue }
+            for next in (index + 1)..<min(index + 4, range.upperBound) where !lexicon.participles(tokens[next].normalized).isEmpty {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// The weather and scene clauses in the present within a sentence, as the verb's index
+    /// and the imparfait form that would replace it.
+    private func presentSceneVerbs(in range: Range<Int>, of tokens: [Token]) -> [(index: Int, present: String, fix: String)] {
+        var found: [(index: Int, present: String, fix: String)] = []
+        for index in range where tokens[index].normalized == "il" && index + 1 < range.upperBound {
+            let verb = tokens[index + 1]
+            let followedBy = index + 2 < range.upperBound ? tokens[index + 2].normalized : ""
+            var imparfait: String?
+            if verb.normalized == "fait", Self.weatherWords.contains(followedBy) {
+                imparfait = lexicon.conjugate("faire", "ii3s")
+            } else if verb.normalized == "pleut" {
+                imparfait = lexicon.conjugate("pleuvoir", "ii3s")
+            } else if verb.normalized == "neige" {
+                imparfait = lexicon.conjugate("neiger", "ii3s")
+            } else if verb.normalized == "y", index + 3 < range.upperBound, tokens[index + 2].normalized == "a",
+                      ["du", "de", "des"].contains(tokens[index + 3].normalized),
+                      tokens[(index + 4)..<min(index + 6, range.upperBound)].contains(where: { Self.weatherNouns.contains($0.normalized) }) {
+                imparfait = lexicon.conjugate("avoir", "ii3s")
+                found.append((index + 2, "a", imparfait ?? "avait"))
+                continue
+            }
+            if let imparfait { found.append((index + 1, verb.normalized, imparfait)) }
+        }
+        return found
+    }
+
+    /// Suggests the imparfait for the weather or a scene described in the present right after
+    /// an account that is clearly in the past: "Hier, j'ai pris des photos. Il fait froid."
+    ///
+    /// It is only a suggestion, since the present is right when the writer means it's still
+    /// true today. It needs a past anchor such as hier or "la semaine dernière" and a verb
+    /// already in the past in the same sentence, and it reads at most the next two sentences,
+    /// stopping at one that says something is true now ("aujourd'hui", "maintenant", "encore").
+    private func narrativeTenseIssues(in text: TaggedText) -> [Issue] {
+        let tokens = text.tokens
+        let sentences = sentenceRanges(of: tokens)
+        var issues: [Issue] = []
+        var reported: Set<Int> = []
+        for (position, range) in sentences.enumerated() {
+            guard let anchor = pastAnchor(in: range, of: tokens), hasPastVerb(in: range, of: tokens) else { continue }
+            for next in (position + 1)..<min(position + 3, sentences.count) {
+                let following = sentences[next]
+                let words = tokens[following].map(\.normalized)
+                let hasQuote = tokens[following].contains { "«»\"“”".contains($0.text.first ?? " ") || $0.gap.contains("«") }
+                guard !hasQuote, !words.contains(where: { Self.presentMarkers.contains($0) }),
+                      pastAnchor(in: following, of: tokens) == nil else { break }
+                for scene in presentSceneVerbs(in: following, of: tokens) where !reported.contains(scene.index) {
+                    reported.insert(scene.index)
+                    issues.append(issue(
+                        .tense, .suggestion, from: scene.index, through: scene.index, in: tokens,
+                        replacement: matchingCase(of: tokens[scene.index].text, scene.fix),
+                        explanation: explanations.render(.tenseInNarrative, [
+                            "anchor": anchor, "present": scene.present, "fix": scene.fix
+                        ]),
+                        source: "Narrative tense rule"
+                    ))
+                }
+            }
+        }
+        return issues
     }
 
     /// The reflexive pronouns each subject takes: je me, tu te, il se, nous nous.

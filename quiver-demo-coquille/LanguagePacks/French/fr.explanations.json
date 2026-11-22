@@ -133,6 +133,51 @@
     "template": "With être, the past participle agrees with {subject}, so it's {fix}.",
     "example": "With être, the past participle agrees with elles, so it's allées."
   },
+  "participleAgreesWithObject": {
+    "hint": "The direct object comes before avoir, so the past participle agrees with it.",
+    "template": "The direct object {object} comes before avoir, so the past participle agrees with it: {fix}.",
+    "example": "The direct object les photos comes before avoir, so the past participle agrees with it: prises."
+  },
+  "participleAgreesWithLes": {
+    "hint": "The pronoun les comes before avoir, so the past participle agrees with it.",
+    "template": "The pronoun les comes before avoir, so the past participle agrees with it in number: {fix}. If les stands for feminine words, the participle also takes an e: {feminine}.",
+    "example": "The pronoun les comes before avoir, so the past participle agrees with it in number: mangés. If les stands for feminine words, the participle also takes an e: mangées."
+  },
+  "tenseInNarrative": {
+    "hint": "In an account of the past, a scene or the weather is usually in the imparfait.",
+    "template": "{anchor} puts this account in the past, so a scene or the weather is usually in the imparfait: {fix} instead of {present}. If you mean it's still true today, the present is right.",
+    "example": "hier puts this account in the past, so a scene or the weather is usually in the imparfait: faisait instead of fait. If you mean it's still true today, the present is right."
+  },
+  "hyphenatedWords": {
+    "hint": "These are separate words, so there is no hyphen between them.",
+    "template": "{word} is written as separate words, with no hyphen: {fix}.",
+    "example": "parce-que is written as separate words, with no hyphen: parce que."
+  },
+  "doubleDeterminer": {
+    "hint": "Two determiners in a row: a noun takes only one.",
+    "template": "{first} and {second} are both determiners, and a noun takes only one. Keep the one you mean.",
+    "example": "un and la are both determiners, and a noun takes only one. Keep the one you mean."
+  },
+  "doubleDeterminerDrop": {
+    "hint": "A noun takes one determiner, so the article isn't needed next to a possessive.",
+    "template": "A noun takes one determiner, so {drop} isn't needed beside {keep}.",
+    "example": "A noun takes one determiner, so le isn't needed beside mon."
+  },
+  "quantityDe": {
+    "hint": "After an expression of quantity, a noun in general takes de, not des.",
+    "template": "After {quantity}, a noun in general takes de, not des. Des is right only when you mean \"of the\" a particular group.",
+    "example": "After beaucoup, a noun in general takes de, not des. Des is right only when you mean \"of the\" a particular group."
+  },
+  "bareVerbAfterEtre": {
+    "hint": "After être, French needs an adjective, a past participle or a noun, not a verb form.",
+    "template": "{form} is a verb form, and after être French needs an adjective, a past participle or a noun. To say what is happening, use en train de and the infinitive, or a verb of its own.",
+    "example": "travailler is a verb form, and after être French needs an adjective, a past participle or a noun. To say what is happening, use en train de and the infinitive, or a verb of its own."
+  },
+  "infinitiveAfterEtre": {
+    "hint": "After être, a verb of movement takes its past participle, not the infinitive.",
+    "template": "After être, {verb} takes its past participle, so it's {fix}.",
+    "example": "After être, aller takes its past participle, so it's allé."
+  },
   "generalArticle": {
     "hint": "After {verb}, a noun for something in general takes le, la or les.",
     "template": "After {verb}, a noun for something in general takes le, la or les: {fix}.",

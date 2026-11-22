@@ -24,6 +24,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
     case accent
     case auxiliary
     case participle
+    case tense
     case article
     case conjugation
     case siClause
@@ -54,6 +55,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .accent: "ACCENT"
         case .auxiliary: "ÊTRE OR AVOIR"
         case .participle: "PARTICIPLE"
+        case .tense: "TENSE"
         case .article: "ARTICLE"
         case .conjugation: "CONJUGATION"
         case .siClause: "SI CLAUSE"
@@ -86,6 +88,7 @@ nonisolated enum IssueKind: String, CaseIterable, Codable, Equatable, Sendable {
         case .accent: "Accents (a vs. à)"
         case .auxiliary: "Être or avoir (je suis allé)"
         case .participle: "Past participles (il a mangé)"
+        case .tense: "Tense (il faisait beau)"
         case .article: "Articles (j'aime le fromage)"
         case .conjugation: "Conjugation (je vais)"
         case .siClause: "Si clauses (si tu viens)"

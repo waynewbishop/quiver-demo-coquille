@@ -86,6 +86,17 @@ enum Markdown {
         return Line(block: syntax.block, emphasis: syntax.emphasis, text: text, spans: spans)
     }
 
+    /// `text` with every Markdown symbol taken out, line for line: heading marks, list
+    /// markers and the asterisks of bold and italic go, and the words stay. Blank lines are
+    /// kept, so paragraphs still part where they did.
+    ///
+    /// This is for places that show the words without the formatting, such as a postcard.
+    static func plain(_ text: String) -> String {
+        text.split(separator: "\n", omittingEmptySubsequences: false)
+            .map { line(String($0)).text }
+            .joined(separator: "\n")
+    }
+
     /// The character offsets of every Markdown symbol in `text`, in order, leaving out
     /// anything inside a note.
     static func ranges(in text: String) -> [Range<Int>] {

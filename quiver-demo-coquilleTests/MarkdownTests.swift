@@ -82,6 +82,14 @@ final class MarkdownTests: XCTestCase {
         XCTAssertEqual(Markdown.ranges(in: "**Il pleut.** // # note"), [0..<2, 11..<13])
     }
 
+    // Plain text keeps the words and the line breaks, and loses every symbol.
+    func testPlainTakesOutTheSymbols() {
+        XCTAssertEqual(
+            Markdown.plain("# My weekend\n\n**This morning**, I was at the park.\n- It was *very* nice.\n5 * 3 = 15"),
+            "My weekend\n\nThis morning, I was at the park.\nIt was very nice.\n5 * 3 = 15"
+        )
+    }
+
     // MARK: - Restyling translations
 
     // Headings, list markers and whole-line emphasis return on the matching English lines.
@@ -190,5 +198,25 @@ final class MarkdownTests: XCTestCase {
             return XCTFail("Expected English, got \(model.english)")
         }
         XCTAssertEqual(english, "**This morning**, it's raining.")
+    }
+
+    // A postcard carries the English as plain words, though the pane shows it formatted.
+    func testPostcardEnglishHasNoMarkdown() async throws {
+        let translator = LineTranslator(english: ["Lundi 9 novembre": "Monday, November 9", "Il pleut.": "It's raining."])
+        let pack = try LanguagePack.french()
+        let linter = Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        let model = EditorModel(stats: StatsStore(fileURL: nil), journal: nil, linter: linter, translator: translator)
+        model.text = AttributedString("**Lundi 9 novembre**\n\n- Il pleut.")
+        model.textDidChange()
+        model.lintNow()
+        model.setTableau(TableauCatalog.tableau(withID: "le-parc"))
+        model.isEnglishOn = true
+        for _ in 0..<200 {
+            guard case .translating = model.english else { break }
+            await Task.yield()
+        }
+        let postcard = try XCTUnwrap(model.postcardContent)
+        XCTAssertEqual(postcard.french, "Il pleut.")
+        XCTAssertEqual(postcard.english, "Monday, November 9\n\nIt's raining.")
     }
 }

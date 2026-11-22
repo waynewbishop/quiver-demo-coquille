@@ -53,6 +53,23 @@ final class PostcardTests: XCTestCase {
         XCTAssertEqual(PostcardContent.backText(from: entry), "Aujourd'hui, je suis allé au parc.\nIl faisait beau.")
     }
 
+    /// Markdown symbols are taken out of the back, including a bold date heading.
+    func testBackTextHasNoMarkdown() {
+        let entry = """
+        **Lundi 16 novembre 2026**
+
+        # Mon week-end
+
+        **Ce matin**, j'étais au parc.
+        - Il faisait *très* beau.
+        2. Nous avons mangé.
+        """
+        XCTAssertEqual(
+            PostcardContent.backText(from: entry),
+            "Mon week-end\n\nCe matin, j'étais au parc.\nIl faisait très beau.\nNous avons mangé."
+        )
+    }
+
     /// A sentence that starts with a weekday isn't mistaken for the date heading.
     func testBackTextKeepsASentenceStartingWithAWeekday() {
         XCTAssertEqual(PostcardContent.backText(from: "Lundi, je vais au parc."), "Lundi, je vais au parc.")

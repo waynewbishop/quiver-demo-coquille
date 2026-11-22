@@ -185,7 +185,8 @@ final class EditorModel {
     /// The English comes along only when it was translated from exactly this text.
     var postcardContent: PostcardContent? {
         guard let tableau, hasFrench else { return nil }
-        let translation: String? = if case .translated(let text) = english, englishSource == plainText { text } else { nil }
+        // The pane shows the translation's Markdown as formatting; a postcard has just the words.
+        let translation: String? = if case .translated(let text) = english, englishSource == plainText { Markdown.plain(text) } else { nil }
         return PostcardContent(
             tableau: tableau,
             french: PostcardContent.backText(from: plainText),

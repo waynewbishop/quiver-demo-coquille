@@ -475,7 +475,30 @@ final class RuleScorecardTests: XCTestCase {
 
         ("Tu parle français.", "grammar.conjugation"),
         ("Nous finis à midi.", "grammar.conjugation"),
-        ("Tu parles français.", nil)
+        ("Tu parles français.", nil),
+
+        ("Je les ai mangé.", "grammar.precedingObject"),
+        ("Elle ne les a pas regardé.", "grammar.precedingObject"),
+        ("Les photos que j'ai pris me plaisent.", "grammar.precedingObject"),
+        ("Voici la robe que j'ai acheté.", "grammar.precedingObject"),
+        ("Je les ai mangés.", nil),
+        ("Les photos que j'ai prises me plaisent.", nil),
+        ("Je pense que j'ai pris la route.", nil),
+        ("Hier, j'ai pris des photos. Il fait froid.", "grammar.narrativeTense"),
+        ("Hier, j'ai pris des photos. Il faisait froid.", nil),
+        ("Hier, j'ai pris des photos. Aujourd'hui, il fait froid.", nil),
+
+        ("Je suis fatigué parce-que j'ai couru.", "grammar.hyphen"),
+        ("Il a beaucoup-de photos.", "grammar.hyphen"),
+        ("Peut-être qu'il viendra.", nil),
+        ("Je vois mon l'ami.", "grammar.doubleDeterminer"),
+        ("Il a un la maison.", "grammar.doubleDeterminer"),
+        ("L'un de mes amis est là.", nil),
+        ("Il parle beaucoup des vacances.", nil),
+        ("Je suis aller au marché.", "grammar.etreForm"),
+        ("Je suis travailler ce soir.", "grammar.etreForm"),
+        ("Il est parti.", nil),
+        ("J'ai perdu beaucoup des photos.", "grammar.quantityDe")
     ]
 
     /// One rule's report on the corpus, with any sentence it got wrong.
@@ -551,7 +574,7 @@ final class RuleScorecardTests: XCTestCase {
 
         // The scorecard describes the rules rather than passing or failing them; these
         // checks only keep the corpus itself sound.
-        XCTAssertEqual(tuning.count, 26)
+        XCTAssertEqual(tuning.count, 32)
         let identifiers = Set(tuning.map(\.identifier))
         for (text, rule) in Self.tuningCorpus + Self.unseenCorpus {
             guard let rule else { continue }
