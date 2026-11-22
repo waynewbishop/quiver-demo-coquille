@@ -44,6 +44,22 @@ enum Markdown {
         let block: Block
         let emphasis: Emphasis?
         let text: String
+        /// Emphasis on a few words inside the line, as character offsets into `text`.
+        /// Empty when the emphasis covers the whole line, which `emphasis` holds instead.
+        var spans: [Span] = []
+    }
+
+    /// A few emphasized words inside a line.
+    struct Span: Equatable {
+        /// Where the words sit in the line's `text`, in characters.
+        let range: Range<Int>
+        let kind: Emphasis
+    }
+
+    /// The emphasized words of a line, in order, for translating on their own.
+    static func phrases(in line: Line) -> [String] {
+        let characters = Array(line.text)
+        return line.spans.map { String(characters[$0.range]) }
     }
 
     /// Reads one line of text as Markdown.
@@ -51,8 +67,23 @@ enum Markdown {
         let characters = Array(line)
         let syntax = syntax(of: characters)
         let symbols = Set(syntax.ranges.flatMap { $0 })
-        let words = characters.indices.filter { !symbols.contains($0) }.map { characters[$0] }
-        return Line(block: syntax.block, emphasis: syntax.emphasis, text: String(words).trimmingCharacters(in: .whitespaces))
+        let kept = characters.indices.filter { !symbols.contains($0) }
+        let words = kept.map { characters[$0] }
+        let text = String(words).trimmingCharacters(in: .whitespaces)
+
+        // Emphasis on only part of the line becomes spans over the words left after the
+        // symbols and the leading spaces are removed.
+        var spans: [Span] = []
+        if syntax.emphasis == nil {
+            let lead = words.prefix { $0 == " " || $0 == "\t" }.count
+            for pair in syntax.pairs {
+                let first = kept.firstIndex { $0 >= pair.open.upperBound } ?? kept.count
+                let end = kept.firstIndex { $0 >= pair.close.lowerBound } ?? kept.count
+                let range = max(first - lead, 0)..<min(end - lead, text.count)
+                if !range.isEmpty { spans.append(Span(range: range, kind: pair.kind)) }
+            }
+        }
+        return Line(block: syntax.block, emphasis: syntax.emphasis, text: text, spans: spans)
     }
 
     /// The character offsets of every Markdown symbol in `text`, in order, leaving out
@@ -90,13 +121,17 @@ enum Markdown {
     /// Emphasis on a few words inside a line can't follow them, since translating moves
     /// words around, so only emphasis over a whole line carries over. When the translation
     /// doesn't have one line for each source line, it's returned untouched as plain text.
-    static func restyled(_ translation: String, like lines: [Line]) -> String {
+    static func restyled(_ translation: String, like lines: [Line], spanTranslations: [[String]] = []) -> String {
         let translated = translation.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         guard translated.count == lines.count,
-              lines.contains(where: { $0.block != .paragraph || $0.emphasis != nil }) else { return translation }
-        return zip(lines, translated).map { line, english in
-            let words = english.trimmingCharacters(in: .whitespaces)
+              lines.contains(where: { $0.block != .paragraph || $0.emphasis != nil || !$0.spans.isEmpty }) else { return translation }
+        return zip(lines.indices, zip(lines, translated)).map { index, pair in
+            let (line, english) = pair
+            var words = english.trimmingCharacters(in: .whitespaces)
             guard !words.isEmpty else { return "" }
+            if !line.spans.isEmpty, index < spanTranslations.count {
+                words = emphasizing(words, phrases: spanTranslations[index], like: line.spans)
+            }
             let emphasized = switch line.emphasis {
             case .bold: "**\(words)**"
             case .italic: "*\(words)*"
@@ -112,6 +147,37 @@ enum Markdown {
         }.joined(separator: "\n")
     }
 
+    /// `english` with each translated phrase wrapped in its emphasis symbols, wherever the
+    /// phrase turns up as whole words. A phrase that isn't found, perhaps because it
+    /// translates differently on its own, is left plain.
+    private static func emphasizing(_ english: String, phrases: [String], like spans: [Span]) -> String {
+        let characters = Array(english)
+        var found: [(range: Range<Int>, kind: Emphasis)] = []
+        for (phrase, span) in zip(phrases, spans) {
+            let target = Array(phrase.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)))
+            guard !target.isEmpty, target.count <= characters.count else { continue }
+            var start = 0
+            while start + target.count <= characters.count {
+                let end = start + target.count
+                let matches = String(characters[start..<end]).compare(String(target), options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                let startsWord = start == 0 || !characters[start - 1].isLetter && !characters[start - 1].isNumber
+                let endsWord = end == characters.count || !characters[end].isLetter && !characters[end].isNumber
+                if matches, startsWord, endsWord, !found.contains(where: { $0.range.overlaps(start..<end) }) {
+                    found.append((start..<end, span.kind))
+                    break
+                }
+                start += 1
+            }
+        }
+        var result = characters
+        for (range, kind) in found.sorted(by: { $0.range.lowerBound > $1.range.lowerBound }) {
+            let symbol = Array(kind == .bold ? "**" : "*")
+            result.insert(contentsOf: symbol, at: range.upperBound)
+            result.insert(contentsOf: symbol, at: range.lowerBound)
+        }
+        return String(result)
+    }
+
     // MARK: - Reading a line
 
     /// A pair of asterisk runs around emphasized words.
@@ -122,7 +188,7 @@ enum Markdown {
     }
 
     /// A line's layout, any emphasis over all of it, and the offsets of its symbols.
-    private static func syntax(of characters: [Character]) -> (block: Block, emphasis: Emphasis?, ranges: [Range<Int>]) {
+    private static func syntax(of characters: [Character]) -> (block: Block, emphasis: Emphasis?, ranges: [Range<Int>], pairs: [EmphasisPair]) {
         let (block, marker) = blockMarker(in: characters)
         let contentStart = marker?.upperBound ?? 0
         let pairs = emphasisPairs(in: characters, from: contentStart)
@@ -138,7 +204,7 @@ enum Markdown {
            pairs[0].open.lowerBound == first, pairs[0].close.upperBound == last + 1 {
             emphasis = pairs[0].kind
         }
-        return (block, emphasis, ranges)
+        return (block, emphasis, ranges, pairs)
     }
 
     /// The line's layout and its marker with the space after it, such as "## " or "1. ",

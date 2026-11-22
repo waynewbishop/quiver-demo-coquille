@@ -18,7 +18,10 @@ import SwiftUI
 struct ProgressSheet: View {
 
     let store: StatsStore
+    /// Weak spots, tricky words and the corrections history are Coquille Pro features.
+    @Environment(ProStore.self) private var pro
     @Environment(\.dismiss) private var dismiss
+    @State private var showsPaywall = false
     @State private var confirmsReset = false
     /// Why the last reset couldn't be saved, for the alert.
     @State private var resetFailure: String?
@@ -33,9 +36,13 @@ struct ProgressSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     summary
-                    weakSpots
-                    trickyWords
-                    corrections
+                    if pro.grantsFeatures {
+                        weakSpots
+                        trickyWords
+                        corrections
+                    } else {
+                        lockedDetail
+                    }
                     footer
                     #if !os(macOS)
                     // At the end of the page, away from Done, so it's never tapped by mistake.
@@ -84,6 +91,21 @@ struct ProgressSheet: View {
 
     private var showsResetFailure: Binding<Bool> {
         Binding(get: { resetFailure != nil }, set: { if !$0 { resetFailure = nil } })
+    }
+
+    /// Stands in for the detailed sections for a learner without Pro.
+    private var lockedDetail: some View {
+        section("DETAILED PROGRESS") {
+            Text("Coquille Pro adds your weak spots, your tricky words and the history of your corrections.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Button("See Coquille Pro") { showsPaywall = true }
+                .buttonStyle(.borderedProminent)
+        }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView(store: pro)
+                .tint(.brand)
+        }
     }
 
     /// The four summary cards.

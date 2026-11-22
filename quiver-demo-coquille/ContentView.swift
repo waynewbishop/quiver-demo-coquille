@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     let stats: StatsStore
     let journal: Journal
+    @Environment(ProStore.self) private var pro
     @State private var pendingRoute: CoquilleRoute?
     @State private var pendingExercise: ExercisePrompt?
     /// Set once the welcome tour has been shown, so it opens by itself only at first launch.
@@ -22,6 +23,10 @@ struct ContentView: View {
             pendingRoute: $pendingRoute
         )
         .onOpenURL { open($0) }
+        // Reconciles Pro when the learner comes back, perhaps after managing the subscription.
+        .onReceive(NotificationCenter.default.appBecameActive) { _ in
+            Task { await pro.refresh() }
+        }
         .onChange(of: RouteInbox.shared.link, initial: true) {
             guard let link = RouteInbox.shared.link else { return }
             RouteInbox.shared.link = nil
@@ -84,4 +89,5 @@ private struct TourPresentation: ViewModifier {
 
 #Preview {
     ContentView(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")))
+        .environment(ProStore(listensForUpdates: false))
 }

@@ -38,12 +38,25 @@ final class MarkdownTests: XCTestCase {
         }
     }
 
-    // Emphasis over a whole line is kept; emphasis on a few words only loses its symbols.
+    // Emphasis over a whole line is kept; emphasis on a few words becomes spans over its words.
     func testEmphasis() {
         XCTAssertEqual(Markdown.line("**Lundi 9 novembre**"), .init(block: .paragraph, emphasis: .bold, text: "Lundi 9 novembre"))
         XCTAssertEqual(Markdown.line("- *Il pleut.*"), .init(block: .bullet, emphasis: .italic, text: "Il pleut."))
-        XCTAssertEqual(Markdown.line("Il fait *très* beau."), .init(block: .paragraph, emphasis: nil, text: "Il fait très beau."))
-        XCTAssertEqual(Markdown.line("**Il** fait **beau**"), .init(block: .paragraph, emphasis: nil, text: "Il fait beau"))
+        XCTAssertEqual(Markdown.line("Il fait *très* beau."),
+                       .init(block: .paragraph, emphasis: nil, text: "Il fait très beau.", spans: [.init(range: 8..<12, kind: .italic)]))
+        XCTAssertEqual(Markdown.line("**Il** fait **beau**"),
+                       .init(block: .paragraph, emphasis: nil, text: "Il fait beau",
+                             spans: [.init(range: 0..<2, kind: .bold), .init(range: 8..<12, kind: .bold)]))
+    }
+
+    // Bold at the start of a line, as in the Parkrun entry, is a span, and a bullet's marker is skipped.
+    func testSpansIgnoreMarkersAndLeadingSpaces() {
+        let line = Markdown.line("**Ce matin**, j’étais photographe.")
+        XCTAssertEqual(line.text, "Ce matin, j’étais photographe.")
+        XCTAssertEqual(line.spans, [.init(range: 0..<8, kind: .bold)])
+        XCTAssertEqual(Markdown.phrases(in: line), ["Ce matin"])
+        let bullet = Markdown.line("- Il fait **très** beau.")
+        XCTAssertEqual(Markdown.phrases(in: bullet), ["très"])
     }
 
     // Asterisks with a space on their inner side, or with nothing to close them, are plain text.
@@ -78,6 +91,25 @@ final class MarkdownTests: XCTestCase {
         XCTAssertEqual(
             Markdown.restyled(english, like: lines),
             "# My weekend\n\n**Monday, November 9**\n- The weather is very nice.\n1. I eat."
+        )
+    }
+
+    // Emphasized words found again in the English get their symbols back, as whole words only.
+    func testRestyledCarriesEmphasisInsideALine() {
+        let lines = ["**Ce matin**, j’étais photographe.", "Il fait *très* beau, c’est every day."].map(Markdown.line)
+        let english = "This morning, I was a photographer.\nThe weather is very nice, it's every day."
+        XCTAssertEqual(
+            Markdown.restyled(english, like: lines, spanTranslations: [["This morning."], ["very"]]),
+            "**This morning**, I was a photographer.\nThe weather is *very* nice, it's every day."
+        )
+    }
+
+    // A phrase that translates differently on its own is left plain, and the line is untouched.
+    func testRestyledSkipsPhrasesItCannotFind() {
+        let lines = [Markdown.line("Il fait **beau**.")]
+        XCTAssertEqual(
+            Markdown.restyled("The weather is nice.", like: lines, spanTranslations: [["beautiful"]]),
+            "The weather is nice."
         )
     }
 
@@ -133,5 +165,30 @@ final class MarkdownTests: XCTestCase {
             return XCTFail("Expected English, got \(model.english)")
         }
         XCTAssertEqual(english, "**Monday, November 9**\n\n- It's raining.")
+    }
+
+    // Bold on a few words is translated on its own, then found again in the English line.
+    func testEnglishCarriesBoldInsideALine() async throws {
+        let translator = LineTranslator(english: [
+            "Ce matin, il pleut.": "This morning, it's raining.",
+            "Ce matin": "This morning",
+        ])
+        let pack = try LanguagePack.french()
+        let linter = Linter(spellChecker: SilentSpellChecker(), grammar: pack.grammar, lexicon: pack.lexicon, explanations: pack.explanations)
+        let model = EditorModel(stats: StatsStore(fileURL: nil), journal: nil, linter: linter, translator: translator)
+        model.text = AttributedString("**Ce matin**, il pleut.")
+        model.textDidChange()
+        model.lintNow()
+        XCTAssertFalse(model.isLocked, "The French should be clean: \(model.blockingIssues.map(\.original))")
+
+        model.isEnglishOn = true
+        for _ in 0..<200 {
+            guard case .translating = model.english else { break }
+            await Task.yield()
+        }
+        guard case .translated(let english) = model.english else {
+            return XCTFail("Expected English, got \(model.english)")
+        }
+        XCTAssertEqual(english, "**This morning**, it's raining.")
     }
 }

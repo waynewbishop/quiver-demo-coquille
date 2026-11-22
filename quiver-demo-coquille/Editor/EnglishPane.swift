@@ -46,8 +46,8 @@ struct EnglishPane: View {
     }
 
     /// Apple's system font at `size`, scaled with the system's text size setting.
-    private func systemFont(_ size: Double) -> Font {
-        .system(size: size * textScale)
+    private func systemFont(_ size: Double, weight: Font.Weight = .regular) -> Font {
+        .system(size: size * textScale, weight: weight)
     }
 
     /// The English with its Markdown shown as formatting: larger bold headings, "•" for
@@ -59,24 +59,39 @@ struct EnglishPane: View {
         for (index, raw) in lines.enumerated() {
             let line = Markdown.line(String(raw))
             var font = systemFont(size)
+            var scale = 1.0
             var marker = ""
             switch line.block {
             case .paragraph:
                 break
             case .heading(let level):
-                font = systemFont(size * Self.headingScale(level)).bold()
+                scale = Self.headingScale(level)
+                font = systemFont(size * scale, weight: .bold)
             case .bullet:
                 marker = "•  "
             case .numbered(let number):
                 marker = number + " "
             }
             switch line.emphasis {
-            case .bold: font = font.bold()
+            case .bold:
+                font = systemFont(size * scale, weight: .bold)
             case .italic: font = font.italic()
             case nil: break
             }
             var piece = AttributedString(marker + line.text)
             piece.font = font
+            // Emphasis on a few words inside the line.
+            let offset = marker.count
+            for span in line.spans {
+                let characters = piece.characters
+                guard offset + span.range.upperBound <= characters.count else { continue }
+                let lower = characters.index(characters.startIndex, offsetBy: offset + span.range.lowerBound)
+                let upper = characters.index(characters.startIndex, offsetBy: offset + span.range.upperBound)
+                piece[lower..<upper].font = switch span.kind {
+                case .bold: systemFont(size, weight: .bold)
+                case .italic: font.italic()
+                }
+            }
             result += piece
             if index < lines.count - 1 {
                 result += AttributedString("\n")

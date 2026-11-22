@@ -36,6 +36,8 @@ extension NotificationCenter {
 /// Coquille's preferences and the state of Apple's separately installed language assets.
 struct SettingsView: View {
 
+    let journal: Journal
+    @Environment(ProStore.self) private var pro
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
     @AppStorage("showsSuggestions") private var showsSuggestions = true
     @AppStorage(SpeechNarrator.voiceStorageKey) private var playbackVoiceID = ""
@@ -79,6 +81,8 @@ struct SettingsView: View {
 
     private var form: some View {
         Form {
+            ProSection(store: pro, journal: journal)
+
             Section("General") {
                 Picker("Appearance", selection: $appearance) {
                     ForEach(Appearance.allCases) { appearance in
@@ -195,5 +199,6 @@ private extension AVSpeechSynthesisVoiceQuality {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")))
+        .environment(ProStore(listensForUpdates: false))
 }

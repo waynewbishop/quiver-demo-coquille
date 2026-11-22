@@ -5,6 +5,8 @@ import SwiftUI
     /// The learner's stats, shared by the editor and, on the Mac, the Corrections window,
     /// so a fix shows in the list as soon as it's made.
     @State private var stats = StatsStore() 
+    /// Whether the learner has Coquille Pro, asked by the gates and Settings.
+    @State private var proStore = ProStore()
     /// The learner's entries, one text file each, in the app's Documents folder.
     @State private var journal = Journal(folderURL: Journal.defaultFolderURL())
 
@@ -18,6 +20,7 @@ import SwiftUI
     var body: some Scene {
         WindowGroup {
             ContentView(stats: stats, journal: journal)
+                .environment(proStore)
         }
         .commands {
             FileCommands()
@@ -36,15 +39,19 @@ import SwiftUI
 
         #if os(macOS)
         Settings {
-            SettingsView()
+            SettingsView(journal: journal)
+                .environment(proStore)
                 .tint(.brand)
         }
 
         // Listed in the Window menu, so the corrections can stay open beside the editor.
         Window("Corrections", id: "corrections") {
             NavigationStack {
-                CorrectionsView(store: stats)
+                ProGate(title: "Your corrections", message: "The history of your corrections is part of Coquille Pro.") {
+                    CorrectionsView(store: stats)
+                }
             }
+            .environment(proStore)
             .tint(.brand)
         }
         .defaultSize(width: 460, height: 560)

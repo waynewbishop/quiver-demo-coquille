@@ -24,6 +24,9 @@ import UniformTypeIdentifiers
 struct EditorScreen: View {
 
     let journal: Journal
+    /// Whether the learner has Coquille Pro, which gates new entries past the free limit,
+    /// Share as Postcard and detailed progress.
+    @Environment(ProStore.self) private var pro
     @State private var model: EditorModel
     /// A validated link waiting for initial restoration or a save decision.
     @Binding private var pendingRoute: CoquilleRoute?
@@ -48,6 +51,12 @@ struct EditorScreen: View {
     /// names unsaved writing in the window and fills in the title when it's saved.
     @State private var storyTitle: String?
     @State private var showsProgress = false
+    /// The Coquille Pro offer, while its sheet is up.
+    @State private var showsPaywall = false
+    /// The save-over-the-limit sheet, while it's up.
+    @State private var showsLimit = false
+    /// What the learner chose in the limit sheet, carried out once it has closed.
+    @State private var afterLimit: LimitChoice?
     /// The panel beside the French, the phrasebook or the explanation, if one is open.
     @State private var sidePanel: SidePanel?
     @State private var showsSettings = false
@@ -117,6 +126,7 @@ struct EditorScreen: View {
 
     var body: some View {
         root
+            .onAppear { installEntryLimit() }
             .fileImporter(isPresented: $showsImporter, allowedContentTypes: [.plainText], onCompletion: imported)
             .fileExporter(
                 isPresented: showsExporter,
@@ -265,6 +275,17 @@ struct EditorScreen: View {
                 ProgressSheet(store: model.stats)
                     .tint(.brand)
             }
+            .sheet(isPresented: $showsPaywall) {
+                PaywallView(store: pro)
+                    .tint(.brand)
+            }
+            .sheet(isPresented: $showsLimit, onDismiss: carryOutLimitChoice) {
+                LimitReachedSheet(limit: EntryAllowance.freeLimit) { choice in
+                    afterLimit = choice
+                    showsLimit = false
+                }
+                .tint(.brand)
+            }
             .sheet(isPresented: showsPostcard) {
                 if let postcard {
                     PostcardSheet(content: postcard)
@@ -285,12 +306,14 @@ struct EditorScreen: View {
             }
             #if !os(macOS)
             .sheet(isPresented: $showsSettings) {
-                SettingsView()
+                SettingsView(journal: journal)
                     .tint(.brand)
             }
             .sheet(isPresented: $showsCorrections) {
                 NavigationStack {
-                    CorrectionsView(store: model.stats)
+                    ProGate(title: "Your corrections", message: "The history of your corrections is part of Coquille Pro.") {
+                        CorrectionsView(store: model.stats)
+                    }
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) {
                                 Button("Done") { showsCorrections = false }
@@ -342,7 +365,8 @@ struct EditorScreen: View {
         case .new: move(.new)
         case .importFile: move(.importFile)
         case .save: save(then: nil)
-        case .saveAsNewEntry: naming = Naming(asNewEntry: true, then: nil)
+        case .saveAsNewEntry:
+            if canCreateEntry() { naming = Naming(asNewEntry: true, then: nil) }
         case .renameEntry: startRenaming()
         case .duplicateEntry: if let url = model.fileURL { duplicate(url) }
         case .deleteEntry: pendingDelete = model.fileURL
@@ -356,6 +380,10 @@ struct EditorScreen: View {
     /// Opens the postcard sheet, first asking Fix First or Share as Written while errors are open.
     /// Like play, it checks the French as it is now, not as it was before the last edit.
     private func sharePostcard() {
+        guard pro.grantsFeatures else {
+            showsPaywall = true
+            return
+        }
         if !model.isLintCurrent { model.lintNow() }
         guard let content = model.postcardContent else { return }
         if model.isLocked {
@@ -461,12 +489,57 @@ struct EditorScreen: View {
             showsEntries = false
             editorIsFocused = true
         case .importFile:
-            showsImporter = true
+            if canCreateEntry() { showsImporter = true }
         case .example:
             editorIsFocused = false
             model.loadExample()
         }
         if case .open = move { showsEntries = false }
+    }
+
+    // MARK: - Coquille Pro
+
+    /// What the learner chose in the limit sheet.
+    enum LimitChoice {
+        case seePro
+        case manageEntries
+        case keepWriting
+    }
+
+    /// Whether a new entry may be created now. When the free limit is reached, shows the
+    /// sheet that says the draft is safe, and answers no.
+    private func canCreateEntry() -> Bool {
+        let allowance = EntryAllowance(savedCount: journal.entries.count)
+        if allowance.allowsNewEntry(hasPro: pro.grantsFeatures) { return true }
+        showsLimit = true
+        return false
+    }
+
+    /// Gives the journal the plan's limit, so it's checked at the moment an entry is created.
+    private func installEntryLimit() {
+        let pro = pro
+        journal.mayCreateEntry = { savedCount in
+            EntryAllowance(savedCount: savedCount).allowsNewEntry(hasPro: pro.grantsFeatures)
+        }
+    }
+
+    /// Carries out the limit sheet's choice once the sheet has closed, since two sheets
+    /// can't change places at the same moment.
+    private func carryOutLimitChoice() {
+        guard let choice = afterLimit else { return }
+        afterLimit = nil
+        switch choice {
+        case .seePro:
+            showsPaywall = true
+        case .manageEntries:
+            #if os(macOS)
+            columns = .all
+            #else
+            showsEntries = true
+            #endif
+        case .keepWriting:
+            editorIsFocused = true
+        }
     }
 
     /// Saves the writing, asking for a title first when it isn't an entry yet, then goes on to `move`.
@@ -476,6 +549,9 @@ struct EditorScreen: View {
             return
         }
         if model.saveNeedsTitle {
+            // Unsaved writing becomes a new entry, which needs a free slot or Pro. It stays
+            // a draft in the editor until then.
+            guard canCreateEntry() else { return }
             naming = Naming(asNewEntry: false, then: move)
             return
         }
@@ -497,6 +573,7 @@ struct EditorScreen: View {
 
     /// Keeps both versions: the learner's writing becomes a new entry, the changed file stays as it is.
     private func resolveBySavingAsNew(_ conflict: SaveConflict) {
+        guard canCreateEntry() else { return }
         naming = Naming(asNewEntry: true, then: conflict.then)
     }
 
@@ -546,6 +623,7 @@ struct EditorScreen: View {
 
     /// Copies an entry and puts the copy's name up for editing.
     private func duplicate(_ url: URL) {
+        guard canCreateEntry() else { return }
         attempt("The entry couldn't be duplicated") {
             if let copy = try model.duplicateEntry(url) { renaming = copy }
         }
@@ -590,6 +668,9 @@ struct EditorScreen: View {
     private func attempt(_ title: String, _ action: () throws -> Void) {
         do {
             try action()
+        } catch is Journal.EntryLimitReached {
+            // Another window filled the last slot after the check; the draft is still safe.
+            showsLimit = true
         } catch {
             fileProblem = FileProblem(title: title, message: error.localizedDescription)
         }
@@ -1260,4 +1341,5 @@ struct PaneHeader: View {
 
 #Preview {
     EditorScreen(stats: StatsStore(fileURL: nil), journal: Journal(folderURL: .temporaryDirectory.appending(path: "Preview journal")), workspace: nil)
+        .environment(ProStore(listensForUpdates: false))
 }

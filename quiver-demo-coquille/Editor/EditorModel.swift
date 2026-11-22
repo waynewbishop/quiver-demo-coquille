@@ -917,8 +917,18 @@ final class EditorModel {
         translationTask = Task {
             do {
                 let translated = try await translator.translate(source)
+                // Emphasized words inside a line are translated on their own, so the English
+                // can find them again and carry their emphasis over.
+                var spanTranslations: [[String]] = []
+                for line in lines {
+                    var each: [String] = []
+                    for phrase in Markdown.phrases(in: line) {
+                        each.append((try? await translator.translate(phrase)) ?? "")
+                    }
+                    spanTranslations.append(each)
+                }
                 guard !Task.isCancelled, current == plainText else { return }
-                english = .translated(Markdown.restyled(translated, like: lines))
+                english = .translated(Markdown.restyled(translated, like: lines, spanTranslations: spanTranslations))
                 englishSource = current
             } catch TranslationUnavailable.notInstalled {
                 guard !Task.isCancelled else { return }

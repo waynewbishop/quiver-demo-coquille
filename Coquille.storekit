@@ -1,0 +1,65 @@
+{
+  "identifier" : "0C0A11E0",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21540000",
+      "localizations" : [
+
+      ],
+      "name" : "Coquille Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740000001",
+          "introductoryOffer" : {
+            "internalID" : "6740000002",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlimited journal, iCloud sync, detailed progress and postcards.",
+              "displayName" : "Coquille Pro Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "coquille.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Coquille Pro Annual",
+          "subscriptionGroupID" : "21540000",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

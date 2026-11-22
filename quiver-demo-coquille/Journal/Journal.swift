@@ -56,6 +56,19 @@ final class Journal {
         }
     }
 
+    /// Thrown when creating, importing or duplicating an entry would pass the plan's limit.
+    /// Writing to, renaming, exporting and deleting existing entries never throws it.
+    struct EntryLimitReached: LocalizedError {
+        var errorDescription: String? {
+            "The free journal is full. Coquille Pro keeps every entry, or you can delete one to free a slot."
+        }
+    }
+
+    /// Whether one more entry may be created now. The app sets it from the plan, and it's
+    /// asked at the moment of creation, so a sheet left open in another window can't slip
+    /// an entry past the limit. A journal with no plan allows everything.
+    @ObservationIgnored var mayCreateEntry: (_ savedCount: Int) -> Bool = { _ in true }
+
     /// The folder holding the entries.
     let folderURL: URL
     /// Every entry, newest first.
@@ -124,6 +137,7 @@ final class Journal {
     /// A name that's taken gets a number, as in "2026-10-31 (2).txt".
     @discardableResult
     func createEntry(text: String, title: String? = nil, on date: Date = .now) throws -> URL {
+        try requireRoomForEntry()
         let url = uniqueURL(for: Self.baseName(day: dayString(for: date), title: title))
         try write(text, to: url)
         return url
@@ -138,6 +152,7 @@ final class Journal {
     /// or its own date when the name already starts with one.
     @discardableResult
     func importEntry(text: String, originalName: String, on date: Date = .now) throws -> URL {
+        try requireRoomForEntry()
         let name = Self.cleaned(originalName)
         let base: String
         if self.date(fromName: name) != nil {
@@ -148,6 +163,18 @@ final class Journal {
         let url = uniqueURL(for: base)
         try write(text, to: url)
         return url
+    }
+
+    /// Counts the entry files in the folder as they are now, which includes anything another
+    /// window or app just added.
+    private func savedEntryCount() -> Int {
+        let urls = (try? FileManager.default.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])) ?? []
+        return urls.filter { $0.pathExtension.lowercased() == "txt" }.count
+    }
+
+    /// Stops a creation that would pass the plan's limit.
+    private func requireRoomForEntry() throws {
+        guard mayCreateEntry(savedEntryCount()) else { throw EntryLimitReached() }
     }
 
     /// Writes an entry's text and updates its place in the list.
@@ -204,6 +231,7 @@ final class Journal {
     /// Copies an entry under the same date, with "copy" after its title.
     @discardableResult
     func duplicate(_ url: URL) throws -> URL {
+        try requireRoomForEntry()
         let text = try CoordinatedFile.read(url, FrenchTextFile.text(at:))
         let title = [Self.title(of: url), "copy"].compactMap { $0 }.joined(separator: " ")
         let copy = uniqueURL(for: Self.baseName(day: day(of: url), title: title))
