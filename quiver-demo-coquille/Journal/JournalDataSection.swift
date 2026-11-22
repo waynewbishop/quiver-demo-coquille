@@ -49,10 +49,13 @@ struct JournalDataSection: View {
     }
 
     /// The date of the last saved backup, or "Never".
-    private var lastBackupText: String {
-        guard lastBackup > 0 else { return "Never" }
-        return Date(timeIntervalSince1970: lastBackup).formatted(date: .abbreviated, time: .omitted)
-    }
+    private var lastBackupText: String { lastBackupDescription(lastBackup) }
+}
+
+/// The date of a saved backup, or "Never" before the first one, from the stored time.
+func lastBackupDescription(_ seconds: Double) -> String {
+    guard seconds > 0 else { return "Never" }
+    return Date(timeIntervalSince1970: seconds).formatted(date: .abbreviated, time: .omitted)
 }
 
 /// A backup, as a file the learner can save.

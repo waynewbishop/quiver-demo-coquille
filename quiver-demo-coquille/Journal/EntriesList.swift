@@ -39,6 +39,10 @@ struct EntriesList: View {
     @AppStorage("journalShowsCalendar") private var showsCalendar = false
     /// Set when the learner asks to restore a backup from the empty journal.
     @State private var showsRestorePicker = false
+    #if !os(macOS)
+    @AppStorage(JournalArchive.lastBackupKey) private var lastBackup = 0.0
+    @State private var showsBackUp = false
+    #endif
 
     var body: some View {
         VStack(spacing: 0) {
@@ -62,7 +66,33 @@ struct EntriesList: View {
         .navigationTitle("Journal")
         .onAppear { journal.refresh() }
         .journalRestore(journal, isPicking: $showsRestorePicker)
+        #if !os(macOS)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { dataMenu }
+        }
+        .sheet(isPresented: $showsBackUp) {
+            BackUpSheet(journal: journal)
+                .tint(.brand)
+        }
+        #endif
     }
+
+    #if !os(macOS)
+    /// A quiet shortcut to the same backup and restore actions as Settings, with when the
+    /// journal was last backed up.
+    private var dataMenu: some View {
+        Menu {
+            Button("Back Up Journal…", systemImage: "archivebox") { showsBackUp = true }
+            Button("Restore from Backup…", systemImage: "arrow.down.doc") { showsRestorePicker = true }
+            Section {
+                Text("Last backup saved: \(lastBackupDescription(lastBackup))")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+        }
+        .accessibilityLabel("Journal data")
+    }
+    #endif
 
     /// The entries, newest first, with their right-click menus.
     private var list: some View {
