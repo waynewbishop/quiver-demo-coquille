@@ -37,6 +37,8 @@ struct EntriesList: View {
     let perform: (EntryAction) -> Void
     /// Whether the journal shows the month as a calendar of paintings, kept between launches.
     @AppStorage("journalShowsCalendar") private var showsCalendar = false
+    /// Set when the learner asks to restore a backup from the empty journal.
+    @State private var showsRestorePicker = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -59,6 +61,7 @@ struct EntriesList: View {
         }
         .navigationTitle("Journal")
         .onAppear { journal.refresh() }
+        .journalRestore(journal, isPicking: $showsRestorePicker)
     }
 
     /// The entries, newest first, with their right-click menus.
@@ -72,6 +75,13 @@ struct EntriesList: View {
             } else if journal.entries.isEmpty {
                 Text("Entries you save will appear here.")
                     .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .selectionDisabled()
+                // Where someone on a replacement phone, or after reinstalling, looks first.
+                Button("Restore from Backup…") { showsRestorePicker = true }
+                    .selectionDisabled()
+                Text("Starting on a new device, or reinstalled Coquille? Choose a backup to bring your entries back.")
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .selectionDisabled()
             }

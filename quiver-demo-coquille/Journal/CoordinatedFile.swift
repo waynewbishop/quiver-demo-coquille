@@ -16,7 +16,7 @@ import Foundation
 /// Reads and changes journal files through `NSFileCoordinator`, so a file is never changed
 /// while the system or another app is in the middle of syncing or editing it, as iCloud
 /// and the Files app can be.
-enum CoordinatedFile {
+nonisolated enum CoordinatedFile {
 
     /// Runs `body` on `url` once the system lets Coquille read it.
     static func read<Value>(_ url: URL, _ body: (URL) throws -> Value) throws -> Value {

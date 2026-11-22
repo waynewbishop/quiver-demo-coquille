@@ -93,6 +93,8 @@ struct SettingsView: View {
                 Toggle("Show suggestions", isOn: $showsSuggestions)
             }
 
+            JournalDataSection(journal: journal)
+
             Section {
                 Picker("French Playback Voice", selection: $playbackVoiceID) {
                     Text("Automatic").tag("")

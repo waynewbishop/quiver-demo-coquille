@@ -138,9 +138,7 @@ final class Journal {
     @discardableResult
     func createEntry(text: String, title: String? = nil, on date: Date = .now) throws -> URL {
         try requireRoomForEntry()
-        let url = uniqueURL(for: Self.baseName(day: dayString(for: date), title: title))
-        try write(text, to: url)
-        return url
+        return try createFile(text, base: Self.baseName(day: dayString(for: date), title: title))
     }
 
     /// The name an entry would be saved under, without ".txt" or a number.
@@ -160,9 +158,7 @@ final class Journal {
         } else {
             base = name.isEmpty ? dayString(for: date) : "\(dayString(for: date)) \(name)"
         }
-        let url = uniqueURL(for: base)
-        try write(text, to: url)
-        return url
+        return try createFile(text, base: base)
     }
 
     /// Counts the entry files in the folder as they are now, which includes anything another
@@ -234,9 +230,7 @@ final class Journal {
         try requireRoomForEntry()
         let text = try CoordinatedFile.read(url, FrenchTextFile.text(at:))
         let title = [Self.title(of: url), "copy"].compactMap { $0 }.joined(separator: " ")
-        let copy = uniqueURL(for: Self.baseName(day: day(of: url), title: title))
-        try write(text, to: copy)
-        return copy
+        return try createFile(text, base: Self.baseName(day: day(of: url), title: title))
     }
 
     /// Removes an entry's file.
@@ -316,6 +310,25 @@ final class Journal {
     /// "2026-10-31" for `date` in the journal's calendar.
     private func dayString(for date: Date) -> String {
         LearnerStats.dayKey(for: date, calendar: calendar)
+    }
+
+    /// Saves a new entry under `base`.txt, or the first numbered name that's free, and never
+    /// replaces a file. The check and the write happen together under one coordinated
+    /// write, so a restore or another app claiming the name in between sends this to the
+    /// next name instead of overwriting.
+    private func createFile(_ text: String, base: String) throws -> URL {
+        let data = Data(text.utf8)
+        for _ in 0..<100 {
+            let url = uniqueURL(for: base)
+            let created = try CoordinatedFile.write(data, to: url) { target in
+                !FileManager.default.fileExists(atPath: target.path(percentEncoded: false))
+            }
+            if created {
+                didWrite(text, to: url)
+                return url
+            }
+        }
+        throw CocoaError(.fileWriteFileExists)
     }
 
     /// `base`.txt, or the first of `base` (2).txt, (3).txt and so on that isn't taken.
