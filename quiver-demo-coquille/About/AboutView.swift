@@ -13,54 +13,27 @@
 
 import SwiftUI
 
-/// One slide of the About dialog: a widget painting with its prompt in French and English.
-///
-/// Nothing is retyped here. The painting, its title, style and description come from
-/// `TableauCatalog`, and the English from the matching prompt in `fr.prompts.json`.
-struct AboutSlide {
-    /// The painting, its French title and prompt, its style and its VoiceOver description.
-    let tableau: Tableau
-    /// The prompt in English.
-    let english: String
-
-    /// The prompt in French.
-    let french: String
-
-    /// Every prompt's painting, in the prompt catalog's order; paintings without a prompt stay out.
-    static let all: [AboutSlide] = PromptCatalog.bundled().compactMap { prompt in
-        guard let tableau = TableauCatalog.tableau(for: prompt), let french = tableau.french else { return nil }
-        return AboutSlide(tableau: tableau, english: prompt.text, french: french)
-    }
-
-    /// The slide for the prompt that's today's on `date`, the one the widget shows.
-    static func index(on date: Date = .now) -> Int {
-        let today = PromptCatalog.prompt(on: date)
-        return all.firstIndex { $0.tableau.promptID == today.id } ?? 0
-    }
-}
-
-/// The page shown in the About dialog's panel.
+/// The page shown in the About dialog.
 private enum AboutPage {
     case about
     case acknowledgments
     case privacy
 }
 
-/// The About dialog: a slideshow of the widget's paintings beside the app's name, version,
-/// today's prompt and links to the acknowledgments and privacy pages.
+/// The About dialog: a stack of painting stamps over the app's name, tagline, version and
+/// links to the acknowledgments and privacy pages.
 ///
 /// The Mac shows it in its own fixed-size window, the iPad in a sheet sized to it, and the
-/// iPhone in a sheet with the painting above the panel.
+/// iPhone in a full sheet with a Done button.
 struct AboutView: View {
 
     /// The Mac window's scene identifier, used by the app menu and Settings.
     static let windowID = "about"
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
-    @State private var index = AboutSlide.index()
-    @State private var isPaused = false
     @State private var page = AboutPage.about
+    /// Lives here, not in the stack, so the order survives a visit to Privacy.
+    @State private var deck = ShuffleDeck(count: TableauCatalog.available.count)
 
     #if os(macOS)
     private let isCompact = false
@@ -69,150 +42,47 @@ struct AboutView: View {
     private var isCompact: Bool { sizeClass == .compact }
     #endif
 
-    private var slide: AboutSlide { AboutSlide.all[index] }
-
     var body: some View {
         Group {
-            if isCompact {
-                VStack(spacing: 0) {
-                    gallery
-                        .frame(height: 340)
-                        .overlay(alignment: .topTrailing) {
-                            Button("Done") { dismiss() }
-                                .buttonStyle(.borderedProminent)
-                                .padding(16)
-                        }
-                    panel
-                        .padding(24)
-                }
-            } else {
-                HStack(spacing: 0) {
-                    gallery
-                        .frame(width: 333)
-                    panel
-                        .padding(EdgeInsets(top: 32, leading: 27, bottom: 21, trailing: 27))
-                }
-                .frame(width: 640, height: 400)
+            switch page {
+            case .about: aboutPage
+            case .acknowledgments: AcknowledgmentsPage(isCompact: isCompact) { page = .about }
+            case .privacy: PrivacyPage(isCompact: isCompact) { page = .about }
             }
         }
+        // Room for the Mac window's controls.
+        .padding(.top, isCompact ? 0 : 40)
+        .frame(width: isCompact ? nil : 440, height: isCompact ? nil : 620)
+        .frame(maxWidth: isCompact ? .infinity : nil, maxHeight: isCompact ? .infinity : nil)
         .foregroundStyle(Color("AboutInk"))
         .tint(.brand)
         .background(Color("AboutPanel"))
-        .task(id: [isPaused, reduceMotion]) { await rotate() }
-    }
-
-    // MARK: Gallery
-
-    /// The paintings stacked on one another, the current one shown, with the caption bar over them.
-    private var gallery: some View {
-        ZStack(alignment: .bottom) {
-            ForEach(AboutSlide.all.indices, id: \.self) { k in
-                Color.clear
-                    .overlay {
-                        Image(AboutSlide.all[k].tableau.imageName)
-                            .resizable()
-                            .scaledToFill()
-                            .animation(reduceMotion ? nil : .linear(duration: 7)) {
-                                $0.scaleEffect(k == index && !reduceMotion ? 1.06 : 1)
-                            }
-                    }
-                    .clipped()
-                    .animation(.easeInOut(duration: 1.2)) {
-                        $0.opacity(k == index ? 1 : 0)
-                    }
-                    .accessibilityElement()
-                    .accessibilityLabel(AboutSlide.all[k].tableau.description)
-                    .accessibilityAddTraits(.isImage)
-                    .accessibilityHidden(k != index)
-            }
-            captionBar
-        }
-        .clipped()
-    }
-
-    /// The painting's title, the slide dots and the pause button on a dark scrim.
-    private var captionBar: some View {
-        HStack(alignment: .bottom, spacing: 10) {
-            Text(french(slide.tableau.title))
-                .font(.cormorant(fixed: isCompact ? 26 : 22))
-                .lineLimit(2)
-            Spacer(minLength: 8)
-            HStack(spacing: isCompact ? 4 : 3) {
-                ForEach(AboutSlide.all.indices, id: \.self) { k in
-                    Circle()
-                        .fill(.white.opacity(k == index ? 1 : 0.4))
-                        .frame(width: isCompact ? 5 : 4, height: isCompact ? 5 : 4)
-                }
-            }
-            .padding(.bottom, isCompact ? 20 : 10)
-            .accessibilityHidden(true)
-            if !reduceMotion {
-                Button { isPaused.toggle() } label: {
-                    Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                        .font(.system(size: isCompact ? 15 : 10))
-                        .frame(width: isCompact ? 44 : 24, height: isCompact ? 44 : 24)
-                        .background(.white.opacity(0.22), in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(isPaused ? "Play slideshow" : "Pause slideshow")
+        .overlay(alignment: .topTrailing) {
+            if isCompact {
+                Button("Done") { dismiss() }
+                    .buttonStyle(.borderedProminent)
+                    .padding(16)
             }
         }
-        .foregroundStyle(.white)
-        .padding(16)
-        .padding(.top, 50)
-        .background(
-            LinearGradient(colors: [Color(red: 14 / 255, green: 20 / 255, blue: 36 / 255).opacity(0.78), .clear],
-                           startPoint: .bottom, endPoint: .top)
-        )
     }
 
-    /// Moves to the next painting every six seconds until paused, or not at all with Reduce Motion.
-    private func rotate() async {
-        guard !isPaused, !reduceMotion else { return }
-        while !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(6))
-            guard !Task.isCancelled else { return }
-            index = (index + 1) % AboutSlide.all.count
-        }
-    }
-
-    // MARK: Panel
-
-    /// The page now shown beside or below the painting.
-    @ViewBuilder private var panel: some View {
-        switch page {
-        case .about: aboutPage
-        case .acknowledgments: AcknowledgmentsPage(isCompact: isCompact) { page = .about }
-        case .privacy: PrivacyPage(isCompact: isCompact) { page = .about }
-        }
-    }
-
-    /// The name, version, tagline, today's prompt, links and copyright.
+    /// The stamp stack, then the name, tagline and version, with the links and copyright at the foot.
     private var aboutPage: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(spacing: 0) {
+            StampStack(deck: $deck)
+                .frame(height: 300)
             Text("Coquille")
-                .font(.system(size: isCompact ? 34 : 30, weight: .semibold))
-            Text("Version \(Bundle.main.versionAndBuild)")
-                .font(.system(size: isCompact ? 14 : 12))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 30, weight: .semibold))
+                .padding(.top, 18)
             Text(french("Un compilateur pour votre français."))
-                .font(.cormorant(fixed: isCompact ? 22 : 18))
-            Divider()
-                .overlay(Color("AboutRule"))
-                .padding(.vertical, 14)
-            Text(french(slide.tableau.style.uppercased()))
-                .font(.system(size: 11, design: .monospaced))
-                .tracking(1)
+                .font(.cormorant(fixed: 21))
+                .padding(.top, 6)
+            Text("Version \(Bundle.main.versionAndBuild)")
+                .font(.system(size: 13))
                 .foregroundStyle(.secondary)
-            Text(french(slide.french))
-                .font(.cormorant(fixed: isCompact ? 28 : 23))
-                .fixedSize(horizontal: false, vertical: true)
-            Text(slide.english)
-                .font(.system(size: isCompact ? 14 : 13))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 12)
-            HStack(spacing: 20) {
+                .padding(.top, 8)
+            Spacer(minLength: 16)
+            HStack(spacing: 22) {
                 Button("Acknowledgments") { page = .acknowledgments }
                 Button("Privacy") { page = .privacy }
             }
@@ -220,10 +90,79 @@ struct AboutView: View {
             .foregroundStyle(.tint)
             .font(.system(size: isCompact ? 16 : 13, weight: .medium))
             Text("© 2026 Wayne W Bishop. All rights reserved.")
-                .font(.system(size: isCompact ? 12 : 11))
+                .font(.cormorant(fixed: isCompact ? 17 : 15, weight: .medium))
                 .foregroundStyle(.secondary)
+                .padding(.top, 6)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .multilineTextAlignment(.center)
+        .padding(EdgeInsets(top: 0, leading: 40, bottom: 22, trailing: 40))
+    }
+}
+
+/// The paintings as a stack of stamps: the top one lifts away every few seconds to show the next.
+private struct StampStack: View {
+    @Binding var deck: ShuffleDeck
+
+    /// How long each stamp stays on top.
+    private let interval = Duration.seconds(4)
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isLifting = false
+
+    private var paintings: [Tableau] { TableauCatalog.available }
+
+    var body: some View {
+        ZStack {
+            // Only the top three are views, so only three images are ever loaded.
+            ForEach(Array(deck.upcoming.prefix(3).enumerated()), id: \.element) { place, index in
+                let p = placement(place)
+                PaintingStamp(tableau: paintings[index], width: 300, tilt: p.angle, titleSize: 24)
+                    .offset(x: p.x, y: p.y)
+                    .opacity(p.opacity)
+                    .zIndex(Double(3 - place))
+                    .transition(.opacity)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label))
+        .task { await run() }
+    }
+
+    /// Where a stamp sits: 0 is the top stamp, 1 and 2 peek out beneath it.
+    private func placement(_ place: Int) -> (x: CGFloat, y: CGFloat, angle: Double, opacity: Double) {
+        if place == 0 && isLifting {
+            return reduceMotion ? (0, 0, 1.5, 0) : (30, -90, -9, 0)
+        }
+        switch place {
+        case 0: return (0, 0, 1.5, 1)
+        case 1: return (-10, 8, -3, 1)
+        default: return (12, 14, 4, 1)
+        }
+    }
+
+    /// The VoiceOver label naming the top painting, its title tagged French.
+    private var label: AttributedString {
+        var text = AttributedString("A stack of painting stamps. On top: ")
+        text += french(paintings[deck.top].title)
+        text += AttributedString(".")
+        return text
+    }
+
+    /// Lifts the top stamp away every few seconds until the view goes away.
+    private func run() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: interval)
+            guard !Task.isCancelled else { return }
+            let lift = reduceMotion ? 0.4 : 0.7
+            withAnimation(.easeInOut(duration: lift)) { isLifting = true }
+            try? await Task.sleep(for: .seconds(lift))
+            guard !Task.isCancelled else { return }
+            // With Reduce Motion the stamps beneath take their places without sliding.
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.7)) {
+                deck.advance()
+                isLifting = false
+            }
+        }
     }
 }
 
@@ -250,15 +189,19 @@ private struct AboutSubpage<Content: View>: View {
                 .font(.system(size: isCompact ? 16 : 13, weight: .medium))
             Text(title)
                 .font(.system(size: isCompact ? 24 : 20, weight: .semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 28)
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(spacing: 12) {
                     content
                 }
-                .font(.system(size: isCompact ? 15 : 13))
+                .multilineTextAlignment(.center)
+                .font(.cormorant(fixed: isCompact ? 17 : 15, weight: .medium))
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
+        .padding(EdgeInsets(top: 10, leading: 36, bottom: 28, trailing: 36))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
@@ -275,13 +218,16 @@ private struct AcknowledgmentsPage: View {
             credit("Universal Dependencies.", "The French GSD, Rhapsodie and ParisStories treebanks, used to build the part-of-speech models and the verb preposition list. CC BY-SA 4.0.")
             credit("Paintings.", "Made for Coquille, in the style of Monet and Cézanne.")
             credit("Cormorant Garamond.", link: "https://github.com/CatharsisFonts/Cormorant", "The italic of painting titles, the calendar and postcards. By Christian Thalmann. SIL Open Font License 1.1.")
+            Text(french("Merci."))
+                .font(.cormorant(fixed: isCompact ? 24 : 21))
+                .padding(.top, 8)
         }
     }
 
-    /// One credit: its name in bold, linked to its site when it has one, then what it does and its license.
+    /// One credit: its name in bold, linked to its site when it has one, then what it does and its license, in the italic of the tagline.
     private func credit(_ name: String, link: String? = nil, _ detail: String) -> some View {
         var title = AttributedString(name)
-        title.inlinePresentationIntent = .stronglyEmphasized
+        title.font = .cormorant(fixed: isCompact ? 17 : 15, weight: .semibold)
         if let link, let url = URL(string: link) {
             title.link = url
         }

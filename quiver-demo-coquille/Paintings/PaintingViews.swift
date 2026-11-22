@@ -45,6 +45,10 @@ struct PaintingStamp: View {
     let width: CGFloat
     /// Whether to print the title under the painting; the tiny stamp beside a title doesn't.
     var showsTitle = true
+    /// The stamp's tilt in degrees.
+    var tilt = 1.5
+    /// The title's size in points; in proportion to the stamp's width when `nil`.
+    var titleSize: CGFloat?
 
     /// The frame's margin around the painting, in proportion to the stamp.
     private var margin: CGFloat { max(2, width * 0.05) }
@@ -58,7 +62,7 @@ struct PaintingStamp: View {
                 .clipped()
             if showsTitle {
                 Text(frenchText(tableau.title))
-                    .font(.cormorant(fixed: width * 0.135))
+                    .font(.cormorant(fixed: titleSize ?? width * 0.135))
                     .foregroundStyle(Color(white: 0.1))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -73,7 +77,7 @@ struct PaintingStamp: View {
                 .strokeBorder(Color(white: 0.8), style: StrokeStyle(lineWidth: 1, dash: [1.5, 2]))
         }
         .shadow(color: .black.opacity(0.14), radius: 3, y: 1)
-        .rotationEffect(.degrees(1.5))
+        .rotationEffect(.degrees(tilt))
     }
 }
 
