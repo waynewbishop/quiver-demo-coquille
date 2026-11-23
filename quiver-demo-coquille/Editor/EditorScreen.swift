@@ -31,7 +31,6 @@ struct EditorScreen: View {
     /// A validated link waiting for initial restoration or a save decision.
     @Binding private var pendingRoute: CoquilleRoute?
     @State private var showsIssueList = false
-    @State private var showsImporter = false
     /// The text and name of a copy being exported, while the save panel is up.
     @State private var exporting: ExportItem?
     /// The entries list as a sheet, on iPhone and iPad.
@@ -127,7 +126,6 @@ struct EditorScreen: View {
     var body: some View {
         root
             .onAppear { installEntryLimit() }
-            .fileImporter(isPresented: $showsImporter, allowedContentTypes: [.plainText], onCompletion: imported)
             .fileExporter(
                 isPresented: showsExporter,
                 document: FrenchTextFile(text: exporting?.text ?? ""),
@@ -347,7 +345,6 @@ struct EditorScreen: View {
         case todaysEntry
         case prompt(WritingPrompt)
         case exercise(ExercisePrompt)
-        case importFile
         case example
     }
 
@@ -363,7 +360,6 @@ struct EditorScreen: View {
     private func handle(_ request: FileRequest) {
         switch request {
         case .new: move(.new)
-        case .importFile: move(.importFile)
         case .save: save(then: nil)
         case .saveAsNewEntry:
             if canCreateEntry() { naming = Naming(asNewEntry: true, then: nil) }
@@ -488,8 +484,6 @@ struct EditorScreen: View {
             storyTitle = nil
             showsEntries = false
             editorIsFocused = true
-        case .importFile:
-            if canCreateEntry() { showsImporter = true }
         case .example:
             editorIsFocused = false
             model.loadExample()
@@ -642,17 +636,6 @@ struct EditorScreen: View {
     /// The open writing's name for an exported copy: the entry's own, or the story's title.
     private var exportName: String {
         model.fileURL?.deletingPathExtension().lastPathComponent ?? FrenchTextFile.suggestedFilename(for: model.exerciseTitle ?? storyTitle)
-    }
-
-    /// Copies the file picked in Import… into the journal as a new entry and opens it,
-    /// or reports why it couldn't be read.
-    private func imported(_ result: Result<URL, any Error>) {
-        attempt("The file couldn't be imported") {
-            let url = try result.get()
-            let contents = try FrenchTextFile.text(at: url)
-            let entry = try journal.importEntry(text: contents, originalName: url.deletingPathExtension().lastPathComponent)
-            try model.openEntry(entry)
-        }
     }
 
     /// Reports an export that failed.

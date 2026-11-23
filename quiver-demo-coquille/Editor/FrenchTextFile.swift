@@ -14,7 +14,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The learner's French as a plain-text file, for journal entries, Import… and Export a Copy….
+/// The learner's French as a plain-text file, for journal entries and Export a Copy….
 ///
 /// Only the words are saved, never the issues or their fixes: Coquille lints a file
 /// again when it opens, and any text editor or teacher can read it.
@@ -75,7 +75,6 @@ struct FrenchTextFile: FileDocument {
 /// A File menu command for the focused window to carry out.
 enum FileRequest {
     case new
-    case importFile
     case save
     case saveAsNewEntry
     case renameEntry
@@ -121,7 +120,7 @@ enum ShareTitles {
     #endif
 }
 
-/// The File menu on the Mac and iPad, arranged as in Xcode: new, import, save, then the
+/// The File menu on the Mac and iPad, arranged as in Xcode: new, save, then the
 /// open entry's Rename, Duplicate and Delete, then its painting, then export and share.
 ///
 /// Nothing is saved to the journal without Save. New takes ⌘N from New Window, since
@@ -136,8 +135,6 @@ struct FileCommands: Commands {
         CommandGroup(replacing: .newItem) {
             button("New", .new, enabled: fileRequest != nil)
                 .keyboardShortcut("n", modifiers: .command)
-            button("Import…", .importFile, enabled: fileRequest != nil)
-                .keyboardShortcut("o", modifiers: .command)
         }
         CommandGroup(replacing: .saveItem) {
             button("Save", .save, enabled: state?.canSave == true)

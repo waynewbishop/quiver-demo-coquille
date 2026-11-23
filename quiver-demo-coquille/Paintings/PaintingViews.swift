@@ -310,7 +310,8 @@ struct PaintingPicker: View {
         .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 
-    /// A painting and its title; clicking it chooses it, and clicking it again clears the choice.
+    /// A painting and its title; clicking it chooses it, clicking it again clears the choice,
+    /// and double-clicking it adds or replaces with it straight away.
     private func tile(_ tableau: Tableau) -> some View {
         let isOn = tableau == selection
         return Button {
@@ -347,6 +348,13 @@ struct PaintingPicker: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        // A double-tap adds or replaces with this painting, like Add or Replace. It runs
+        // alongside the single tap, so choosing and clearing a painting stay as quick as before.
+        .simultaneousGesture(TapGesture(count: 2).onEnded {
+            guard tableau != current else { return }
+            choose(tableau)
+            dismiss()
+        })
         .accessibilityLabel(Text("\(frenchText(tableau.title)), \(frenchText(tableau.word))"))
         .accessibilityAddTraits(isOn ? .isSelected : [])
     }

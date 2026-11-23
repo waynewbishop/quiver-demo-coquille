@@ -20,7 +20,7 @@ import Observation
 /// so the Finder, the Files app, any text editor and any teacher see what Coquille sees.
 /// A name starts with the entry's date, followed by the title the learner gave it.
 ///
-/// Nothing is written here unless the learner chooses to: Save, Import, Rename,
+/// Nothing is written here unless the learner chooses to: Save, Rename,
 /// Duplicate and Delete are the only ways in.
 @Observable
 final class Journal {
