@@ -123,8 +123,9 @@ struct MoreMenuItems: View {
         }
         Section {
             if model.fileURL != nil {
-                Button("Save as New Entry…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
+                Button("Save as…", systemImage: "plus.square.on.square") { request(.saveAsNewEntry) }
                     .disabled(!model.canSave)
+                Button("Rename…", systemImage: "pencil") { request(.renameEntry) }
             }
             explainItem
             if model.tableau == nil {

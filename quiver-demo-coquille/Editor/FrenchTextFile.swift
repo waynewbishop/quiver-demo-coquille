@@ -139,10 +139,10 @@ struct FileCommands: Commands {
         CommandGroup(replacing: .saveItem) {
             button("Save", .save, enabled: state?.canSave == true)
                 .keyboardShortcut("s", modifiers: .command)
-            button("Save as New Entry…", .saveAsNewEntry, enabled: state?.canSave == true && state?.hasOpenEntry == true)
+            button("Save as…", .saveAsNewEntry, enabled: state?.canSave == true && state?.hasOpenEntry == true)
                 .keyboardShortcut("s", modifiers: [.command, .shift])
             Divider()
-            button("Rename Entry…", .renameEntry, enabled: state?.hasOpenEntry == true)
+            button("Rename…", .renameEntry, enabled: state?.hasOpenEntry == true)
             button("Duplicate Entry", .duplicateEntry, enabled: state?.hasOpenEntry == true)
             button("Delete Entry…", .deleteEntry, enabled: state?.hasOpenEntry == true)
             Divider()

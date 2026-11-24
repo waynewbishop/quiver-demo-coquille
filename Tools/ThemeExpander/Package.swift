@@ -9,7 +9,7 @@ let package = Package(
     name: "ThemeExpander",
     platforms: [.macOS(.v14)],
     dependencies: [
-        .package(url: "https://github.com/waynewbishop/quiver", from: "1.6.0")
+        .package(url: "https://github.com/waynewbishop/quiver", from: "1.7.0")
     ],
     targets: [
         .executableTarget(

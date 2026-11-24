@@ -183,6 +183,7 @@ struct EditorScreen: View {
                 }
                 .tint(.brand)
             }
+            .renameSheet(renamingHere, journal: journal, perform: perform)
             // The File menu's commands ask this window through `fileRequest`.
             .focusedSceneValue(\.fileRequest, $fileRequest)
             .focusedSceneValue(\.editorModel, model)
@@ -604,18 +605,27 @@ struct EditorScreen: View {
         }
     }
 
-    /// Edits the open entry's name in the list, showing the list if it's hidden.
+    /// Asks for a new title for the open entry.
     private func startRenaming() {
         guard let url = model.fileURL else { return }
-        #if os(macOS)
-        columns = .all
-        #else
-        showsEntries = true
-        #endif
         renaming = url
     }
 
-    /// Copies an entry and puts the copy's name up for editing.
+    /// Where this window shows the rename dialog. On iPhone and iPad it steps aside while
+    /// the journal sheet is open, since that sheet shows its own, and a view can't present two.
+    private var renamingHere: Binding<URL?> {
+        Binding {
+            #if os(macOS)
+            renaming
+            #else
+            showsEntries ? nil : renaming
+            #endif
+        } set: {
+            renaming = $0
+        }
+    }
+
+    /// Copies an entry and asks for the copy's title.
     private func duplicate(_ url: URL) {
         guard canCreateEntry() else { return }
         attempt("The entry couldn't be duplicated") {
@@ -686,14 +696,16 @@ struct EditorScreen: View {
         return "Delete “\(name)”?"
     }
 
-    /// The Save and Save as New Entry items, for the Français header's menus. Export a
+    /// The Save, Save as and Rename items, for the Français header's menus. Export a
     /// Copy lives in the File menu and each journal entry's menu.
     @ViewBuilder
     private var saveMenuItems: some View {
         Button("Save", systemImage: "square.and.arrow.down") { save(then: nil) }
             .disabled(!model.canSave)
-        Button("Save as New Entry…", systemImage: "plus.square.on.square") { naming = Naming(asNewEntry: true, then: nil) }
+        Button("Save as…", systemImage: "plus.square.on.square") { naming = Naming(asNewEntry: true, then: nil) }
             .disabled(!model.canSave || model.fileURL == nil)
+        Button("Rename…", systemImage: "pencil") { startRenaming() }
+            .disabled(model.fileURL == nil)
     }
 
     #if os(macOS)

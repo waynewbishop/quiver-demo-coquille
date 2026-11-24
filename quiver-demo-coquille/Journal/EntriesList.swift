@@ -32,7 +32,7 @@ struct EntriesList: View {
 
     let journal: Journal
     let model: EditorModel
-    /// The entry whose name is being edited in place, if any.
+    /// The entry whose rename dialog is showing, if any.
     @Binding var renaming: URL?
     let perform: (EntryAction) -> Void
     /// Whether the journal shows the month as a calendar of paintings, kept between launches.
@@ -67,6 +67,8 @@ struct EntriesList: View {
         .onAppear { journal.refresh() }
         .journalRestore(journal, isPicking: $showsRestorePicker)
         #if !os(macOS)
+        // The journal is itself a sheet here, so its rename dialog opens from inside it.
+        .renameSheet($renaming, journal: journal, perform: perform)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { dataMenu }
         }
@@ -121,14 +123,11 @@ struct EntriesList: View {
                     entry: entry,
                     model: model,
                     isOpen: model.fileURL == entry.url,
-                    showsThumbnailSpace: showsThumbnailSpace,
-                    renaming: $renaming,
-                    commitRename: { perform(.rename(entry.url, $0)) }
+                    showsThumbnailSpace: showsThumbnailSpace
                 )
                 .tag(entry.url)
                 .swipeActions {
                     Button("Delete", role: .destructive) { perform(.delete(entry.url)) }
-                    Button("Duplicate") { perform(.duplicate(entry.url)) }
                 }
             }
         }
@@ -168,7 +167,7 @@ struct EntriesList: View {
 }
 
 /// One saved entry: its title, date and opening line, a red dot while it has errors,
-/// "Edited" while it's open with unsaved changes, and a text field while it's renamed.
+/// and "Edited" while it's open with unsaved changes.
 private struct EntryRow: View {
 
     let entry: Journal.Entry
@@ -177,12 +176,8 @@ private struct EntryRow: View {
     /// Whether rows without a painting keep a blank space where one would be, so titles
     /// line up once any entry in the journal has a painting.
     let showsThumbnailSpace: Bool
-    @Binding var renaming: URL?
-    let commitRename: (String) -> Void
     /// Whether the entry's French has errors, or `nil` until it's been checked.
     @State private var hasErrors: Bool?
-    @State private var draftTitle = ""
-    @FocusState private var titleIsFocused: Bool
 
     /// The thumbnail's width: smaller in the Mac sidebar than in the iPhone and iPad list.
     private static var thumbnailWidth: CGFloat {
@@ -210,26 +205,10 @@ private struct EntryRow: View {
     private var details: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
-                if renaming == entry.url {
-                    TextField("Title", text: $draftTitle)
-                        .focused($titleIsFocused)
-                        .onSubmit(finishRename)
-                        .onAppear {
-                            draftTitle = entry.title ?? ""
-                            titleIsFocused = true
-                        }
-                        #if os(macOS)
-                        .onExitCommand { renaming = nil }
-                        #endif
-                        .onChange(of: titleIsFocused) {
-                            if !titleIsFocused { finishRename() }
-                        }
-                } else {
-                    Text(entry.title ?? "Untitled")
-                        .fontWeight(.medium)
-                        .foregroundStyle(entry.title == nil ? .secondary : .primary)
-                        .lineLimit(1)
-                }
+                Text(entry.title ?? "Untitled")
+                    .fontWeight(.medium)
+                    .foregroundStyle(entry.title == nil ? .secondary : .primary)
+                    .lineLimit(1)
                 HStack(spacing: 6) {
                     Text(entry.date.formatted(date: .abbreviated, time: .omitted))
                     if isOpen && model.isEdited {
@@ -258,12 +237,5 @@ private struct EntryRow: View {
         .task(id: "\(model.isReady)|\(entry.text)") {
             hasErrors = model.hasErrors(in: entry.text)
         }
-    }
-
-    /// Commits the new title once, whether by Return or by clicking away.
-    private func finishRename() {
-        guard renaming == entry.url else { return }
-        renaming = nil
-        if draftTitle != (entry.title ?? "") { commitRename(draftTitle) }
     }
 }

@@ -146,6 +146,11 @@ final class Journal {
         Self.baseName(day: dayString(for: date), title: title)
     }
 
+    /// The name an existing entry would have with `title`, keeping its date.
+    func proposedName(renaming url: URL, to title: String) -> String {
+        Self.baseName(day: day(of: url), title: title)
+    }
+
     /// Copies an outside file's text in as a new entry, keeping its name after the date,
     /// or its own date when the name already starts with one.
     @discardableResult
