@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "l-avion.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

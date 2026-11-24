@@ -77,6 +77,18 @@
       "french": "La technologie",
       "english": "Everyday technology",
       "short": "Tech"
+    },
+    {
+      "id": "vetements",
+      "french": "Les vêtements",
+      "english": "Clothing",
+      "short": "Clothes"
+    },
+    {
+      "id": "transports",
+      "french": "Les transports",
+      "english": "Getting around",
+      "short": "Transport"
     }
   ],
   "paintings": [
@@ -155,6 +167,26 @@
       "genre": "Nature morte",
       "painter": "Cézanne",
       "description": "A warm lamp glowing on a shelf in the evening"
+    },
+    {
+      "id": "bonne-nuit",
+      "title": "Bonne nuit",
+      "word": "dormir",
+      "wordEnglish": "to sleep",
+      "theme": "maison",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A child asleep in bed under a blue blanket, a lamp glowing and the moon in the window"
+    },
+    {
+      "id": "la-sieste",
+      "title": "La sieste",
+      "word": "la sieste",
+      "wordEnglish": "the nap",
+      "theme": "maison",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A person napping in a striped hammock between two trees on a flowered lawn"
     },
     {
       "id": "pommes-et-pichet",
@@ -455,6 +487,16 @@
       "description": "Tall trunks and orange leaves beside a grey lake, with a green rail fence"
     },
     {
+      "id": "le-camping",
+      "title": "Le camping",
+      "word": "la tente",
+      "wordEnglish": "the tent",
+      "theme": "dehors",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "An orange tent and a small campfire among dark pines under a starry sky"
+    },
+    {
       "id": "les-nympheas",
       "title": "Les nymphéas",
       "word": "le calme",
@@ -719,6 +761,16 @@
       "description": "The Arc de Triomphe at the end of a tree-lined avenue in spring"
     },
     {
+      "id": "le-dome-de-science-world",
+      "title": "Le dôme de Science World",
+      "word": "le dôme",
+      "wordEnglish": "the dome",
+      "theme": "merveilles",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "The silver geodesic dome of Science World on the Vancouver waterfront"
+    },
+    {
       "id": "le-sapin-de-noel",
       "title": "Le sapin de Noël",
       "word": "Noël",
@@ -869,16 +921,6 @@
       "description": "A café terrace with a red awning and small round tables"
     },
     {
-      "id": "le-metro",
-      "title": "Le métro",
-      "word": "le métro",
-      "wordEnglish": "the metro",
-      "theme": "ville",
-      "genre": "Paysage",
-      "painter": "Monet",
-      "description": "A green Art Nouveau metro entrance on a city square"
-    },
-    {
       "id": "la-librairie",
       "title": "La librairie",
       "word": "la librairie",
@@ -909,16 +951,6 @@
       "description": "A city street at night with glowing windows and lamps"
     },
     {
-      "id": "le-bus",
-      "title": "Le bus",
-      "word": "le bus",
-      "wordEnglish": "the bus",
-      "theme": "ville",
-      "genre": "Paysage",
-      "painter": "Monet",
-      "description": "A green city bus at a stop on a sunny street"
-    },
-    {
       "id": "la-poste",
       "title": "La poste",
       "word": "la poste",
@@ -937,6 +969,36 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "Rows of grey city rooftops and chimneys at sunset"
+    },
+    {
+      "id": "le-pont-de-capilano",
+      "title": "Le pont de Capilano",
+      "word": "le pont suspendu",
+      "wordEnglish": "the suspension bridge",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Two walkers on a rope suspension bridge high above a river in a pine forest"
+    },
+    {
+      "id": "le-skytrain-a-vancouver",
+      "title": "Le SkyTrain à Vancouver",
+      "word": "la ville",
+      "wordEnglish": "the city",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A SkyTrain on its elevated track with city towers and snowy mountains behind"
+    },
+    {
+      "id": "le-parc-stanley",
+      "title": "Le parc Stanley",
+      "word": "la forêt",
+      "wordEnglish": "the forest",
+      "theme": "ville",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Tall pines above a seawall path where people walk, with mountains across the water"
     },
     {
       "id": "la-lecture",
@@ -987,6 +1049,26 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "A painter at an easel in a green garden"
+    },
+    {
+      "id": "le-carnet-du-matin",
+      "title": "Le carnet du matin",
+      "word": "le carnet",
+      "wordEnglish": "the notebook",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "An open notebook and a pen on a desk beside a cup, in morning light from the window"
+    },
+    {
+      "id": "ecrire-au-cafe",
+      "title": "Écrire au café",
+      "word": "écrire",
+      "wordEnglish": "to write",
+      "theme": "loisirs",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A hand writing in a notebook at a café table with a cup of coffee"
     },
     {
       "id": "le-telephone",
@@ -1067,6 +1149,186 @@
       "genre": "Nature morte",
       "painter": "Cézanne",
       "description": "A camera on a table by a window, with printed photos around it"
+    },
+    {
+      "id": "les-chaussures-de-course",
+      "title": "Les chaussures de course",
+      "word": "les chaussures",
+      "wordEnglish": "shoes",
+      "theme": "vetements",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A pair of blue running shoes on a red mat by the door"
+    },
+    {
+      "id": "la-veste",
+      "title": "La veste",
+      "word": "la veste",
+      "wordEnglish": "the jacket",
+      "theme": "vetements",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A green jacket hanging on a rail beside a window"
+    },
+    {
+      "id": "la-robe-d-ete",
+      "title": "La robe d’été",
+      "word": "la robe",
+      "wordEnglish": "the dress",
+      "theme": "vetements",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A yellow summer dress hanging on a line in a flowered garden"
+    },
+    {
+      "id": "la-chemise-bleue",
+      "title": "La chemise bleue",
+      "word": "la chemise",
+      "wordEnglish": "the shirt",
+      "theme": "vetements",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A blue shirt laid out on a white bed"
+    },
+    {
+      "id": "le-pantalon",
+      "title": "Le pantalon",
+      "word": "le pantalon",
+      "wordEnglish": "pants",
+      "theme": "vetements",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A pair of blue trousers hanging beside a window"
+    },
+    {
+      "id": "le-pull-rouge",
+      "title": "Le pull rouge",
+      "word": "le pull",
+      "wordEnglish": "the sweater",
+      "theme": "vetements",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A red sweater on a wooden floor beside a cup"
+    },
+    {
+      "id": "l-echarpe",
+      "title": "L’écharpe",
+      "word": "l’écharpe",
+      "wordEnglish": "the scarf",
+      "theme": "vetements",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A snowman wearing a red, white and blue scarf among snowy pines"
+    },
+    {
+      "id": "la-jupe-rouge",
+      "title": "La jupe rouge",
+      "word": "la jupe",
+      "wordEnglish": "the skirt",
+      "theme": "vetements",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A woman in a white blouse and a red skirt standing in a city street"
+    },
+    {
+      "id": "les-gants",
+      "title": "Les gants",
+      "word": "les gants",
+      "wordEnglish": "gloves",
+      "theme": "vetements",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A pair of blue gloves held up in front of a snowy mountain scene"
+    },
+    {
+      "id": "le-metro",
+      "title": "Le métro",
+      "word": "le métro",
+      "wordEnglish": "the metro",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A green Art Nouveau metro entrance on a city square"
+    },
+    {
+      "id": "le-bus",
+      "title": "Le bus",
+      "word": "le bus",
+      "wordEnglish": "the bus",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A green city bus at a stop on a sunny street"
+    },
+    {
+      "id": "la-voiture",
+      "title": "La voiture",
+      "word": "la voiture",
+      "wordEnglish": "the car",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A red car driving along a country road between green hills"
+    },
+    {
+      "id": "le-bus-scolaire",
+      "title": "Le bus scolaire",
+      "word": "le bus scolaire",
+      "wordEnglish": "the school bus",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A yellow school bus passing a brick school building"
+    },
+    {
+      "id": "le-tgv",
+      "title": "Le TGV",
+      "word": "le TGV",
+      "wordEnglish": "the high-speed train",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A white high-speed train crossing green hills under a blue sky"
+    },
+    {
+      "id": "l-avion",
+      "title": "L’avion",
+      "word": "l’avion",
+      "wordEnglish": "the plane",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A passenger plane flying above white clouds in a blue sky"
+    },
+    {
+      "id": "le-taxi",
+      "title": "Le taxi",
+      "word": "le taxi",
+      "wordEnglish": "the taxi",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A yellow taxi driving through a city at night under lit windows"
+    },
+    {
+      "id": "le-ferry",
+      "title": "Le ferry",
+      "word": "le ferry",
+      "wordEnglish": "the ferry",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A white ferry crossing the water with mountains behind"
+    },
+    {
+      "id": "la-moto",
+      "title": "La moto",
+      "word": "la moto",
+      "wordEnglish": "the motorcycle",
+      "theme": "transports",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A rider on a blue motorcycle on a road in front of green hills and mountains"
     }
   ]
 }

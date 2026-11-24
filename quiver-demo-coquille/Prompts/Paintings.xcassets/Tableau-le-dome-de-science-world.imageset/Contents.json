@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-dome-de-science-world.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

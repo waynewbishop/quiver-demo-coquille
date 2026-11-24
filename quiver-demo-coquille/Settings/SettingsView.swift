@@ -44,6 +44,10 @@ struct SettingsView: View {
     @State private var translationStatus: TranslationPackStatus?
     /// Set when the learner asks to download the pack, which starts the system's prompt.
     @State private var downloadRequest: TranslationSession.Configuration?
+    /// Set when the learner asks to back up or restore the journal. Both are presented from
+    /// the Form, since a presentation modifier on a Section is copied onto every row.
+    @State private var showsBackUp = false
+    @State private var showsRestorePicker = false
     @Environment(\.dismiss) private var dismiss
     #if os(macOS)
     @Environment(\.openWindow) private var openWindow
@@ -93,7 +97,7 @@ struct SettingsView: View {
                 Toggle("Show suggestions", isOn: $showsSuggestions)
             }
 
-            JournalDataSection(journal: journal)
+            JournalDataSection(journal: journal, showsBackUp: $showsBackUp, showsRestorePicker: $showsRestorePicker)
 
             Section {
                 Picker("French Playback Voice", selection: $playbackVoiceID) {
@@ -140,6 +144,11 @@ struct SettingsView: View {
             Task { translationStatus = await TranslationPack.status() }
         }
         .translationTask(downloadRequest, action: Self.prepareDownload)
+        .sheet(isPresented: $showsBackUp) {
+            BackUpSheet(journal: journal)
+                .tint(.brand)
+        }
+        .journalRestore(journal, isPicking: $showsRestorePicker)
         #if !os(macOS)
         .sheet(isPresented: $isShowingAbout) {
             AboutView()

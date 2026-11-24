@@ -22,9 +22,12 @@ import UniformTypeIdentifiers
 struct JournalDataSection: View {
 
     let journal: Journal
+    /// Set to start a backup. The presenting sheet lives on the Form that holds this
+    /// section, because a presentation modifier on a `Section` is copied onto every row.
+    @Binding var showsBackUp: Bool
+    /// Set to start a restore, presented by the Form for the same reason.
+    @Binding var showsRestorePicker: Bool
     @AppStorage(JournalArchive.lastBackupKey) private var lastBackup = 0.0
-    @State private var showsBackUp = false
-    @State private var showsRestorePicker = false
 
     var body: some View {
         Section {
@@ -41,11 +44,6 @@ struct JournalDataSection: View {
         } footer: {
             Text("A backup is a ZIP file you save yourself. Keep one outside Coquille so it survives deleting the app.")
         }
-        .sheet(isPresented: $showsBackUp) {
-            BackUpSheet(journal: journal)
-                .tint(.brand)
-        }
-        .journalRestore(journal, isPicking: $showsRestorePicker)
     }
 
     /// The date of the last saved backup, or "Never".
