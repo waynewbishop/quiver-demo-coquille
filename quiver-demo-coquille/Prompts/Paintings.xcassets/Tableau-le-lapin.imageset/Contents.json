@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-lapin.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

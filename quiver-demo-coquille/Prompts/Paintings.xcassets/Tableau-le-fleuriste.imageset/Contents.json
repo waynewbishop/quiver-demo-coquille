@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-fleuriste.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

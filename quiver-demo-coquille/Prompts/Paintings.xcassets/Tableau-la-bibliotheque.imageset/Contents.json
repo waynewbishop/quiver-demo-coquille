@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-bibliotheque.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-vache.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

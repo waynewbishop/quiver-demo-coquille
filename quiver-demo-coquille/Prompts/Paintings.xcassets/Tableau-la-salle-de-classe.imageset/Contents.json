@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-salle-de-classe.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -9,20 +9,37 @@ that won't compile.
 
 This demo uses [Quiver](https://github.com/waynewbishop/quiver) for
 the machine learning in a universal SwiftUI app for iPhone, iPad and
-Mac. The whole screen is one text editor. Mistakes get a red underline;
+Mac. It's also a worked example of using small, explainable models
+beside plain rules: where a rule is exact we use a rule, and where a
+word is ambiguous or unknown we ask a Quiver model, then stay silent
+unless it's sure.
+
+## What Coquille is
+
+The whole screen is one text editor. Mistakes get a red underline;
 tapping one opens a card that names the rule, such as "fromage is
 masculine." The underline shows where the mistake is, and the fix stays
-hidden until we ask for it, so we get the first try at correcting it.
-The progress sheet counts the fixes we typed ourselves.
-A play button reads the
-French aloud and an English toggle shows an on-device translation, but
-both stay locked until every error is fixed or ignored. Apple's
-translator is forgiving ("une fromage" still comes out as "a cheese"),
-so clean English would hide the mistake. Like a compiler, nothing runs
-until the code is right.
+hidden until we ask for it, so we always get the first try at correcting
+it. The progress sheet counts only the fixes we typed ourselves.
 
-Everything runs offline, with native Apple frameworks and Quiver as the
-only dependency.
+A play button reads the French aloud and an English toggle shows an
+on-device translation, but both stay locked until every error is fixed or
+ignored. Apple's translator is forgiving ("une fromage" still comes out as
+"a cheese"), so clean English would hide the mistake. Like a compiler,
+nothing runs until the code is right.
+
+Around the editor sits a small journal. Each entry is a plain text file on
+the device, a backup is one ZIP that restores on any device, and Explain
+uses Apple's on-device language model to point out the phrases in an
+error-free entry that are worth knowing. A finished entry can be shared as
+a postcard, with one of the app's paintings, the French and the English.
+A short welcome tour opens on first run. Quiver does three jobs here: it
+ranks spelling guesses, it guesses the gender of nouns the lexicon doesn't
+know, and it settles words that can be read two ways.
+
+Our checking runs on the device, with native Apple frameworks and Quiver
+as the only dependency. Explain needs Apple Intelligence, and translation
+needs Apple's French language pack, as described below.
 
 ## Run it
 
@@ -44,52 +61,39 @@ itself, and translation needs Apple's French language pack:
 On a Mac with Apple Intelligence, the window title names the story once
 the French has no errors; otherwise it reads "Coquille".
 
-## Widgets and exercise links
+## Try it
 
-The `CoquilleWidgets` extension provides **Le tableau du jour**, a widget
-that pairs each daily prompt with a painting, and one control, Écrire, on
-iPhone, iPad and Mac. Add them through the system's widget gallery and
-Control Center **+** flow.
+Each experiment below takes a minute. Type the sentence into the editor,
+then watch what Coquille does and doesn't do.
 
-The painting is always in full color. Small shows it with today's French
-prompt; medium adds the English beneath the French; large adds the
-painting's French title and **Cette semaine**, the week's paintings from
-Monday to Sunday with today ringed. iPad and the Mac desktop add extra
-large: the painting on the left, with the prompt and a two-row week beside
-it. On iPhone and iPad the Lock Screen gets a rectangular prompt and a
-circular pencil-and-scribble mark, and StandBy on iPhone shows the small
-face full screen. Tapping anywhere opens today's prompt as an unsaved draft. The prompt
-changes on the local calendar day, including across daylight-saving
-changes, and everything works offline. Écrire, which can sit in Control
-Center, on the Lock Screen or on the Action Button, carries on with the
-writing already open, or starts today's entry with the keyboard up.
-
-The 14 paintings are originals made for Coquille, landscapes in the spirit
-of Monet and still lifes in the spirit of Cézanne, and they belong to the
-app. They ship in the widget's asset catalog as `Tableau-<prompt id>`,
-pre-sized to 700 px. The full-size originals live outside the repo in
-`~/Projects/Resources/coquille-paintings/`; a new or revised painting is
-resized with `sips -Z 700` into its imageset.
-
-Claude can offer a lesson's writing exercise with a custom link:
-
-```text
-coquille://new?title=Nov%203%3A%20C%27est%20ferm%C3%A9&prompt=Is%20it%20open%3F&prompt=It%20was%20closed.&hint=c%27%C3%A9tait
-```
-
-A confirmation sheet shows the English prompts before **Start writing**
-creates an unsaved entry. Prompts become grey notes above blank answer lines;
-no French answer is inserted. An optional hint stays collapsed until the
-learner asks for it. Links support 1–10 single-line prompts of up to 300
-characters each, an optional 120-character title, and an optional
-300-character hint. The complete URL is capped at 2,048 UTF-8 bytes, and
-unknown, duplicate, malformed, or oversized fields are rejected without
-changing the editor. The same `coquille://` links work on iPhone, iPad and Mac.
-
-The editor supports the system's copy and paste commands, so homework and
-Coquille's feedback can be pasted back into a Claude conversation.
+1. **See a rule, then earn the fix.** Type "Nous avons acheté une fromage et
+   des pommes rouge." Two words are underlined. Tap each one to read the
+   rule it names, and try correcting it before choosing **Show fix**. Then
+   open the progress sheet: it counts the corrections we typed, not the ones
+   we accepted.
+2. **Feel the lock.** With an error still on the page, the play button and
+   the English toggle are locked. Fix or ignore the last error and both
+   unlock. Ignoring is always possible, so a wrong flag never traps us.
+3. **Compare an error with a warning.** Type "Il dort plus." and then "Je
+   mange une fromage." The first is a warning for a missing *ne*, and
+   playback still works. The second is an error, and playback locks. The
+   difference is how sure the rule is.
+4. **Watch words come apart.** Type "Jemappelle Paul. Moi, jaime le
+   fromage. Je nemangepas ici." Each run-together word is flagged with a
+   fix that restores the spaces and apostrophes. These are warnings, so they
+   never lock playback, and a word the system could have meant as a name or
+   as an accent slip is left alone.
+5. **Test the silence.** Type "plus tard" and "le livre". Nothing is flagged,
+   because each rule stays quiet when a phrase is correct French or the
+   word can take either gender. Try to find a correct sentence that gets
+   flagged; if we find one, it's a rule to tighten.
+6. **Search with a typo.** Open the phrasebook and search "bonjur" or
+   "cafe". The right phrase still appears, because the search ranks phrases
+   by letter-pair similarity with Quiver.
 
 ## What it checks
+
+Here is the kind of thing we see in the editor:
 
 ```
 Nous avons acheté une fromage et des pommes rouge.
@@ -101,7 +105,7 @@ Nous avons acheté une fromage et des pommes rouge.
 |---|---|---|---|
 | Spelling | gentile → gentille | Error | System spellchecker, guesses ranked by Quiver |
 | Unknown words | Ahdourdui, with no fix offered | Warning | System spellchecker, no French guess |
-| Run-together words | jesuis → je suis, jaime → j'aime | Warning | System spellchecker, split by Lexique |
+| Run-together words | jesuis → je suis, jaime → j'aime, nemangepas → ne mange pas | Warning | System spellchecker, split by Lexique |
 | Article gender | une fromage → un fromage, ce maison → cette maison, quel maison → quelle maison | Error | Lexique, known noun |
 | Contractions | à le marché → au marché | Error | Contraction rule |
 | Elision | je aime → j'aime, au école → à l'école, si il → s'il | Error | Elision rule |
@@ -139,8 +143,8 @@ every issue at once, like Xcode's issue navigator.
 ## The phrasebook
 
 A blank page is the hardest part of writing in a new language. The
-book button opens a phrasebook beside the editor: 104 complete phrases
-in eight situations, from greetings and the café to directions, travel
+book button opens a phrasebook beside the editor: 676 complete phrases
+in 17 situations, from greetings and the café to directions, travel
 and journal starters. Each row shows the French, an English gloss, a
 *tu* or *vous* tag when it matters, and a play button that reads it
 aloud. Many carry a one-line note on the pattern, such as "Je voudrais
@@ -168,7 +172,60 @@ included, and expects no issues, so a phrase we copy is never flagged.
 If the file is missing or won't load, the editor and linter still work
 with an empty phrasebook.
 
-## Quiver APIs used
+## Journal, Explain and postcards
+
+Each entry is saved as an ordinary text file, so any text editor reads our
+writing. **Back Up Journal…** in Settings writes every entry into one ZIP, plus a
+small manifest of file names and dates; the format is the same on iPhone,
+iPad and Mac. Restoring merges: it adds what's missing, skips what's
+already there, and never changes or removes an entry, using **Restore from
+Backup…**. If an entry of the
+same name has different writing, the backup's version is kept beside it as
+"(recovered)", and restoring the same backup twice adds nothing.
+
+**Explain** reads a whole entry with Apple's on-device language model and
+offers up to four phrases worth knowing, in the order they appear. It only
+runs once the French has no errors, so it can't explain a mistake as if it
+were right. Its notes are the model's, not the linter's rules.
+
+**Share as Postcard** gathers an entry's painting, its French as written,
+the English translation if there is one, and the date for the postmark.
+
+## How it works
+
+Every check reads the same text and reports issues, each with a severity
+and a rule that names it. The part-of-speech layer runs first, because
+several rules read its verdicts. The sections below follow the layers from
+the first line of defence to the last: the system spellchecker, Quiver's
+ranking, the tagged context, the phrase list and the gender model.
+
+### Spelling and run-together words
+
+The system spellchecker flags words it doesn't know and offers guesses.
+Only guesses the Lexique lexicon knows are offered, because the Mac's French
+spellchecker also returns English words ("fro" would otherwise become
+"from"). A flagged word with no French guess is still underlined as a
+warning, with no fix. Seeing the mistake comes first, and a name the system
+doesn't know never blocks play.
+
+The system never suggests a space, so "jesuis" comes back as "jésus". To
+catch two or three words typed as one, we try every split point before the
+guesses are ranked. A split qualifies when the first piece is a function
+word (*je*, *me*, *ne*, *un*) or an elided letter before a vowel, and the
+rest are lexicon words of three letters or more, or function words
+themselves. When exactly one split qualifies we offer it, as a warning;
+when several fit, we stay silent. Only if no two-word split exists do we
+look for three words, as in "nemangepas" → "ne mange pas", "jemappelle" →
+"je m'appelle" and "cestbon" → "c'est bon". There at least one of the later
+pieces must be a function word, an elision or a common link such as *pas* or
+*est*, which keeps two arbitrary lexicon words from qualifying.
+
+The split steps aside when the system offers the same letters with accents
+("demanger" for "démanger" is a missing accent, not "de manger"), and a
+capitalized word in the middle of a sentence is read as a name and never
+split.
+
+### Quiver APIs used
 
 - `LogisticRegression` — the gender classifier. Each feature is 1.0 when
   a noun ends with one ending (-tion, -ment, -ette…), and the model is
@@ -186,7 +243,7 @@ with an empty phrasebook.
   before "gentil". The phrasebook search uses the same vectors, so
   "bonjur" finds "Bonjour !".
 
-## The part-of-speech layer
+### The part-of-speech layer
 
 Nearly 30% of running French has more than one reading in Lexique,
 and most of that is two-way. Before the rules run, each pass is tagged
@@ -197,9 +254,11 @@ the verdicts instead of working out its neighbours by hand:
 - adjective or noun, for words Lexique lists as both (malade, jeune);
 - helper or main verb, for avoir and être ("il a mangé", "il a faim");
 - noun or verb, for words like demande and porte, so "la demande sur le
-  site" never matches a pattern for the verb demander.
+  site" never matches a pattern for the verb demander;
+- *et* or *est*, which learners often swap, settled from the words around
+  it rather than from which one was typed.
 
-All four share one recipe, `ContextDecider`: the five words around
+The first four share one recipe, `ContextDecider`: the five words around
 the target and what Lexique says each can be. Each is one JSON file of
 word lists and weights, trained in the Quiver Notebook
 (`coquille-part-of-speech-model.swift`) on the Universal Dependencies
@@ -207,10 +266,11 @@ French treebanks. On held-out treebank text, at the 0.95 cutoff the
 rules use, article or pronoun decides 97% of cases and is right on
 99.8%; adjective or noun decides 54% and is right on 98.9%; helper or
 main decides 73% and is right on 99.1%; noun or verb decides 67% and is
-right on 98.8%. A word the decider
-isn't sure about gets no verdict, and the rules stay silent.
+right on 98.8%. A word the decider isn't sure about gets no verdict, and the rules stay
+silent. The *et* or *est* decider has its own model file,
+`fr.et-est-model.json`, trained the same way.
 
-## The phrase list
+### The phrase list
 
 Every listed phrase lives in `fr.patterns.json`: look-alikes, word
 choices, idioms, meaning questions and prepositions, one entry each. An
@@ -231,7 +291,7 @@ counts which preposition each verb takes in the treebanks and keeps an
 entry only when the flagged word pair never appears there. A rerun
 replaces those entries and leaves the hand-written ones alone.
 
-## The gender model
+### The gender model
 
 The model only answers for nouns Lexique doesn't know; known nouns never
 need it, because the lexicon answers them exactly. It was trained in the
@@ -267,6 +327,82 @@ The weights above only show the shape of the file; they aren't trained
 values. The app rejects a file whose ending count doesn't match the
 model's `featureCount`.
 
+## How we know it's right
+
+A narrow linter that's always right beats a broad one that cries wolf, so
+we test the silences as hard as the catches. The test target holds more
+than 450 XCTest cases: the false-positive traps above, correct French that
+must pass clean, hostile `coquille://` links, calendar selection for the
+daily prompt, and a check that every phrasebook phrase passes the whole
+linter, platform spellchecker included, with no issues.
+
+Each model is measured on text it never saw. The part-of-speech deciders
+and the gender model report, at the cutoff the rules use, how often they
+decide and how often they're right when they do. A word a model isn't sure
+about gets no verdict, so the cost of an uncertain case is a missed
+correction, never a wrong one. The scorecards for run-together words work
+the same way: sentences written before the filter was built, run through
+the real spellchecker, with traps for names and accent slips that must
+not be split.
+
+## Extend it
+
+Most changes are data, not code. A new phrase is one entry in
+`fr.phrases.json` with its situation, French, English, register and an
+optional note. A new look-alike, word choice, idiom or preposition is one
+entry in `fr.patterns.json`. A change to an explanation is a change to its
+template in `fr.explanations.json`. The lexicon, the gender model and the
+verb + preposition entries each rebuild with the commands in their
+sections. A new two-way ambiguity is a new `ContextDecider` file trained in
+the Quiver Notebook, with no code changes, and a model trained with a
+different feature recipe is refused instead of mis-read. After any change,
+run the tests: a rule that starts flagging correct French fails them.
+
+## Widgets and exercise links
+
+The `CoquilleWidgets` extension provides **Le tableau du jour**, a widget
+that pairs each daily prompt with a painting, and one control, Écrire, on
+iPhone, iPad and Mac. Add them through the system's widget gallery and
+Control Center **+** flow.
+
+The painting is always in full color. Small shows it with today's French
+prompt; medium adds the English beneath the French; large adds the
+painting's French title and **Cette semaine**, the week's paintings from
+Monday to Sunday with today ringed. iPad and the Mac desktop add extra
+large: the painting on the left, with the prompt and a two-row week beside
+it. On iPhone and iPad the Lock Screen gets a rectangular prompt and a
+circular pencil-and-scribble mark, and StandBy on iPhone shows the small
+face full screen. Tapping anywhere opens today's prompt as an unsaved draft. The prompt
+changes on the local calendar day, including across daylight-saving
+changes, and everything works offline. Écrire, which can sit in Control
+Center, on the Lock Screen or on the Action Button, carries on with the
+writing already open, or starts today's entry with the keyboard up.
+
+The 142 paintings are originals made for Coquille, grouped in 18 themes, and
+they belong to the app. Each ships in `Prompts/Paintings.xcassets` as
+`Tableau-<slug>`, pre-sized to 700 px, and there are 14 daily prompts to pair
+them with. The full-size originals live outside the repo in
+`~/Projects/Resources/coquille-paintings/`; a new or revised painting is
+resized with `sips -Z 700` into its imageset.
+
+Claude can offer a lesson's writing exercise with a custom link:
+
+```text
+coquille://new?title=Nov%203%3A%20C%27est%20ferm%C3%A9&prompt=Is%20it%20open%3F&prompt=It%20was%20closed.&hint=c%27%C3%A9tait
+```
+
+A confirmation sheet shows the English prompts before **Start writing**
+creates an unsaved entry. Prompts become grey notes above blank answer lines;
+no French answer is inserted. An optional hint stays collapsed until the
+learner asks for it. Links support 1–10 single-line prompts of up to 300
+characters each, an optional 120-character title, and an optional
+300-character hint. The complete URL is capped at 2,048 UTF-8 bytes, and
+unknown, duplicate, malformed, or oversized fields are rejected without
+changing the editor. The same `coquille://` links work on iPhone, iPad and Mac.
+
+The editor supports the system's copy and paste commands, so homework and
+Coquille's feedback can be pasted back into a Claude conversation.
+
 ## Project layout
 
 Everything is plain folders in one Xcode project:
@@ -280,6 +416,10 @@ Everything is plain folders in one Xcode project:
   look-alike, word-choice and idiom lists, and the phrasebook, all as
   readable JSON. Changing a template changes the explanation without
   touching code.
+- `PartOfSpeech/` — the five deciders and the tagger that runs before the rules.
+- `Journal/` — saved entries, rename, and backup and restore as a ZIP.
+- `Welcome/`, `Settings/`, `About/` — the first-run tour, Settings and the About dialog.
+- `Paintings/` — the paintings' views and the postcard.
 - `Phrasebook/` — the phrase model, the Quiver-backed search and the
   phrasebook view.
 - `Speech/`, `Translation/`, `Stats/`, `Editor/` — playback, on-device
@@ -294,7 +434,7 @@ Everything is plain folders in one Xcode project:
 - `Tools/BuildLexicon.swift` — rebuilds the lexicon from the full
   Lexique table, applying `Tools/fr.noun-gender-overrides.json` and
   `Tools/fr.adjective-overrides.json`.
-- `quiver-demo-coquilleTests/` — 243 XCTest cases, including the
+- `quiver-demo-coquilleTests/` — more than 450 XCTest cases, including the
   false-positive traps above, correct French that must pass clean,
   phrasebook validation, calendar selection, and hostile-link tests.
 
@@ -338,3 +478,4 @@ SIL Open Font License 1.1; the license ships beside them as
 - [Quiver Cookbook](https://github.com/waynewbishop/quiver-cookbook) — interactive recipes
 - [Quiver Documentation](https://waynewbishop.github.io/quiver/documentation/quiver/) — API reference and conceptual guides
 - [Swift Algorithms & Data Structures](https://waynewbishop.github.io/swift-algorithms/) — the companion book
+

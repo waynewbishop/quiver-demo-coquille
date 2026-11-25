@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "le-cartable.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

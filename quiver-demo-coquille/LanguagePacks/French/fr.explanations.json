@@ -54,9 +54,9 @@
     "example": "Ahdourdui isn't in the French dictionary, and there's no close match to suggest."
   },
   "runTogether": {
-    "hint": "{word} reads as two words run together. Look for where the space or apostrophe goes.",
-    "template": "{word} is two words run together: {fix}.",
-    "example": "mecouche is two words run together: me couche."
+    "hint": "{word} reads as words run together. Look for where the spaces or apostrophes go.",
+    "template": "{word} is words run together: {fix}.",
+    "example": "mecouche is words run together: me couche."
   },
   "enArticle": {
     "hint": "En doesn't normally come before le, la or les.",

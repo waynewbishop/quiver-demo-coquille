@@ -145,29 +145,91 @@ struct OrthographicFilter: LinguisticFilter {
     /// The letters that open a word with a vowel sound, before which French elides.
     private static let vowelSounds = Set("aeiouyhàâäéèêëîïôöùûü")
 
+    /// Short words that often sit in the middle or at the end of a run of three, as in
+    /// "nemangepas" or "cestbon", beyond the function words that can open one.
+    private static let runOnLinks: Set<String> = [
+        "est", "es", "suis", "sont", "ai", "as", "pas", "plus", "jamais", "rien", "point"
+    ]
+
     /// The one way `word` splits into a function word and a known word, such as
     /// "mecouche" → "me couche" or "jaime" → "j'aime", or nil when there's no such split
     /// or more than one.
     ///
     /// The second word must be at least three letters or a function word itself, because
     /// Lexique lists fragments such as "ya" and "rai" that would otherwise qualify.
+    ///
+    /// Only when no two-word split exists are three words tried, as in "nemangepas" →
+    /// "ne mange pas", "jemappelle" → "je m'appelle" and "cestbon" → "c'est bon".
     func runTogetherFix(for word: String) -> String? {
         let letters = Array(FrenchTokenizer.normalize(word))
         guard letters.count >= 4, !letters.contains("'") else { return nil }
-        var fixes: [String] = []
+        var fixes = twoWordFixes(letters)
+        if fixes.isEmpty && letters.count >= 6 {
+            fixes = threeWordFixes(letters)
+        }
+        guard fixes.count == 1, let fix = fixes.first else { return nil }
+        return Self.matchingCase(fix, of: word)
+    }
+
+    /// Every way `letters` splits into a function word and a known word, with the space or
+    /// apostrophe that joins them.
+    private func twoWordFixes(_ letters: [Character]) -> Set<String> {
+        var fixes: Set<String> = []
         for cut in 1..<(letters.count - 1) {
             let head = String(letters[..<cut])
             let tail = String(letters[cut...])
             guard tail.count >= 3 || Self.runOnHeads.contains(tail), lexicon.contains(tail) else { continue }
             if Self.runOnHeads.contains(head) {
-                fixes.append(head + " " + tail)
+                fixes.insert(head + " " + tail)
             }
             if Self.elisions.contains(head), let first = tail.first, Self.vowelSounds.contains(first) {
-                fixes.append(head + "'" + tail)
+                fixes.insert(head + "'" + tail)
             }
         }
-        guard fixes.count == 1, let fix = fixes.first else { return nil }
-        return Self.matchingCase(fix, of: word)
+        return fixes
+    }
+
+    /// Every way `letters` splits into three words: a function word, then two more where
+    /// at least one is a function word, an elided word or a common link such as "pas".
+    ///
+    /// Requiring that anchor keeps two arbitrary lexicon words from qualifying.
+    private func threeWordFixes(_ letters: [Character]) -> Set<String> {
+        var fixes: Set<String> = []
+        for firstCut in 1..<(letters.count - 3) {
+            let head = String(letters[..<firstCut])
+            let rest = Array(letters[firstCut...])
+            guard let first = rest.first else { continue }
+            var joiners: [String] = []
+            if Self.runOnHeads.contains(head) { joiners.append(" ") }
+            if Self.elisions.contains(head), Self.vowelSounds.contains(first) { joiners.append("'") }
+            guard !joiners.isEmpty else { continue }
+
+            for secondCut in 1..<(rest.count - 1) {
+                let middle = String(rest[..<secondCut])
+                let tail = String(rest[secondCut...])
+                guard isRunOnWord(tail), tail.count >= 3 || Self.runOnHeads.contains(tail) || Self.runOnLinks.contains(tail) else { continue }
+                var middleForms: [String] = []
+                if isRunOnWord(middle) { middleForms.append(middle + " ") }
+                if Self.elisions.contains(middle), let tailFirst = tail.first, Self.vowelSounds.contains(tailFirst) {
+                    middleForms.append(middle + "'")
+                }
+                let anchored = Self.runOnHeads.contains(middle) || Self.runOnLinks.contains(middle)
+                    || Self.runOnHeads.contains(tail) || Self.runOnLinks.contains(tail)
+                    || middleForms.contains { $0.hasSuffix("'") }
+                guard anchored else { continue }
+                for joiner in joiners {
+                    for form in middleForms {
+                        fixes.insert(head + joiner + form + tail)
+                    }
+                }
+            }
+        }
+        return fixes
+    }
+
+    /// Whether `word` can stand as one of three: three letters or more, or a function word or link, and known.
+    private func isRunOnWord(_ word: String) -> Bool {
+        (word.count >= 3 || Self.runOnHeads.contains(word) || Self.runOnLinks.contains(word)) && lexicon.contains(word)
     }
 
     /// `fix` with a capital first letter when `word` starts with one: "Jesuis" becomes "Je suis".

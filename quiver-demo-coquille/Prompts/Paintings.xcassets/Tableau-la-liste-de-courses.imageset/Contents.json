@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "la-liste-de-courses.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

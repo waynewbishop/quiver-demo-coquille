@@ -81,6 +81,24 @@ final class RunTogetherWordTests: XCTestCase {
         XCTAssertNil(filter.runTogetherFix(for: "abc"))
     }
 
+    // When no two-word split exists, three words are tried: a function word, then a word
+    // with an anchor (a function word, an elision or a link such as "pas").
+    func testSplitsThreeWords() throws {
+        let filter = try filter()
+        XCTAssertEqual(filter.runTogetherFix(for: "nemangepas"), "ne mange pas")
+        XCTAssertEqual(filter.runTogetherFix(for: "jemappelle"), "je m'appelle")
+        XCTAssertEqual(filter.runTogetherFix(for: "cestbon"), "c'est bon")
+        XCTAssertEqual(filter.runTogetherFix(for: "Jemappelle"), "Je m'appelle")
+    }
+
+    // A two-word split always wins, and three words never split a word that has no function-word start.
+    func testThreeWordsStayConservative() throws {
+        let filter = try filter()
+        XCTAssertEqual(filter.runTogetherFix(for: "mecouche"), "me couche")
+        XCTAssertNil(filter.runTogetherFix(for: "chatmaison"))
+        XCTAssertNil(filter.runTogetherFix(for: "abcdefgh"))
+    }
+
     // MARK: - Through the linter
 
     // A run-together word is a warning whose fix is the split, ahead of the system's single-word guess.
@@ -90,7 +108,7 @@ final class RunTogetherWordTests: XCTestCase {
         XCTAssertEqual(issue.kind, .spelling)
         XCTAssertEqual(issue.severity, .warning)
         XCTAssertEqual(issue.replacement, "me couche")
-        XCTAssertEqual(issue.reason, "mecouche is two words run together: me couche.")
+        XCTAssertEqual(issue.reason, "mecouche is words run together: me couche.")
         XCTAssertFalse(issue.hint.contains("me couche"))
     }
 
@@ -130,7 +148,10 @@ final class RunTogetherWordTests: XCTestCase {
             ("Il mange dupain.", "du pain"),
             ("Je parle avec lesenfants.", "les enfants"),
             ("Je pense quil pleut.", "qu'il"),
-            ("Ilya un chat.", "Il y a")
+            ("Ilya un chat.", "Il y a"),
+            ("Je nemangepas ici.", "ne mange pas"),
+            ("Jemappelle Paul.", "Je m'appelle"),
+            ("Cestbon ici.", "C'est bon")
         ]
         for (sentence, fix) in mustFix {
             XCTAssertTrue(linter.lint(sentence).contains { $0.replacement == fix }, "\(sentence) should offer \(fix)")

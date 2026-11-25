@@ -89,6 +89,24 @@
       "french": "Les transports",
       "english": "Getting around",
       "short": "Transport"
+    },
+    {
+      "id": "animaux",
+      "french": "Les animaux",
+      "english": "Animals",
+      "short": "Animals"
+    },
+    {
+      "id": "courses",
+      "french": "Les courses",
+      "english": "Shopping and errands",
+      "short": "Shopping"
+    },
+    {
+      "id": "travail",
+      "french": "Le travail et l’école",
+      "english": "Work and school",
+      "short": "Work"
     }
   ],
   "paintings": [
@@ -1329,6 +1347,217 @@
       "genre": "Paysage",
       "painter": "Monet",
       "description": "A rider on a blue motorcycle on a road in front of green hills and mountains"
+    },
+    {
+      "id": "le-chien-au-parc",
+      "title": "Le chien au parc",
+      "word": "le chien",
+      "wordEnglish": "the dog",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A happy dog with a red collar on a park path, a yellow ball nearby"
+    },
+    {
+      "id": "les-oiseaux",
+      "title": "Les oiseaux",
+      "word": "l’oiseau",
+      "wordEnglish": "the bird",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Four colourful birds side by side on a branch under green leaves"
+    },
+    {
+      "id": "le-cheval",
+      "title": "Le cheval",
+      "word": "le cheval",
+      "wordEnglish": "the horse",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A brown horse in a green field behind a white fence"
+    },
+    {
+      "id": "la-vache",
+      "title": "La vache",
+      "word": "la vache",
+      "wordEnglish": "the cow",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A black and white cow with a bell in an alpine meadow below snowy peaks"
+    },
+    {
+      "id": "le-poisson-rouge",
+      "title": "Le poisson rouge",
+      "word": "le poisson rouge",
+      "wordEnglish": "the goldfish",
+      "theme": "animaux",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "An orange goldfish in a round bowl by a window"
+    },
+    {
+      "id": "le-lapin",
+      "title": "Le lapin",
+      "word": "le lapin",
+      "wordEnglish": "the rabbit",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A grey rabbit with tall ears in a vegetable garden beside a carrot"
+    },
+    {
+      "id": "les-canards",
+      "title": "Les canards",
+      "word": "le canard",
+      "wordEnglish": "the duck",
+      "theme": "animaux",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Three ducks swimming on a round pond between two trees"
+    },
+    {
+      "id": "le-supermarche",
+      "title": "Le supermarché",
+      "word": "le supermarché",
+      "wordEnglish": "the supermarket",
+      "theme": "courses",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A shopper in a supermarket aisle between colourful shelves"
+    },
+    {
+      "id": "le-panier",
+      "title": "Le panier",
+      "word": "le panier",
+      "wordEnglish": "the basket",
+      "theme": "courses",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A wicker basket of apples, lemons, limes and oranges, with a baguette"
+    },
+    {
+      "id": "la-caisse",
+      "title": "La caisse",
+      "word": "la caisse",
+      "wordEnglish": "the checkout",
+      "theme": "courses",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A cashier at the register as groceries move along the belt"
+    },
+    {
+      "id": "le-fleuriste",
+      "title": "Le fleuriste",
+      "word": "le fleuriste",
+      "wordEnglish": "the florist",
+      "theme": "courses",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Buckets of bright flowers outside a green flower shop"
+    },
+    {
+      "id": "le-sac-de-courses",
+      "title": "Le sac de courses",
+      "word": "le sac",
+      "wordEnglish": "the bag",
+      "theme": "courses",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A paper grocery bag with a baguette, lettuce and milk on a kitchen counter"
+    },
+    {
+      "id": "le-chariot",
+      "title": "Le chariot",
+      "word": "le chariot",
+      "wordEnglish": "the cart",
+      "theme": "courses",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "A shopping cart with groceries in the parking lot of a store"
+    },
+    {
+      "id": "la-liste-de-courses",
+      "title": "La liste de courses",
+      "word": "la liste",
+      "wordEnglish": "the list",
+      "theme": "courses",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A handwritten shopping list held to the fridge by a red magnet"
+    },
+    {
+      "id": "la-salle-de-classe",
+      "title": "La salle de classe",
+      "word": "la classe",
+      "wordEnglish": "the class",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Pupils at their desks facing a green chalkboard"
+    },
+    {
+      "id": "le-cartable",
+      "title": "Le cartable",
+      "word": "le cartable",
+      "wordEnglish": "the school bag",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A red leather school bag by the door, with a pencil and an exercise book"
+    },
+    {
+      "id": "la-reunion",
+      "title": "La réunion",
+      "word": "la réunion",
+      "wordEnglish": "the meeting",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Four colleagues around a meeting table, a chart on the whiteboard"
+    },
+    {
+      "id": "les-devoirs",
+      "title": "Les devoirs",
+      "word": "les devoirs",
+      "wordEnglish": "homework",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "A child doing homework at the kitchen table with a glass of milk"
+    },
+    {
+      "id": "la-recre",
+      "title": "La récré",
+      "word": "la récré",
+      "wordEnglish": "recess",
+      "theme": "travail",
+      "genre": "Paysage",
+      "painter": "Monet",
+      "description": "Children playing in a schoolyard with hopscotch and a ball"
+    },
+    {
+      "id": "la-pause",
+      "title": "La pause",
+      "word": "la pause",
+      "wordEnglish": "the break",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Two colleagues chatting over mugs in the office kitchen"
+    },
+    {
+      "id": "la-bibliotheque",
+      "title": "La bibliothèque",
+      "word": "la bibliothèque",
+      "wordEnglish": "the library",
+      "theme": "travail",
+      "genre": "Nature morte",
+      "painter": "Cézanne",
+      "description": "Two people reading at a lamp-lit table between tall bookshelves"
     }
   ]
 }
+

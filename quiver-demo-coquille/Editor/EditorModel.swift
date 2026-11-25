@@ -156,6 +156,11 @@ final class EditorModel {
         return ranges.ranges.contains { !$0.isEmpty }
     }
 
+    /// Selects all the writing, for the More menu's Select All on iPhone.
+    func selectAll() {
+        selection = AttributedTextSelection(range: text.startIndex..<text.endIndex)
+    }
+
     /// Whether Save first asks for a title, as it does for writing not yet in the journal.
     var saveNeedsTitle: Bool {
         fileURL == nil

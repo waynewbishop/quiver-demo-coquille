@@ -82,7 +82,7 @@ struct CompactToolbar: ToolbarContent {
 
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                MoreMenuItems(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsExplanation: $showsExplanation, showsSettings: $showsSettings, perform: perform)
+                MoreMenuItems(model: model, showsProgress: $showsProgress, showsPhrasebook: $showsPhrasebook, showsExplanation: $showsExplanation, showsSettings: $showsSettings, perform: perform, offersSelectAll: true)
             } label: {
                 Label("More", systemImage: "ellipsis")
             }
@@ -108,6 +108,8 @@ struct MoreMenuItems: View {
     @Binding var showsSettings: Bool
     /// Hands a file command to the editor, which asks about unsaved changes first.
     let perform: (FileRequest) -> Void
+    /// Whether Select All shows, which only iPhone needs; the Mac and iPad have it on the keyboard.
+    var offersSelectAll = false
 
     var body: some View {
         Section {
@@ -120,6 +122,11 @@ struct MoreMenuItems: View {
             Button("Share as Postcard…", systemImage: "envelope") { request(.sharePostcard) }
                 .disabled(model.postcardContent == nil)
             Toggle("Phrasebook", systemImage: "book", isOn: hidingKeyboard($showsPhrasebook))
+            if offersSelectAll {
+                // The keyboard stays up, so the system's Copy and Cut follow at once.
+                Button("Select All", systemImage: "selection.pin.in.out") { model.selectAll() }
+                    .disabled(!model.hasText)
+            }
         }
         Section {
             if model.fileURL != nil {
