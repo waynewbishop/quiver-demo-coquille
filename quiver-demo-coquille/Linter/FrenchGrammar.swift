@@ -1351,6 +1351,21 @@ nonisolated struct FrenchGrammar: Grammar {
         return lexicon.noun(tokens[index].normalized) == nil || text.isAdjective(index, certainty: Self.adjectiveLean)
     }
 
+    /// Common adjectives that usually stand before their noun. Many are also nouns in Lexique
+    /// ("une belle"), so the tagger is rarely sure of them, but between a determiner and a noun
+    /// they can only be adjectives.
+    private static let prenominalAdjectiveLemmas: Set<String> = [
+        "beau", "bon", "grand", "petit", "joli", "gros", "vieux", "nouveau", "jeune",
+        "mauvais", "long", "haut", "meilleur", "autre", "premier", "dernier", "vrai"
+    ]
+
+    /// Whether the word at `index` is one of the common adjectives that stand before a noun.
+    private func isPrenominalAdjective(at index: Int, in text: TaggedText) -> Bool {
+        let token = text.tokens[index]
+        guard token.text.first?.isLowercase == true else { return false }
+        return lexicon.adjectiveLemmas(of: token.normalized).contains { Self.prenominalAdjectiveLemmas.contains($0) }
+    }
+
     /// The noun and its determiner for the object that ends at `end`, which is either the noun
     /// itself ("les photos"), the noun after an adjective ("les belles photos"), or an adjective
     /// after the noun ("les photos magnifiques"). Returns nil when no determiner opens the phrase.
@@ -1360,7 +1375,7 @@ nonisolated struct FrenchGrammar: Grammar {
         // "les belles photos": the adjective sits before the noun.
         if end >= 2, tokens[end - 1].isAdjacentToNext, tokens[end - 2].isAdjacentToNext,
            Self.determiners[tokens[end - 2].normalized] != nil, !text.mayBePronoun[end - 2],
-           isSureAdjective(at: end - 1, in: text),
+           isSureAdjective(at: end - 1, in: text) || isPrenominalAdjective(at: end - 1, in: text),
            tokens[end].text.first?.isLowercase == true, lexicon.noun(tokens[end].normalized) != nil,
            (text.verbProbability[end] ?? 0) < 0.5 { return (end - 2, end) }
         // "les photos magnifiques": the adjective sits after the noun.

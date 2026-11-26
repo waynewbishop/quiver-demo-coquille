@@ -40,6 +40,7 @@ final class LinguisticFilterTests: XCTestCase {
             "orthography.spelling",
             "grammar.gender", "grammar.gender.predicted", "grammar.contraction", "grammar.elision", "grammar.accent",
             "grammar.auxiliary", "grammar.subjunctive", "grammar.objectPronoun", "grammar.relativePronoun", "grammar.conjugation", "grammar.siClause", "grammar.futureAfterQuand", "grammar.participle",
+            "grammar.hyphen", "grammar.doubleDeterminer", "grammar.quantityDe", "grammar.etreForm", "grammar.precedingObject", "grammar.narrativeTense",
             "grammar.article", "grammar.articleNumber", "grammar.agreement", "grammar.lookAlike", "grammar.wordChoice",
             "grammar.negation", "grammar.idiom", "grammar.meaning", "grammar.etOrEst",
             "grammar.preposition", "grammar.sentenceCapital", "grammar.lowercase", "grammar.number"

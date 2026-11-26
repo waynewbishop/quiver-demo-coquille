@@ -50,7 +50,7 @@ final class QuotesTests: XCTestCase {
     func testEveryQuoteStyleIsFound() {
         XCTAssertEqual(Quotes.ranges(in: "a \"bc\" d"), [3..<5])
         XCTAssertEqual(Quotes.ranges(in: "a “bc” d"), [3..<5])
-        XCTAssertEqual(Quotes.ranges(in: "a « bc » d"), [4..<8])
+        XCTAssertEqual(Quotes.ranges(in: "a « bc » d"), [3..<7])
     }
 
     // An apostrophe never ends a quote, so the name stays whole.
@@ -69,7 +69,7 @@ final class QuotesTests: XCTestCase {
         let text = "Je suis chez \"Trader Joe's\".\nBonjour"
         let masked = Quotes.masked(text)
         XCTAssertEqual(masked.count, text.count)
-        XCTAssertEqual(masked, "Je suis chez \"              \".\nBonjour")
+        XCTAssertEqual(masked, "Je suis chez \"            \".\nBonjour")
     }
 
     // MARK: - Linting
